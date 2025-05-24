@@ -6,27 +6,48 @@ A system for analyzing and visualizing social dynamics in texts.
 
 1. **Prerequisites**
    - Python 3.12.9
-   - [Miniconda](https://docs.conda.io/en/latest/miniconda.html) ≥ 23.10
+   - [Miniconda](https://docs.conda.io/en/latest/miniconda.html) ≥ 23.10 (recommended)
    - Git 2.30+
 
 2. **Environment Setup**
+
+   Choose one of the following methods:
+
+   ### Using Conda (Recommended)
+
    ```bash
-   # Create and activate conda environment
-   conda create -y -n sociograph python=3.12.9
+   # Clone the repository
+   git clone <repository-url>
+   cd sociograph
+
+   # Create environment from environment.yml
+   conda env create -f environment.yml
    conda activate sociograph
+   ```   ### Using pip
+
+   ```bash
+   # Clone the repository
+   git clone <repository-url>
+   cd sociograph
+
+   # Create and activate virtual environment
+   python -m venv .venv
+   .\.venv\Scripts\Activate.ps1  # On Windows
+   source .venv/bin/activate     # On Unix/macOS
 
    # Install dependencies
    python -m pip install --upgrade pip
-   pip install fastapi uvicorn[standard] langchain chromadb sqlite-vec \
-               tiktoken openrouter-client sentence-transformers llama-index \
-               pydantic markdown-it-py weasyprint cairocffi spacy
+   pip install -r requirements.txt
 
-   # Download spaCy model
+   # Download spaCy model (required for both pip and conda installations)
    python -m spacy download en_core_web_sm
    ```
 
+   Note: The `requirements.txt` file contains only the direct dependencies. Using conda with `environment.yml` is recommended as it provides a more complete and tested environment.
+
 3. **Repository Structure**
-   ```
+
+   ```text
    backend/              # Backend service
      app/
        core/            # Core business logic
@@ -48,4 +69,5 @@ A system for analyzing and visualizing social dynamics in texts.
    - Frontend development path to be determined in later phases
 
 ## License
+
 TBD
