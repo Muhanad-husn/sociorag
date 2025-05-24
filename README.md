@@ -68,6 +68,29 @@ A system for analyzing and visualizing social dynamics in texts.
    - Vector storage using sqlite-vec for efficient similarity search
    - Frontend development path to be determined in later phases
 
+## Global Configuration
+
+The project uses a centralized configuration system that allows for easy adjustment of parameters:
+
+### Changing Defaults
+
+1. Copy `.env.example` → `.env` and tweak numeric thresholds.
+2. Or create `config.yaml` and pass its path to `get_config()`:
+
+```python
+from backend.app.core.config import get_config
+cfg = get_config("config.yaml")
+print(cfg.TOP_K)   # 50
+```
+
+All configuration parameters are defined in `backend/app/core/config.py` and include:
+
+- **Paths**: BASE_DIR, INPUT_DIR, SAVED_DIR, VECTOR_DIR, GRAPH_DB, PDF_THEME
+- **Models**: EMBEDDING_MODEL, RERANKER_MODEL, ENTITY_LLM_MODEL, ANSWER_LLM_MODEL, TRANSLATE_LLM_MODEL
+- **Thresholds/Parameters**: CHUNK_SIM (0.85), ENTITY_SIM (0.90), GRAPH_SIM (0.95), TOP_K (100), TOP_K_RERANK (15), MAX_CONTEXT_FRACTION (0.4)
+- **Resources**: SPACY_MODEL, LOG_LEVEL
+- **Limits**: HISTORY_LIMIT (15), SAVED_LIMIT (15)
+
 ## License
 
 TBD

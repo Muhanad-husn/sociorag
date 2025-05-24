@@ -30,6 +30,8 @@ build/
 vector_store/
 saved/
 input/
+graph.db
+config.yaml
 
 # Cache
 .cache/

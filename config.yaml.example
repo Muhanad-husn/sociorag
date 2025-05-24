@@ -1,0 +1,4 @@
+# config.yaml.example
+chunk_sim: 0.8
+top_k: 50
+vector_dir: /mnt/fast_ssd/vector_store
