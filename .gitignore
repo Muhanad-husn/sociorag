@@ -1,0 +1,42 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+
+# Conda & virtualenv
+.env
+.venv
+env/
+venv/
+
+# IDEs and editors
+.idea/
+.vscode/
+*.swp
+*.swo
+*.swn
+
+# Environment
+.python-version
+.env.local
+.env.*.local
+
+# Build and distribution
+dist/
+build/
+*.egg-info/
+
+# Data and models
+vector_store/
+saved/
+input/
+
+# Cache
+.cache/
+.pytest_cache/
+.coverage
+htmlcov/
+
+# System
+.DS_Store
+Thumbs.db
