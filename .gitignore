@@ -42,3 +42,6 @@ htmlcov/
 # System
 .DS_Store
 Thumbs.db
+
+# Instructions
+instructions/
