@@ -148,16 +148,23 @@ class SQLiteSingleton(metaclass=_SingletonMeta):
             )
             
             # Enable WAL mode for better concurrency
-            self._connection.execute("PRAGMA journal_mode=WAL")
-            
-            # Try to load sqlite-vec extension
+            self._connection.execute("PRAGMA journal_mode=WAL")            # Try to load sqlite-vec extension
             try:
-                self._connection.enable_load_extension(True)
-                self._connection.load_extension("vec0")
-                logger.info("Loaded sqlite-vec extension")
+                import sqlite_vec
+                # Use the load method from sqlite_vec
+                sqlite_vec.load(self._connection)
+                logger.info("Loaded sqlite-vec extension using sqlite_vec.load()")
             except Exception as e:
-                logger.warning(f"Could not load sqlite-vec extension: {e}")
-                # Continue without vector extension for now
+                try:
+                    # Fallback to manual loading
+                    self._connection.enable_load_extension(True)
+                    extension_path = sqlite_vec.loadable_path()
+                    logger.info(f"SQLite-vec extension path: {extension_path}")
+                    self._connection.load_extension(extension_path)
+                    logger.info("Loaded sqlite-vec extension from path")
+                except Exception as inner_e:
+                    logger.warning(f"Could not load sqlite-vec extension: {inner_e}")
+                    # Continue without vector extension for now
             
             # Create tables if they don't exist
             self._create_tables()
@@ -230,7 +237,6 @@ class SQLiteSingleton(metaclass=_SingletonMeta):
 
 class LLMClientSingleton(metaclass=_SingletonMeta):
     """Singleton OpenRouter LLM client."""
-    
     def __init__(self):
         self._api_key = None
         
@@ -273,33 +279,37 @@ class LLMClientSingleton(metaclass=_SingletonMeta):
                 request_data["max_tokens"] = max_tokens
             
             request = ChatCompletionRequest(**request_data)
-            response = await create_chat_completion(request)
             
-            if stream:
-                # For streaming, use a more defensive approach
-                try:
-                    # Check if response supports async iteration
-                    if hasattr(response, '__aiter__'):
-                        # Use type: ignore to suppress type checker warnings for dynamic typing
-                        async for chunk in response:  # type: ignore
-                            content = self._extract_chunk_content(chunk)
-                            if content:
-                                yield content
-                    else:
-                        # Handle as single response
-                        content = self._extract_response_content(response)
-                        if content:
-                            yield content
-                except Exception:
-                    # Fallback to single response approach
-                    content = self._extract_response_content(response)
-                    if content:
-                        yield content
-            else:
-                # For non-streaming, extract content directly
+            # For non-streaming, use a simpler approach
+            if not stream:
+                response = await create_chat_completion(request)
                 content = self._extract_response_content(response)
                 if content:
                     yield content
+                else:
+                    # Log raw response for debugging
+                    import logging
+                    logging.debug(f"Raw non-streaming response: {response}")
+                    yield f"Error: Could not extract content from response"
+                return
+            
+            # For streaming, handle chunks
+            response = await create_chat_completion(request)
+            
+            # Use type: ignore to suppress type checker warnings for dynamic typing
+            complete_content = ""
+            async for chunk in response:  # type: ignore
+                content = self._extract_chunk_content(chunk)
+                if content:
+                    complete_content += content
+                    yield content
+            
+            # If streaming resulted in empty content, try to extract from the full response
+            if not complete_content:
+                # Log raw response for debugging
+                import logging
+                logging.debug(f"Raw streaming response produced no content.")
+                yield f"Error: No content from streaming response"
                         
         except ImportError:
             # Fallback for testing when openrouter is not available

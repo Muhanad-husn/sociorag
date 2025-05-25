@@ -6,19 +6,19 @@
 
 ## 🎯 Outcomes
 
-| ID | Outcome | Acceptance Criteria |
-|----|---------|---------------------|
-| O‑3.1 | **Reset** endpoint completely clears state. | After `POST /reset` the folders `vector_store/`, `input/`, `saved/`, and file `graph.db` no longer exist. |
-| O‑3.2 | **Upload** endpoint stores PDFs in `input/` with original filenames (minus extension). | Uploading `doc.pdf` results in `input/doc.pdf`. |
-| O‑3.3 | `ingest.process_all()` converts every page into semantic chunks (≈ 1‑3 paragraphs each). | Average chunk length 40–120 tokens; no chunk crosses section boundaries. |
-| O‑3.4 | All chunks embedded and persisted to Chroma collection `chunks`. | `collection.count()` equals total chunks after ingest. |
-| O‑3.5 | Entities & relations extracted and written to `graph.db`, reusing existing IDs when cosine ≥ 0.90. | No duplicate entity rows for surface strings that differ only in whitespace/case. |
-| O‑3.6 | End‑to‑end processing of a 5‑page PDF completes in **< 30 s** on a CPU laptop. | Timer test passes. |
-| O‑3.7 | Progress stream sends JSON updates (`phase`, `percent`) to the client. | UI displays real‑time progress bar. |
+| ID    | Outcome                                                                                            | Acceptance Criteria                                                                                       |
+| ----- | -------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------- |
+| O‑3.1 | **Reset** endpoint completely clears state.                                                        | After `POST /reset` the folders `vector_store/`, `input/`, `saved/`, and file `graph.db` no longer exist. |
+| O‑3.2 | **Upload** endpoint stores PDFs in `input/` with original filenames (minus extension).             | Uploading `doc.pdf` results in `input/doc.pdf`.                                                           |
+| O‑3.3 | `ingest.process_all()` converts every page into semantic chunks (≈ 1‑3 paragraphs each).           | Average chunk length 40–120 tokens; no chunk crosses section boundaries.                                  |
+| O‑3.4 | All chunks embedded and persisted to Chroma collection `chunks`.                                   | `collection.count()` equals total chunks after ingest.                                                    |
+| O‑3.5 | Entities & relations extracted and written to `graph.db`, reusing existing IDs when cosine ≥ 0.90. | No duplicate entity rows for surface strings that differ only in whitespace/case.                         |
+| O‑3.6 | End‑to‑end processing of a 5‑page PDF completes in **< 30 s** on a CPU laptop.                     | Timer test passes.                                                                                        |
+| O‑3.7 | Progress stream sends JSON updates (`phase`, `percent`) to the client.                             | UI displays real‑time progress bar.                                                                       |
 
 ---
 
-## 📋 Pipeline Overview fileciteturn3file0
+## 📋 Pipeline Overview 
 
 ```
 PDF → text pages
@@ -94,7 +94,7 @@ def load_pages(pdf_path: Path) -> list[str]:
     return [p.extract_text() or "" for p in reader.pages]
 ```
 
-### 4  Semantic Chunking fileciteturn3file6
+### 4  Semantic Chunking fileciteinstructions\semanmtic_chunking.md
 
 ```python
 from llama_index.node_parser import SemanticSplitterNodeParser
@@ -125,7 +125,7 @@ def add_chunks(chunks: list[str], source_file: str):
     ChromaSingleton().add_texts(chunks, embeddings=vecs, metadatas=meta, ids=ids)
 ```
 
-### 6  Entity & Relation Extraction fileciteturn3file8
+### 6  Entity & Relation Extraction fileciteinstructions\graph_prompts.py
 
 ```python
 import json, asyncio
@@ -211,26 +211,26 @@ Expect **non‑zero** counts.
 
 ## 🕑 Estimated Effort
 
-| Task | Time (min) |
-|------|------------|
-| Endpoint scaffolding | 10 |
-| Reset + loader | 5 |
-| Semantic chunking tuning | 15 |
-| Vector insert & tests | 8 |
-| Entity extraction & dedup | 20 |
-| Progress & validation | 5 |
-| **Total** | **~1 hr** |
+| Task                      | Time (min) |
+| ------------------------- | ---------- |
+| Endpoint scaffolding      | 10         |
+| Reset + loader            | 5          |
+| Semantic chunking tuning  | 15         |
+| Vector insert & tests     | 8          |
+| Entity extraction & dedup | 20         |
+| Progress & validation     | 5          |
+| **Total**                 | **~1 hr**  |
 
 ---
 
 ## 🚑 Troubleshooting & Tips
 
-| Symptom | Likely Cause | Fix |
-|---------|--------------|-----|
-| Chunks extremely short/long | Splitter thresholds off | Adjust `breakpoint_percentile_threshold` (50–70) |
-| `sqlite3.InterfaceError: Error binding parameter` | Attempting to pass list as BLOB | Serialize embeddings with `array('f')` bytes |
-| LLM times out on big chunk | Chunk exceeds 3 k tokens | Limit chunk length pre‑prompt |
-| Duplicate entity rows | Cosine threshold too high | Lower to 0.88 or normalise embeddings |
+| Symptom                                           | Likely Cause                    | Fix                                              |
+| ------------------------------------------------- | ------------------------------- | ------------------------------------------------ |
+| Chunks extremely short/long                       | Splitter thresholds off         | Adjust `breakpoint_percentile_threshold` (50–70) |
+| `sqlite3.InterfaceError: Error binding parameter` | Attempting to pass list as BLOB | Serialize embeddings with `array('f')` bytes     |
+| LLM times out on big chunk                        | Chunk exceeds 3 k tokens        | Limit chunk length pre‑prompt                    |
+| Duplicate entity rows                             | Cosine threshold too high       | Lower to 0.88 or normalise embeddings            |
 
 ---
 
