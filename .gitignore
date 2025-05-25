@@ -29,6 +29,10 @@ build/
 # Data and models
 vector_store/
 saved/
+
+# Backup directories
+backup_*/
+final_backup_*/
 input/
 graph.db
 config.yaml
