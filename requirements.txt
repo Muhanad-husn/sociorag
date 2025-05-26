@@ -1,35 +1,47 @@
 # Core FastAPI and web framework
 fastapi==0.115.9
 uvicorn[standard]==0.34.2
+starlette==0.45.3
+asgiref==3.8.1
+httpx==0.28.1
 
 # LangChain and vector database
 langchain==0.3.25
+langchain-core==0.3.61
+langchain-community==0.3.24
 chromadb==1.0.10
 
 # Database and similarity search
 sqlite-vec==0.1.6
+sqlalchemy==2.0.41
 
 # Text processing and tokenization
 tiktoken==0.9.0
 
 # LLM client
 openrouter-client==0.1.0
+openai==1.82.0
 
 # Embedding models and transformers
 sentence-transformers==4.1.0
+transformers==4.52.3
+torch==2.7.0
 
 # JSON processing and validation
-jsonschema==4.20.0
-regex==2023.12.25
+jsonschema==4.23.0
+regex==2024.11.6
 
 # Document processing (Phase 3)
 llama-index==0.12.37
-pypdf==5.1.0
-pdfminer.six==20231228
+llama-index-core==0.12.37
+pypdf==5.5.0
+pdfminer.six==20250506
 
 # Data validation and settings
 pydantic==2.11.5
-pydantic-settings==2.2.1
+pydantic-settings==2.9.1
+pydantic-core==2.33.2
+annotated-types==0.7.0
 
 # Environment and configuration
 python-dotenv==1.1.0
@@ -44,7 +56,14 @@ cairocffi==1.7.1
 
 # NLP processing
 spacy==3.8.7
+en_core_web_sm @ https://github.com/explosion/spacy-models/releases/download/en_core_web_sm-3.8.0/en_core_web_sm-3.8.0-py3-none-any.whl
 
 # Testing framework
 pytest==8.3.5
 pytest-asyncio==0.26.0
+
+# Utilities
+numpy==2.2.6
+pandas==2.2.3
+tqdm==4.67.1
+tenacity==9.1.2
