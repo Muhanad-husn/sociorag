@@ -6,28 +6,28 @@
 
 ## 🎯 Outcomes
 
-| ID | Outcome | Acceptance Criteria |
-|----|---------|---------------------|
-| O‑6.1 | All routes described in Phase 6 spec respond with **2xx** when called with valid payloads. | `pytest backend/tests/test_api.py::test_routes_ok` passes. fileciteturn5file2 |
-| O‑6.2 | `/search` streams answer tokens as **SSE** with < 1 s initial latency. | Front‑end displays live typing. |
-| O‑6.3 | `/upload` triggers Phase 3 ingest **asynchronously** and returns JSON `{status:"uploaded"}` immediately. | Upload test checks non‑blocking. |
-| O‑6.4 | `/reset` clears vector store, DB, input & saved dirs, and history file. | Directory listing is empty after call. |
-| O‑6.5 | PDFs saved by Phase 5 are downloadable via `/saved/{id}` and served with `Content‑Disposition: attachment`. | `curl -OJ` retrieves file. |
-| O‑6.6 | API **docs** available at `/docs` and reflect every route. | Swagger UI lists 6 endpoints. |
-| O‑6.7 | Uvicorn server starts with `uvicorn backend.app.main:app --reload` and hot‑reloads code. | Manual check. |
+| ID    | Outcome                                                                                                     | Acceptance Criteria                                                                                          |
+| ----- | ----------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------ |
+| O‑6.1 | All routes described in Phase 6 spec respond with **2xx** when called with valid payloads.                  | `pytest backend/tests/test_api.py::test_routes_ok` passes. fileciteturn5file2 |
+| O‑6.2 | `/search` streams answer tokens as **SSE** with < 1 s initial latency.                                      | Front‑end displays live typing.                                                                              |
+| O‑6.3 | `/upload` triggers Phase 3 ingest **asynchronously** and returns JSON `{status:"uploaded"}` immediately.    | Upload test checks non‑blocking.                                                                             |
+| O‑6.4 | `/reset` clears vector store, DB, input & saved dirs, and history file.                                     | Directory listing is empty after call.                                                                       |
+| O‑6.5 | PDFs saved by Phase 5 are downloadable via `/saved/{id}` and served with `Content‑Disposition: attachment`. | `curl -OJ` retrieves file.                                                                                   |
+| O‑6.6 | API **docs** available at `/docs` and reflect every route.                                                  | Swagger UI lists 6 endpoints.                                                                                |
+| O‑6.7 | Uvicorn server starts with `uvicorn backend.app.main:app --reload` and hot‑reloads code.                    | Manual check.                                                                                                |
 
 ---
 
-## 📋 Route Matrix fileciteturn5file2
+## 📋 Route Matrix fileciteinstructions\sociograph_rebuild_plan.md
 
-| Method & Path | Purpose | Payload / Query | Response |
-|---------------|---------|-----------------|----------|
-| `POST /upload` | Upload a PDF and queue ingestion | `multipart/form-data` field `file` | `{status:"uploaded",file:"foo.pdf"}` |
-| `POST /process` | Manually trigger `process_all()` | none | `{status:"processing"}` |
-| `POST /search` | Stream bilingual answer tokens | `{query:"…",temperature?,top_k?,top_k_r?}` | **SSE** `event:token` |
-| `POST /reset` | Full reset of corpus & history | none | `{status:"corpus cleared"}` |
-| `GET /history` | List last 15 queries | none | JSONL array → list[obj] |
-| `GET /saved/{id}` | Download stored PDF | path `id` like `20250525T120012Z.pdf` | `application/pdf` |
+| Method & Path     | Purpose                          | Payload / Query                            | Response                             |
+| ----------------- | -------------------------------- | ------------------------------------------ | ------------------------------------ |
+| `POST /upload`    | Upload a PDF and queue ingestion | `multipart/form-data` field `file`         | `{status:"uploaded",file:"foo.pdf"}` |
+| `POST /process`   | Manually trigger `process_all()` | none                                       | `{status:"processing"}`              |
+| `POST /search`    | Stream bilingual answer tokens   | `{query:"…",temperature?,top_k?,top_k_r?}` | **SSE** `event:token`                |
+| `POST /reset`     | Full reset of corpus & history   | none                                       | `{status:"corpus cleared"}`          |
+| `GET /history`    | List last 15 queries             | none                                       | JSONL array → list[obj]              |
+| `GET /saved/{id}` | Download stored PDF              | path `id` like `20250525T120012Z.pdf`      | `application/pdf`                    |
 
 ---
 
@@ -85,13 +85,16 @@ app.mount("/saved", StaticFiles(directory=saved_dir), name="saved")
 ### 2  Refactor Routers
 
 * **`backend/app/api/ingest.py`**
+  
   * Already partially built in Phase 3; add `/process` route that simply calls `process_all()` in a background task.
-* **`backend/app/api/qa.py`**
-  * Built in Phase 5; ensure tri‑lingual JSON body validation with Pydantic model:
 
+* **`backend/app/api/qa.py`**
+  
+  * Built in Phase 5; ensure tri‑lingual JSON body validation with Pydantic model:
+  
   ```python
   from pydantic import BaseModel
-
+  
   class SearchPayload(BaseModel):
       query: str
       temperature: float | None = None
@@ -181,25 +184,25 @@ async def test_routes_ok(tmp_path):
 
 ## 🕑 Estimated Effort
 
-| Task | Time (min) |
-|------|------------|
-| Main app & CORS | 5 |
-| Router wiring & payload validation | 10 |
-| SSE + streaming logic | 10 |
-| Static files & download | 5 |
-| Tests & docs | 10 |
-| **Total** | **~40 min** |
+| Task                               | Time (min)  |
+| ---------------------------------- | ----------- |
+| Main app & CORS                    | 5           |
+| Router wiring & payload validation | 10          |
+| SSE + streaming logic              | 10          |
+| Static files & download            | 5           |
+| Tests & docs                       | 10          |
+| **Total**                          | **~40 min** |
 
 ---
 
 ## 🚑 Troubleshooting & Tips
 
-| Symptom | Likely Cause | Fix |
-|---------|--------------|-----|
-| **SSE stops after 30 s** | Browser keep‑alive timeout | Add heartbeat: `yield ":"` every 15 s |
-| **PDF 404** | Saved path difference | Ensure `cfg.SAVED_DIR` matches mount path |
-| **CORS errors** | Origin mismatch | Update `allow_origins` list in `main.py` |
-| **Auto‑reload slow** | `watchgod` scanning large dirs | Exclude `vector_store/` via `--reload-dir` |
+| Symptom                  | Likely Cause                   | Fix                                        |
+| ------------------------ | ------------------------------ | ------------------------------------------ |
+| **SSE stops after 30 s** | Browser keep‑alive timeout     | Add heartbeat: `yield ":"` every 15 s      |
+| **PDF 404**              | Saved path difference          | Ensure `cfg.SAVED_DIR` matches mount path  |
+| **CORS errors**          | Origin mismatch                | Update `allow_origins` list in `main.py`   |
+| **Auto‑reload slow**     | `watchgod` scanning large dirs | Exclude `vector_store/` via `--reload-dir` |
 
 ---
 

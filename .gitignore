@@ -60,3 +60,10 @@ graph_with_lines.txt
 
 # Instructions
 instructions/
+
+# SQLite database journal files
+*.db-shm
+*.db-wal
+
+# Backup directories
+phase*_backup_*/

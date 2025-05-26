@@ -21,7 +21,7 @@ from backend.app.answer.history import append_record, get_recent_history, get_hi
 
 _logger = LoggerSingleton().get()
 
-router = APIRouter(tags=["qa"])
+router = APIRouter(prefix="/api/qa", tags=["qa"])
 
 
 class AskRequest(BaseModel):

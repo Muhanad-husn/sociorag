@@ -170,15 +170,18 @@ The project includes extensive documentation to help users and developers:
 ### User Documentation
 - **[Installation Guide](./docs/installation_guide.md)** - Complete setup instructions for all platforms
 - **[API Documentation](./docs/api_documentation.md)** - Comprehensive API reference with examples
+- **[API Endpoints Reference](./docs/api_endpoints_reference.md)** - Quick reference for all available endpoints
 - **[Project Overview](./docs/project_overview.md)** - High-level project summary and current status
 
 ### Developer Documentation
 - **[Architecture Documentation](./docs/architecture_documentation.md)** - System design and component overview
 - **[Developer Guide](./docs/developer_guide.md)** - Development environment, coding standards, and contribution guidelines
-- **[Phase 6 Implementation Plan](./docs/phase6_implementation_plan.md)** - Roadmap for FastAPI backend completion
+- **[Phase 6 Implementation Summary](./docs/phase6_implementation_summary.md)** - FastAPI backend completion details
+- **[Phase 6 Implementation Plan](./docs/phase6_implementation_plan.md)** - Roadmap for FastAPI backend implementation
 
 ### Technical Documentation
 - **[Enhanced Entity Extraction](./docs/enhanced_entity_extraction.md)** - Advanced entity extraction capabilities
+- **[Phase 6 Implementation Summary](./docs/phase6_implementation_summary.md)** - API integration and WebSocket support
 - **[Phase 5 Implementation Summary](./docs/phase5_implementation_summary.md)** - Answer generation and PDF export details
 - **Additional Phase Documentation** - Complete implementation reports for all phases
 
@@ -205,27 +208,76 @@ The project includes extensive documentation to help users and developers:
 4. **Start API Server**
    ```bash
    python -m backend.app.main
+   # Server will be available at http://127.0.0.1:8000
+   # API docs available at http://127.0.0.1:8000/docs
    ```
 
-## Current Features (Phase 5 Complete)
+5. **Using the API**
+   
+   **Document Management:**
+   ```bash
+   # Reset corpus (clear existing data)
+   curl -X POST http://127.0.0.1:8000/api/ingest/reset
+   
+   # Upload a PDF document
+   curl -X POST -F "file=@./sample.pdf" http://127.0.0.1:8000/api/ingest/upload
+   
+   # Manually trigger processing
+   curl -X POST http://127.0.0.1:8000/api/ingest/process
+   
+   # Stream processing progress (SSE)
+   curl http://127.0.0.1:8000/api/ingest/progress
+   ```
+   
+   **Question Answering:**
+   ```bash
+   # Ask a question (streaming response)
+   curl http://127.0.0.1:8000/api/qa/ask -H "Content-Type: application/json" \
+     -d '{"question": "What are the main themes in the document?"}'
+   
+   # Get query history
+   curl http://127.0.0.1:8000/api/history/
+   
+   # Get usage statistics
+   curl http://127.0.0.1:8000/api/history/stats
+   ```
+
+6. **Testing All Endpoints**
+   ```bash
+   # Test all API endpoints
+   python scripts/test_phase6_api.py all
+   
+   # Test specific endpoint (e.g., WebSocket)
+   python scripts/test_phase6_api.py websocket
+   ```
+
+## Current Features (Phase 6 Complete)
 
 - ✅ **Enhanced Entity Extraction** - LLM-powered entity and relationship extraction
 - ✅ **Vector Storage & Retrieval** - SQLite-vec based semantic search
 - ✅ **Streaming Q&A System** - Real-time answer generation with citations
 - ✅ **PDF Export** - Professional report generation with WeasyPrint
 - ✅ **Query History** - Analytics and tracking with JSONL logging
-- ✅ **FastAPI Integration** - REST API with Server-Sent Events support
+- ✅ **FastAPI Integration** - Complete REST API with comprehensive endpoints
+- ✅ **Server-Sent Events** - Real-time streaming for progress and answers
+- ✅ **WebSocket Support** - Bidirectional communication with heartbeat mechanisms
+- ✅ **Ingestion API** - Document upload, processing, and monitoring endpoints
+- ✅ **History Management** - Full history tracking and retrieval with filtering
+- ✅ **API Documentation** - Interactive Swagger UI with endpoint reference
 
-## Next Phase
+## Next Steps
 
-**Phase 6: FastAPI Back-End Completion**
-- Document management API endpoints
-- Search and export functionality
-- Authentication and authorization
-- Administrative interfaces
-- Comprehensive API documentation
+With the successful completion of Phase 6 (API Integration & FastAPI Backend), the project is now ready to move on to:
 
-See the [Phase 6 Implementation Plan](./docs/phase6_implementation_plan.md) for detailed roadmap.
+### Phase 7: Frontend Development
+
+- Modern React-based user interface
+- Real-time streaming answer display
+- Document management interface
+- History and analytics dashboard
+- Integration with backend API endpoints
+
+See the [Phase 7 Implementation Plan](./docs/phase7_implementation_plan.md) for detailed roadmap.
 
 ## Support and Contributing
 
