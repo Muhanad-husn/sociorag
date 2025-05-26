@@ -6,18 +6,18 @@
 
 ## 🎯 Outcomes
 
-| ID | Outcome | Acceptance Criteria |
-|----|---------|---------------------|
-| O‑4.1 | `normalize_query(text)` returns a tuple `(lang, text_en)` where `lang ∈ {"en","ar"}`. | Arabic input is translated to English; English remains unchanged. |
-| O‑4.2 | `retrieve_chunks()` returns ≤ `Config.TOP_K` texts whose cosine ≥ `Config.CHUNK_SIM` (0.85). | `len(chunks) ≤ 100` and all similarities logged. |
+| ID    | Outcome                                                                                                                         | Acceptance Criteria                                                  |
+| ----- | ------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------- |
+| O‑4.1 | `normalize_query(text)` returns a tuple `(lang, text_en)` where `lang ∈ {"en","ar"}`.                                           | Arabic input is translated to English; English remains unchanged.    |
+| O‑4.2 | `retrieve_chunks()` returns ≤ `Config.TOP_K` texts whose cosine ≥ `Config.CHUNK_SIM` (0.85).                                    | `len(chunks) ≤ 100` and all similarities logged.                     |
 | O‑4.3 | `rerank_chunks()` keeps exactly `Config.TOP_K_RERANK` (15) highest‑scoring docs using **cross‑encoder/ms‑marco‑MiniLM‑L‑6‑v2**. | Returned docs are ordered by descending score. fileciteturn4file7 |
-| O‑4.4 | `retrieve_triples()` fetches graph triples whose entity similarity ≥ `Config.GRAPH_SIM` (0.95). | SQL ANN search proves at least one triple for noun entities. |
-| O‑4.5 | `merge_context()` trims combined tokens to ≤ 40 % of answer‑model context window, preserving order *chunks → triples*. | Token count verified via `tiktoken`. |
-| O‑4.6 | Public API `retrieve_context(query: str) -> dict` returns `{chunks, triples, lang}` in < 1.5 s on laptop. | Pytest timer passes. |
+| O‑4.4 | `retrieve_triples()` fetches graph triples whose entity similarity ≥ `Config.GRAPH_SIM` (0.95).                                 | SQL ANN search proves at least one triple for noun entities.         |
+| O‑4.5 | `merge_context()` trims combined tokens to ≤ 40 % of answer‑model context window, preserving order *chunks → triples*.          | Token count verified via `tiktoken`.                                 |
+| O‑4.6 | Public API `retrieve_context(query: str) -> dict` returns `{chunks, triples, lang}` in < 1.5 s on laptop.                       | Pytest timer passes.                                                 |
 
 ---
 
-## 📋 Pipeline Overview  fileciteturn4file2
+## 📋 Pipeline Overview
 
 ```
 Query
@@ -237,26 +237,26 @@ Expect first three context items printed.
 
 ## 🕑 Estimated Effort
 
-| Task | Time (min) |
-|------|------------|
-| Language detect & translate | 10 |
-| Vector retrieval & rerank | 15 |
-| Graph triples | 15 |
-| Merge + token budget | 5 |
-| Orchestrator & tests | 10 |
-| Docs & README | 5 |
-| **Total** | **~1 hr** |
+| Task                        | Time (min) |
+| --------------------------- | ---------- |
+| Language detect & translate | 10         |
+| Vector retrieval & rerank   | 15         |
+| Graph triples               | 15         |
+| Merge + token budget        | 5          |
+| Orchestrator & tests        | 10         |
+| Docs & README               | 5          |
+| **Total**                   | **~1 hr**  |
 
 ---
 
 ## 🚑 Troubleshooting & Tips
 
-| Symptom | Likely Cause | Fix |
-|---------|--------------|-----|
-| Wrong language detected | `langdetect` heuristic weak for short text | Require ≥ 4 tokens before detection; else bypass translate |
-| Rerank latency high | HF model on CPU | Batch size 16; reduce `TOP_K` |
-| No triples returned | Nouns not found in graph | Lower `GRAPH_SIM` to 0.90 or fallback to fallback heuristics |
-| Context too long | Large triples list | Drop least‑similar chunks before trimming triples |
+| Symptom                 | Likely Cause                               | Fix                                                          |
+| ----------------------- | ------------------------------------------ | ------------------------------------------------------------ |
+| Wrong language detected | `langdetect` heuristic weak for short text | Require ≥ 4 tokens before detection; else bypass translate   |
+| Rerank latency high     | HF model on CPU                            | Batch size 16; reduce `TOP_K`                                |
+| No triples returned     | Nouns not found in graph                   | Lower `GRAPH_SIM` to 0.90 or fallback to fallback heuristics |
+| Context too long        | Large triples list                         | Drop least‑similar chunks before trimming triples            |
 
 ---
 
@@ -271,4 +271,3 @@ Expect first three context items printed.
 ---
 
 _When `retrieve_context()` returns a non‑empty context for both English and Arabic queries, and tests pass in < 1.5 s, **Phase 4 is complete**. Next stop: **Phase 5 – Answer Generation & PDF Export**._
-
