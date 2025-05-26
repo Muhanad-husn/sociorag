@@ -2,6 +2,7 @@
 fastapi==0.115.9
 uvicorn[standard]==0.34.2
 starlette==0.45.3
+sse-starlette==2.2.0
 asgiref==3.8.1
 httpx==0.28.1
 
@@ -53,6 +54,9 @@ markdown-it-py==3.0.0
 # PDF generation
 weasyprint==65.1
 cairocffi==1.7.1
+
+# File upload support for FastAPI
+python-multipart==0.0.20
 
 # NLP processing
 spacy==3.8.7

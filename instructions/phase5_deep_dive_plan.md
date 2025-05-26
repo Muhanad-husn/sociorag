@@ -6,18 +6,18 @@
 
 ## 🎯 Outcomes
 
-| ID | Outcome | Acceptance Criteria |
-|----|---------|---------------------|
-| O‑5.1 | `generate_answer(query, context)` returns a **Markdown** answer with numbered citations like <sup>[1]</sup>. | Unit test parses answer for `\[\d+]` patterns. |
-| O‑5.2 | At least **80 %** of citations correspond to retrieved chunk or triple IDs. | Alignment test passes on sample docs. |
+| ID    | Outcome                                                                                                        | Acceptance Criteria                                                |
+| ----- | -------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------ |
+| O‑5.1 | `generate_answer(query, context)` returns a **Markdown** answer with numbered citations like <sup>[1]</sup>.   | Unit test parses answer for `\[\d+]` patterns.                     |
+| O‑5.2 | At least **80 %** of citations correspond to retrieved chunk or triple IDs.                                    | Alignment test passes on sample docs.                              |
 | O‑5.3 | `/ask` endpoint streams answer tokens (Server‑Sent Events) to UI with `<span data-id="tok">…</span>` wrappers. | UI displays typing effect (see UI overview). fileciteturn5file6 |
-| O‑5.4 | After generation, a **PDF** version is stored in `saved/<<timestamp>>.pdf` following brand CSS. | File exists & opens. |
-| O‑5.5 | Q&A metadata logged in `saved/history.jsonl` (query, answer_path, timestamp, tokens). | Entry appended after every /ask. |
-| O‑5.6 | Generating an answer for a 2‑sentence query finishes in **< 15 s** with CPU. | Timer test passes. |
+| O‑5.4 | After generation, a **PDF** version is stored in `saved/<<timestamp>>.pdf` following brand CSS.                | File exists & opens.                                               |
+| O‑5.5 | Q&A metadata logged in `saved/history.jsonl` (query, answer_path, timestamp, tokens).                          | Entry appended after every /ask.                                   |
+| O‑5.6 | Generating an answer for a 2‑sentence query finishes in **< 15 s** with CPU.                                   | Timer test passes.                                                 |
 
 ---
 
-## 📋 Component Diagram  fileciteturn5file1
+## 📋 Component Diagram  instructions\sociograph_rebuild_plan.md
 
 ```
  /ask  ──► retrieve_context()         ─┐
@@ -40,7 +40,7 @@
 pip install markdown-it-py weasyprint cairocffi sse-starlette tiktoken
 ```
 
-* `answer_prompt.py` with prompt helper functions is present. fileciteturn5file3  
+* `answer_prompt.py` with prompt helper functions is present. instructions\answer_prompt.py  
 * Brand CSS file created in Phase 0 (`resources/pdf_theme.css`).  
 * Phases 0‑4 complete.
 
@@ -50,7 +50,7 @@ pip install markdown-it-py weasyprint cairocffi sse-starlette tiktoken
 
 ### 1  Prompt Helper (`backend/app/answer/prompt.py`)
 
-Reuse logic from **`answer_prompt.py`**: functions `build_system_prompt()`, `build_user_prompt()`, and citation post‑processor. fileciteturn5file3
+Reuse logic from **`answer_prompt.py`**: functions `build_system_prompt()`, `build_user_prompt()`, and citation post‑processor. fileciteinstructions\answer_prompt.py
 
 ```python
 from backend.app.prompts.answer_prompt import (
@@ -184,25 +184,25 @@ async def test_answer_loop():
 
 ## 🕑 Estimated Effort
 
-| Task | Time (min) |
-|------|------------|
-| Prompt & generator | 20 |
-| SSE endpoint & UI glue | 15 |
-| Markdown‑HTML‑PDF | 10 |
-| History log | 5 |
-| Tests & docs | 10 |
-| **Total** | **~1 hr** |
+| Task                   | Time (min) |
+| ---------------------- | ---------- |
+| Prompt & generator     | 20         |
+| SSE endpoint & UI glue | 15         |
+| Markdown‑HTML‑PDF      | 10         |
+| History log            | 5          |
+| Tests & docs           | 10         |
+| **Total**              | **~1 hr**  |
 
 ---
 
 ## 🚑 Troubleshooting & Tips
 
-| Symptom | Likely Cause | Fix |
-|---------|--------------|-----|
-| PDF missing fonts | CSS not embedding fonts | Use `@font-face` with absolute paths |
-| SSE stream disconnects | Client idle timeout | Send keep‑alive `:` comments every 10 s |
-| Citations mis‑numbered | attach_citations regex bug | Ensure stable sorting by first occurrence |
-| Answer truncates prematurely | token budget too low | Increase `max_tokens` or shorten context merge |
+| Symptom                      | Likely Cause               | Fix                                            |
+| ---------------------------- | -------------------------- | ---------------------------------------------- |
+| PDF missing fonts            | CSS not embedding fonts    | Use `@font-face` with absolute paths           |
+| SSE stream disconnects       | Client idle timeout        | Send keep‑alive `:` comments every 10 s        |
+| Citations mis‑numbered       | attach_citations regex bug | Ensure stable sorting by first occurrence      |
+| Answer truncates prematurely | token budget too low       | Increase `max_tokens` or shorten context merge |
 
 ---
 

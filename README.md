@@ -163,6 +163,76 @@ For detailed documentation, see:
 - `scripts/` - Utility scripts
 - `docs/` - Documentation files
 
+## Comprehensive Documentation
+
+The project includes extensive documentation to help users and developers:
+
+### User Documentation
+- **[Installation Guide](./docs/installation_guide.md)** - Complete setup instructions for all platforms
+- **[API Documentation](./docs/api_documentation.md)** - Comprehensive API reference with examples
+- **[Project Overview](./docs/project_overview.md)** - High-level project summary and current status
+
+### Developer Documentation
+- **[Architecture Documentation](./docs/architecture_documentation.md)** - System design and component overview
+- **[Developer Guide](./docs/developer_guide.md)** - Development environment, coding standards, and contribution guidelines
+- **[Phase 6 Implementation Plan](./docs/phase6_implementation_plan.md)** - Roadmap for FastAPI backend completion
+
+### Technical Documentation
+- **[Enhanced Entity Extraction](./docs/enhanced_entity_extraction.md)** - Advanced entity extraction capabilities
+- **[Phase 5 Implementation Summary](./docs/phase5_implementation_summary.md)** - Answer generation and PDF export details
+- **Additional Phase Documentation** - Complete implementation reports for all phases
+
+## Quick Start
+
+1. **Setup Environment**
+   ```bash
+   conda env create -f environment.yml
+   conda activate sociograph
+   python -m spacy download en_core_web_sm
+   ```
+
+2. **Configure API Keys**
+   ```bash
+   cp .env.example .env
+   # Edit .env with your OpenRouter API key
+   ```
+
+3. **Test Installation**
+   ```bash
+   python test_phase5_simple.py
+   ```
+
+4. **Start API Server**
+   ```bash
+   python -m backend.app.main
+   ```
+
+## Current Features (Phase 5 Complete)
+
+- ✅ **Enhanced Entity Extraction** - LLM-powered entity and relationship extraction
+- ✅ **Vector Storage & Retrieval** - SQLite-vec based semantic search
+- ✅ **Streaming Q&A System** - Real-time answer generation with citations
+- ✅ **PDF Export** - Professional report generation with WeasyPrint
+- ✅ **Query History** - Analytics and tracking with JSONL logging
+- ✅ **FastAPI Integration** - REST API with Server-Sent Events support
+
+## Next Phase
+
+**Phase 6: FastAPI Back-End Completion**
+- Document management API endpoints
+- Search and export functionality
+- Authentication and authorization
+- Administrative interfaces
+- Comprehensive API documentation
+
+See the [Phase 6 Implementation Plan](./docs/phase6_implementation_plan.md) for detailed roadmap.
+
+## Support and Contributing
+
+- **Issues**: Report bugs and request features through the issue tracker
+- **Contributing**: See [Developer Guide](./docs/developer_guide.md) for contribution guidelines
+- **Documentation**: All documentation is in the `docs/` directory
+
 ## License
 
 TBD
