@@ -6,20 +6,20 @@
 
 ## 🎯 Outcomes
 
-| ID | Outcome | Acceptance Criteria |
-|----|---------|---------------------|
-| O‑7.1 | **Four pages** (Home, History, Saved, Settings) reachable via client‑side router. | URL changes without full reload. |
-| O‑7.2 | **Home/Search** page streams answer tokens with live typing effect for both English & Arabic, preserving RTL layout. | Visual demo passes QA. |
-| O‑7.3 | **Upload** button sends PDF via `/upload`; toast shown via Sonner. | File appears in server `input/`. |
-| O‑7.4 | **Processing** status bar subscribes to SSE progress and animates. | Bar fills 0 → 100 %. |
-| O‑7.5 | **History** page lists latest 15 queries fetched from `/history`; entries re‑query on click. | Rerun button returns fresh answer. |
-| O‑7.6 | **Saved** page lists PDFs from `/saved/`; clicking downloads file. | HTTP 200 + `Content-Disposition` header. |
-| O‑7.7 | Full dark/light mode support & RTL for Arabic, using **Tailwind** theme tokens consistent with `pdf_theme.css`. | Manual QA on phone + desktop. |
-| O‑7.8 | `pnpm build` outputs a static bundle in `ui/dist/` ≤ 200 kB gzipped. | Bundle size script passes. |
+| ID    | Outcome                                                                                                              | Acceptance Criteria                      |
+| ----- | -------------------------------------------------------------------------------------------------------------------- | ---------------------------------------- |
+| O‑7.1 | **Four pages** (Home, History, Saved, Settings) reachable via client‑side router.                                    | URL changes without full reload.         |
+| O‑7.2 | **Home/Search** page streams answer tokens with live typing effect for both English & Arabic, preserving RTL layout. | Visual demo passes QA.                   |
+| O‑7.3 | **Upload** button sends PDF via `/upload`; toast shown via Sonner.                                                   | File appears in server `input/`.         |
+| O‑7.4 | **Processing** status bar subscribes to SSE progress and animates.                                                   | Bar fills 0 → 100 %.                     |
+| O‑7.5 | **History** page lists latest 15 queries fetched from `/history`; entries re‑query on click.                         | Rerun button returns fresh answer.       |
+| O‑7.6 | **Saved** page lists PDFs from `/saved/`; clicking downloads file.                                                   | HTTP 200 + `Content-Disposition` header. |
+| O‑7.7 | Full dark/light mode support & RTL for Arabic, using **Tailwind** theme tokens consistent with `pdf_theme.css`.      | Manual QA on phone + desktop.            |
+| O‑7.8 | `pnpm build` outputs a static bundle in `ui/dist/` ≤ 200 kB gzipped.                                                 | Bundle size script passes.               |
 
 ---
 
-## 🗂️ Front‑End Architecture  fileciteturn6file0
+## 🗂️ Front‑End Architecture  fileciteinstructions\ui_overview.md
 
 ```
 ui/
@@ -72,7 +72,7 @@ Initialise Tailwind:
 pnpx tailwindcss init -p
 ```
 
-Update `tailwind.config.ts` to include `src/**/*.{tsx,ts}` and extend theme with colours from CSS variables in `pdf_theme.css` for brand consistency fileciteturn6file6.
+Update `tailwind.config.ts` to include `src/**/*.{tsx,ts}` and extend theme with colours from CSS variables in `pdf_theme.css` for brand consistency fileciteinstructions\ui_overview.md.
 
 ---
 
@@ -80,7 +80,7 @@ Update `tailwind.config.ts` to include `src/**/*.{tsx,ts}` and extend theme with
 
 ### 1  Global Styles
 
-*Import Inter + Noto Sans Arabic fonts and colour CSS variables from `styles.css` into `src/index.css`* fileciteturn6file14.
+*Import Inter + Noto Sans Arabic fonts and colour CSS variables from `styles.css` into `src/index.css.
 
 ```css
 @tailwind base;
@@ -216,28 +216,28 @@ Add a test that renders `StreamAnswer` and feeds 100 tokens under 500 ms to as
 
 ## 🕑 Estimated Effort
 
-| Task | Time (hrs) |
-|------|-----------|
-| Vite scaffold & Tailwind config | 0.5 |
-| Core components (Search, Stream, Upload) | 1.5 |
-| Pages & routing | 0.5 |
-| API integration & hooks | 1 |
-| Theming, RTL, dark mode | 0.5 |
-| History & Saved views | 0.5 |
-| Settings & local store | 0.5 |
-| Testing & polish | 1 |
-| **Total** | **~6 hrs** |
+| Task                                     | Time (hrs) |
+| ---------------------------------------- | ---------- |
+| Vite scaffold & Tailwind config          | 0.5        |
+| Core components (Search, Stream, Upload) | 1.5        |
+| Pages & routing                          | 0.5        |
+| API integration & hooks                  | 1          |
+| Theming, RTL, dark mode                  | 0.5        |
+| History & Saved views                    | 0.5        |
+| Settings & local store                   | 0.5        |
+| Testing & polish                         | 1          |
+| **Total**                                | **~6 hrs** |
 
 ---
 
 ## 🚑 Troubleshooting & Tips
 
-| Symptom | Likely Cause | Fix |
-|---------|--------------|-----|
-| SSE blocked by CORS | API missing `Access-Control-Allow-Origin` | Ensure front‑end URL added in FastAPI CORS origins list (Phase 6). |
-| Arabic text overlaps UI | Missing font & RTL | Import Noto Sans Arabic and set `dir="rtl"`. |
-| Tailwind purges styles | Content paths wrong | Check `tailwind.config.ts` `content` glob includes `src/**/*.{tsx,ts}`. |
-| Bundle too large | lucide build‑time icons | Use tree‑shaken `lucide-preact` imports. |
+| Symptom                 | Likely Cause                              | Fix                                                                     |
+| ----------------------- | ----------------------------------------- | ----------------------------------------------------------------------- |
+| SSE blocked by CORS     | API missing `Access-Control-Allow-Origin` | Ensure front‑end URL added in FastAPI CORS origins list (Phase 6).      |
+| Arabic text overlaps UI | Missing font & RTL                        | Import Noto Sans Arabic and set `dir="rtl"`.                            |
+| Tailwind purges styles  | Content paths wrong                       | Check `tailwind.config.ts` `content` glob includes `src/**/*.{tsx,ts}`. |
+| Bundle too large        | lucide build‑time icons                   | Use tree‑shaken `lucide-preact` imports.                                |
 
 ---
 
