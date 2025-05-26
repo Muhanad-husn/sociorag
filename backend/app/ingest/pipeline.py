@@ -8,6 +8,7 @@ This module orchestrates the full ingestion process:
 5. Store the knowledge graph in SQLite
 """
 
+import numpy as np
 import asyncio
 import json
 import math
@@ -15,9 +16,6 @@ import re
 from array import array
 from pathlib import Path
 from typing import Dict, List, Any, Union, Optional, Generator, AsyncGenerator, Tuple
-
-import numpy as np
-from numpy.linalg import norm
 
 from backend.app.core.config import get_config
 from backend.app.core.singletons import (
@@ -27,6 +25,7 @@ from backend.app.core.singletons import (
     get_sqlite,
     get_llm_client
 )
+from backend.app.retriever.vector_utils import calculate_cosine_similarity
 from backend.app.prompts import graph_prompts as gp
 from backend.app.ingest.loader import load_pages
 from backend.app.ingest.chunker import chunk_page
@@ -38,16 +37,10 @@ logger = get_logger()
 config = get_config()
 
 
-def cosine_similarity(v1: List[float], v2: List[float]) -> float:
-    """Calculate cosine similarity between two vectors."""
-    a = np.array(v1)
-    b = np.array(v2)
-    
-    # Handle zero vectors
-    if norm(a) == 0 or norm(b) == 0:
-        return 0.0
-        
-    return float(np.dot(a, b) / (norm(a) * norm(b)))
+from backend.app.retriever.vector_utils import calculate_cosine_similarity
+
+# Use the centralized cosine similarity function
+cosine_similarity = calculate_cosine_similarity
 
 
 def add_chunks_to_store(chunks: List[str], source_file: str) -> None:

@@ -24,6 +24,13 @@ from langchain_community.embeddings import SentenceTransformerEmbeddings
 
 from .config import get_config
 
+# Import the embedding cache if available, with fallback
+try:
+    from backend.app.retriever.embedding_cache import get_embedding_cache
+    _EMBEDDING_CACHE_AVAILABLE = True
+except ImportError:
+    _EMBEDDING_CACHE_AVAILABLE = False
+
 
 class _SingletonMeta(type):
     """Thread-safe singleton metaclass."""
@@ -71,26 +78,103 @@ class EmbeddingSingleton(metaclass=_SingletonMeta):
     
     def __init__(self):
         self._model = None
+        self._logger = None
         
     def get(self) -> SentenceTransformer:
         """Get the singleton embedding model."""
         if self._model is None:
             config = get_config()
             logger = LoggerSingleton().get()
+            self._logger = logger  # Store logger for later use
             logger.info(f"Loading embedding model: {config.EMBEDDING_MODEL}")
-            self._model = SentenceTransformer(config.EMBEDDING_MODEL)
+            try:
+                # Use trust_remote_code=True to avoid authentication issues
+                self._model = SentenceTransformer(config.EMBEDDING_MODEL, trust_remote_code=True)
+            except Exception as e:
+                logger.warning(f"Error loading embedding model with trust_remote_code=True: {e}")
+                # Fallback to basic loading
+                self._model = SentenceTransformer(config.EMBEDDING_MODEL)
             
         return self._model
-    
-    def embed(self, texts: Union[str, List[str]]) -> Union[List[float], List[List[float]]]:
-        """Embed text(s) and return embeddings."""
+        
+    def embed(self, texts: Union[str, List[str]], 
+              use_cache: bool = True) -> Union[List[float], List[List[float]]]:
+        """Embed text(s) and return embeddings.
+        
+        Args:
+            texts: Text or list of texts to embed
+            use_cache: Whether to use the embedding cache (default: True)
+            
+        Returns:
+            List of embeddings (list of floats for single text, list of list of floats for multiple texts)
+        """
+        logger = self._logger or LoggerSingleton().get()
+        
+        # Check cache first if enabled and available
+        if use_cache and _EMBEDDING_CACHE_AVAILABLE:
+            try:
+                cache = get_embedding_cache()
+                cached_embedding = cache.get(texts)
+                if cached_embedding is not None:
+                    logger.debug(f"Using cached embedding for text(s)")
+                    return cached_embedding
+            except Exception as e:
+                # If there's any error with the cache, log it and continue with normal embedding
+                logger.warning(f"Error using embedding cache: {e}")
+        
+        # If not in cache or cache not enabled, embed normally
         model = self.get()
+        
+        # Process differently based on text length and count
+        is_batch = isinstance(texts, list)
+        batch_size = 0
+        
+        if is_batch:
+            batch_size = len(texts)
+            logger.debug(f"Embedding batch of {batch_size} texts")
+            
+            # For very large batches, process in chunks to avoid memory issues
+            if batch_size > 100:
+                chunk_size = 50
+                result = []
+                
+                for i in range(0, batch_size, chunk_size):
+                    end_idx = min(i + chunk_size, batch_size)
+                    logger.debug(f"Processing batch chunk {i} to {end_idx}")
+                    chunk = texts[i:end_idx]
+                    chunk_embeddings = model.encode(chunk)
+                    result.extend([emb.tolist() for emb in chunk_embeddings])
+                    
+                # Store in cache
+                if use_cache and _EMBEDDING_CACHE_AVAILABLE:
+                    try:
+                        cache = get_embedding_cache()
+                        for i, text in enumerate(texts):
+                            cache.set(text, result[i])
+                    except Exception as e:
+                        logger.warning(f"Error storing batch in embedding cache: {e}")
+                
+                return result
+        
+        # Standard processing for single text or small batches
         embeddings = model.encode(texts)
         
-        if isinstance(texts, str):
-            return embeddings.tolist()
+        result = None
+        if is_batch:
+            result = [emb.tolist() for emb in embeddings]
         else:
-            return [emb.tolist() for emb in embeddings]
+            result = embeddings.tolist()
+            
+        # Store in cache if available
+        if use_cache and _EMBEDDING_CACHE_AVAILABLE:
+            try:
+                cache = get_embedding_cache()
+                cache.set(texts, result)
+            except Exception as e:
+                # If there's any error with the cache, log it but don't fail
+                logger.warning(f"Error storing in embedding cache: {e}")
+                    
+        return result
 
 
 class ChromaSingleton(metaclass=_SingletonMeta):
@@ -135,8 +219,7 @@ class SQLiteSingleton(metaclass=_SingletonMeta):
         if self._connection is None:
             config = get_config()
             logger = LoggerSingleton().get()
-            
-            # Ensure parent directory exists
+              # Ensure parent directory exists
             config.GRAPH_DB.parent.mkdir(parents=True, exist_ok=True)
             
             logger.info(f"Connecting to SQLite database: {config.GRAPH_DB}")
@@ -147,8 +230,11 @@ class SQLiteSingleton(metaclass=_SingletonMeta):
                 timeout=30.0
             )
             
+            # Set row_factory to return rows as dictionaries
+            self._connection.row_factory = sqlite3.Row
+            
             # Enable WAL mode for better concurrency
-            self._connection.execute("PRAGMA journal_mode=WAL")            # Try to load sqlite-vec extension
+            self._connection.execute("PRAGMA journal_mode=WAL")# Try to load sqlite-vec extension
             try:
                 import sqlite_vec
                 # Use the load method from sqlite_vec
@@ -395,6 +481,66 @@ def get_nlp():
     return NLPSingleton().get()
 
 
-def embed_texts(texts: Union[str, List[str]]) -> Union[List[float], List[List[float]]]:
-    """Convenience function to embed texts."""
-    return EmbeddingSingleton().embed(texts)
+def embed_texts(texts: Union[str, List[str]], use_cache: bool = True) -> Union[List[float], List[List[float]]]:
+    """Convenience function to embed texts.
+    
+    Args:
+        texts: Text or list of texts to embed
+        use_cache: Whether to use the embedding cache (default: True)
+        
+    Returns:
+        List of embeddings (list of floats for single text, list of list of floats for multiple texts)
+    """
+    return EmbeddingSingleton().embed(texts, use_cache=use_cache)
+
+def extract_vector(embedding: Union[List[float], List[List[float]]]) -> List[float]:
+    """Extract a vector from potentially nested embeddings.
+    
+    Args:
+        embedding: An embedding vector or list of embedding vectors
+        
+    Returns:
+        A flat list of floats representing the embedding vector
+    """
+    # Handle case where embedding is a list of lists (batch embeddings)
+    if isinstance(embedding, list) and embedding and isinstance(embedding[0], list):
+        return embedding[0]  # Take first embedding from batch
+    return embedding  # Already a flat list
+
+def calculate_cosine_similarity(vec1: Union[List[float], List[List[float]]], vec2: Union[List[float], List[List[float]]]) -> float:
+    """Calculate cosine similarity between two vectors.
+    
+    Provides a centralized implementation for consistent similarity calculations.
+    
+    Args:
+        vec1: First vector as a list of float values or list of list of float values
+        vec2: Second vector as a list of float values or list of list of float values
+        
+    Returns:
+        Cosine similarity score between 0 and 1
+    """
+    # Ensure we're working with flat lists of floats
+    # If vec1 is a list of lists (batch embeddings) and not empty, take first element
+    if isinstance(vec1, list) and vec1 and isinstance(vec1[0], list):
+        v1 = vec1[0]
+    else:
+        v1 = vec1
+        
+    # Same for vec2
+    if isinstance(vec2, list) and vec2 and isinstance(vec2[0], list):
+        v2 = vec2[0]
+    else:
+        v2 = vec2
+        
+    # Calculate dot product
+    dot_product = sum(float(a) * float(b) for a, b in zip(v1, v2))
+    
+    # Calculate magnitudes
+    magnitude1 = (sum(float(a) * float(a) for a in v1)) ** 0.5 # type: ignore
+    magnitude2 = (sum(float(b) * float(b) for b in v2)) ** 0.5
+    
+    # Calculate cosine similarity
+    if magnitude1 > 0 and magnitude2 > 0:
+        return float(dot_product / (magnitude1 * magnitude2))
+    else:
+        return 0.0

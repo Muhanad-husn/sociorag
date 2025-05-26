@@ -19,7 +19,7 @@ class _Config(BaseSettings):
 
     # ---------------------- models --------------------- #
     EMBEDDING_MODEL: str = "sentence-transformers/all-MiniLM-L6-v2"
-    RERANKER_MODEL: str = "cross-encoder/ms-marco-MiniLM-L6-v2"
+    RERANKER_MODEL: str = "cross-encoder/ms-marco-MiniLM-L-6-v2"  # Fixed model name with hyphen in L-6
     ENTITY_LLM_MODEL: str = "google/gemini-flash-1.5"
     ANSWER_LLM_MODEL: str = "meta-llama/llama-3.3-70b-instruct:free"
     TRANSLATE_LLM_MODEL: str = "mistralai/mistral-nemo:free"
