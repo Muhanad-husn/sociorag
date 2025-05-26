@@ -43,6 +43,7 @@ config.yaml
 .pytest_cache/
 .coverage
 htmlcov/
+LOCAL_APPDATA_FONTCONFIG_CACHE/
 
 # System
 .DS_Store
@@ -67,3 +68,6 @@ instructions/
 
 # Backup directories
 phase*_backup_*/
+backend/app/answer/pdf.py
+.
+.gitignore
