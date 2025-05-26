@@ -33,6 +33,7 @@ saved/
 # Backup directories
 backup_*/
 final_backup_*/
+phase4_backup_*/
 input/
 graph.db
 config.yaml
@@ -46,6 +47,16 @@ htmlcov/
 # System
 .DS_Store
 Thumbs.db
+
+# Backup and temporary files
+*.bak
+*.backup
+*.bak2
+*_fixed.py
+*_fixed_new.py
+*_improved.py
+*_optimized.py
+graph_with_lines.txt
 
 # Instructions
 instructions/
