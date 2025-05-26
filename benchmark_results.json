@@ -1,0 +1,36 @@
+{
+  "embedding_cache": {
+    "cache_miss_avg": 0.8167328834533691,
+    "cache_hit_avg": 0.0,
+    "no_cache_avg": 0.025070667266845703,
+    "speedup_vs_miss": 816732.8834533691,
+    "speedup_vs_no_cache": 25070.667266845703,
+    "cache_efficiency": 100.0
+  },
+  "parallel_similarity_small": {
+    "sequential_avg": 0.007948716481526693,
+    "parallel_avg": 0.0031169255574544272,
+    "speedup": 2.5501784803671597,
+    "document_count": 10
+  },
+  "parallel_similarity_large": {
+    "sequential_avg": 0.07454943656921387,
+    "parallel_avg": 0.08339198430379231,
+    "speedup": 0.8939640565169245,
+    "document_count": 100
+  },
+  "vector_search": {
+    "individual_avg": 0.05730915069580078,
+    "parallel_individual_avg": 0.026217301686604817,
+    "batch_avg": 0.024063269297281902,
+    "speedup_parallel": 2.1859286428809606,
+    "speedup_batch": 2.381602848216232,
+    "search_count": 5
+  },
+  "metadata": {
+    "timestamp": 1748226681.0400455,
+    "test_text_count": 10,
+    "large_doc_count": 100,
+    "search_term_count": 5
+  }
+}
