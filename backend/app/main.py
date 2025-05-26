@@ -51,29 +51,86 @@ def create_app() -> FastAPI:
     """Create and configure the FastAPI application."""
     from backend.app.api.ingest import router as ingest_router
     from backend.app.api.qa import router as qa_router
-    
-    # Create FastAPI application
+    from backend.app.api.history_new import router as history_router
+    from backend.app.api.documents import router as documents_router
+    from backend.app.api.search import router as search_router
+    from backend.app.api.export import router as export_router
+    from backend.app.api.admin import router as admin_router
+    from backend.app.api.websocket_new import router as websocket_router
+      # Create FastAPI application
     app = FastAPI(
         title="SocioGraph API",
-        description="SocioGraph: AI-powered document analysis and knowledge graph",
-        version="0.1.0"
-    )
-
-    # Add CORS middleware
+        description="SocioGraph: AI-powered document analysis and knowledge graph generation",
+        version="0.2.0",
+        docs_url="/docs",
+        redoc_url="/redoc",
+        openapi_tags=[
+            {
+                "name": "ingest",
+                "description": "Document ingestion endpoints for uploading and processing PDFs"
+            },
+            {
+                "name": "qa",
+                "description": "Question and Answer endpoints for interacting with the knowledge base"
+            },
+            {
+                "name": "history",
+                "description": "Query history and statistics endpoints"
+            },
+            {
+                "name": "websocket",
+                "description": "Real-time communication endpoints using WebSockets"
+            },
+            {
+                "name": "documents",
+                "description": "Document management endpoints"
+            },
+            {
+                "name": "search",
+                "description": "Search endpoints for finding content in the knowledge base"
+            },
+            {
+                "name": "export",
+                "description": "Export endpoints for retrieving data in various formats"
+            },
+            {
+                "name": "admin",
+                "description": "Administrative endpoints for system management"
+            }
+        ]
+    )# Add CORS middleware
     app.add_middleware(
         CORSMiddleware,
         allow_origins=["*"],  # Allow all origins for development
         allow_credentials=True,
-        allow_methods=["*"],
+        allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
         allow_headers=["*"],
-    )
-
-    # Mount static files for serving saved PDFs
-    app.mount("/static/saved", StaticFiles(directory="saved"), name="saved")
+        expose_headers=["Content-Disposition"],
+        max_age=600,  # Cache preflight requests for 10 minutes
+    )    # Mount static files for serving saved PDFs
+    import os
+    from pathlib import Path
+    
+    saved_dir = Path("saved")
+    if not saved_dir.exists():
+        # Try project root
+        project_root = Path(__file__).parent.parent.parent
+        saved_dir = project_root / "saved"
+        if not saved_dir.exists():
+            # Create it if it doesn't exist
+            saved_dir.mkdir(parents=True, exist_ok=True)
+    
+    app.mount("/static/saved", StaticFiles(directory=str(saved_dir)), name="saved")
 
     # Include routers
     app.include_router(ingest_router)
     app.include_router(qa_router)
+    app.include_router(history_router)
+    app.include_router(documents_router)
+    app.include_router(search_router)
+    app.include_router(export_router)
+    app.include_router(admin_router)
+    app.include_router(websocket_router)
 
     @app.get("/")
     async def root():
