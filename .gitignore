@@ -26,6 +26,14 @@ dist/
 build/
 *.egg-info/
 
+# Node.js
+node_modules/
+.npm
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+ui/dist/
+
 # Data and models
 vector_store/
 saved/
@@ -34,6 +42,9 @@ saved/
 backup_*/
 final_backup_*/
 phase4_backup_*/
+phase6_backup_*/
+phase7_backup_*/
+cleanup_backups/
 input/
 graph.db
 config.yaml
