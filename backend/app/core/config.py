@@ -14,7 +14,7 @@ class _Config(BaseSettings):
     INPUT_DIR: Path = Field(default_factory=lambda: Path(__file__).resolve().parent.parent.parent.parent / "input")
     SAVED_DIR: Path = Field(default_factory=lambda: Path(__file__).resolve().parent.parent.parent.parent / "saved")
     VECTOR_DIR: Path = Field(default_factory=lambda: Path(__file__).resolve().parent.parent.parent.parent / "vector_store")
-    GRAPH_DB: Path = Field(default_factory=lambda: Path(__file__).resolve().parent.parent.parent.parent / "graph.db")
+    GRAPH_DB: Path = Field(default_factory=lambda: Path(__file__).resolve().parent.parent.parent.parent / "data" / "graph.db")
     PDF_THEME: Path = Field(default_factory=lambda: Path(__file__).resolve().parent.parent.parent.parent / "resources" / "pdf_theme.css")
 
     # ---------------------- models --------------------- #
