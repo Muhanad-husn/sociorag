@@ -20,10 +20,10 @@ from fastapi import APIRouter, UploadFile, File, Form, Query, HTTPException, Bac
 from fastapi.responses import JSONResponse, FileResponse
 from pydantic import BaseModel
 
-from app.core.config import get_config
-from app.core.singletons import LoggerSingleton, SQLiteSingleton
-from app.ingest.pipeline import process_all
-from app.ingest import reset_corpus
+from backend.app.core.config import get_config
+from backend.app.core.singletons import LoggerSingleton, SQLiteSingleton
+from backend.app.ingest.pipeline import process_all
+from backend.app.ingest import reset_corpus
 
 _logger = LoggerSingleton().get()
 

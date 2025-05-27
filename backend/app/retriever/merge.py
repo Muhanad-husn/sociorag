@@ -3,8 +3,8 @@
 import tiktoken
 from typing import List, Dict, Any
 
-from app.core.singletons import get_logger
-from app.core.config import get_config
+from backend.app.core.singletons import get_logger
+from backend.app.core.config import get_config
 
 # Initialize logger and config
 _logger = get_logger()

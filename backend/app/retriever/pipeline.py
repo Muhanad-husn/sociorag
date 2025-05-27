@@ -2,20 +2,20 @@
 
 from typing import Dict, Any
 
-from app.core.singletons import get_logger, embed_texts
-from app.retriever.language import normalize_query
-from app.retriever.vector import retrieve_chunks, rerank_chunks
+from backend.app.core.singletons import get_logger, embed_texts
+from backend.app.retriever.language import normalize_query
+from backend.app.retriever.vector import retrieve_chunks, rerank_chunks
 # Use the improved graph module
 try:
-    from app.retriever.graph_improved import retrieve_triples
+    from backend.app.retriever.graph_improved import retrieve_triples
     _logger = get_logger()
     _logger.info("Using improved graph retrieval module")
 except ImportError:
-    from app.retriever.graph import retrieve_triples
+    from backend.app.retriever.graph import retrieve_triples
     _logger = get_logger()
     _logger.warning("Falling back to original graph retrieval module")
     
-from app.retriever.merge import merge_context
+from backend.app.retriever.merge import merge_context
 
 # Initialize logger
 _logger = get_logger()

@@ -8,9 +8,9 @@ import asyncio
 import time
 from typing import AsyncGenerator, List, Dict, Any, Optional
 
-from app.core.singletons import LLMClientSingleton, LoggerSingleton
-from app.core.config import get_config
-from app.answer.prompt import (
+from backend.app.core.singletons import LLMClientSingleton, LoggerSingleton
+from backend.app.core.config import get_config
+from backend.app.answer.prompt import (
     build_system_prompt, 
     build_user_prompt, 
     attach_citations,

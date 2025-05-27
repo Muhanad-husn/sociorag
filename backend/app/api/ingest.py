@@ -15,10 +15,10 @@ import time
 from typing import Dict, Any, List, AsyncGenerator
 from concurrent.futures import ThreadPoolExecutor
 
-from app.core.config import get_config
-from app.ingest import reset_corpus
-from app.ingest.pipeline import process_all
-from app.core.singletons import LoggerSingleton
+from backend.app.core.config import get_config
+from backend.app.ingest import reset_corpus
+from backend.app.ingest.pipeline import process_all
+from backend.app.core.singletons import LoggerSingleton
 
 # Initialize logger
 _logger = LoggerSingleton().get()

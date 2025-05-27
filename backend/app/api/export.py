@@ -20,9 +20,9 @@ from fastapi import APIRouter, Query, HTTPException
 from fastapi.responses import FileResponse, StreamingResponse
 from pydantic import BaseModel
 
-from app.core.config import get_config
-from app.core.singletons import LoggerSingleton, SQLiteSingleton
-from app.answer.history import get_recent_history
+from backend.app.core.config import get_config
+from backend.app.core.singletons import LoggerSingleton, SQLiteSingleton
+from backend.app.answer.history import get_recent_history
 
 _logger = LoggerSingleton().get()
 

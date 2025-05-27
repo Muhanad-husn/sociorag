@@ -13,8 +13,8 @@ from datetime import datetime
 from fastapi import APIRouter, Query, HTTPException
 from pydantic import BaseModel
 
-from app.core.singletons import LoggerSingleton, SQLiteSingleton, EmbeddingSingleton
-from app.core.config import get_config
+from backend.app.core.singletons import LoggerSingleton, SQLiteSingleton, EmbeddingSingleton
+from backend.app.core.config import get_config
 
 _logger = LoggerSingleton().get()
 

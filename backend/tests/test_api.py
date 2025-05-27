@@ -18,7 +18,7 @@ from fastapi.testclient import TestClient
 from fastapi import WebSocket
 
 # Import the FastAPI app
-from app.main import create_app
+from backend.app.main import create_app
 
 
 @pytest.fixture

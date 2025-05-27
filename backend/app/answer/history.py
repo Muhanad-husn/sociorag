@@ -9,8 +9,8 @@ from pathlib import Path
 from typing import Dict, Any, List, Optional
 from datetime import datetime
 
-from app.core.config import get_config
-from app.core.singletons import LoggerSingleton
+from backend.app.core.config import get_config
+from backend.app.core.singletons import LoggerSingleton
 
 _cfg = get_config()
 _logger = LoggerSingleton().get()

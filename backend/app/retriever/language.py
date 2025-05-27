@@ -2,7 +2,7 @@
 
 from langdetect import detect
 from transformers import MarianMTModel, MarianTokenizer
-from app.core.singletons import get_logger
+from backend.app.core.singletons import get_logger
 
 _tok, _model = None, None
 
@@ -89,7 +89,7 @@ async def translate_with_llm(text: str, source_lang: str, target_lang: str) -> s
         return text
     
     # Get LLM client
-    from app.core.singletons import LLMClientSingleton
+    from backend.app.core.singletons import LLMClientSingleton
     client = LLMClientSingleton()
     
     # Prepare messages

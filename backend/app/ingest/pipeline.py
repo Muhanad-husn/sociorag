@@ -17,27 +17,27 @@ from array import array
 from pathlib import Path
 from typing import Dict, List, Any, Union, Optional, Generator, AsyncGenerator, Tuple
 
-from app.core.config import get_config
-from app.core.singletons import (
+from backend.app.core.config import get_config
+from backend.app.core.singletons import (
     get_logger, 
     get_chroma, 
     embed_texts, 
     get_sqlite,
     get_llm_client
 )
-from app.retriever.vector_utils import calculate_cosine_similarity
-from app.prompts import graph_prompts as gp
-from app.ingest.loader import load_pages
-from app.ingest.chunker import chunk_page
-from app.ingest.reset import reset_corpus
-from app.ingest.entity_extraction import extract_entities_from_text
+from backend.app.retriever.vector_utils import calculate_cosine_similarity
+from backend.app.prompts import graph_prompts as gp
+from backend.app.ingest.loader import load_pages
+from backend.app.ingest.chunker import chunk_page
+from backend.app.ingest.reset import reset_corpus
+from backend.app.ingest.entity_extraction import extract_entities_from_text
 
 
 logger = get_logger()
 config = get_config()
 
 
-from app.retriever.vector_utils import calculate_cosine_similarity
+from backend.app.retriever.vector_utils import calculate_cosine_similarity
 
 # Use the centralized cosine similarity function
 cosine_similarity = calculate_cosine_similarity

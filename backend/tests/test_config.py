@@ -9,7 +9,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent))
 
 def test_config_defaults():
     """Test that the default configuration values are correct."""
-    from app.core.config import get_config
+    from backend.app.core.config import get_config
     
     cfg = get_config()
     assert cfg.CHUNK_SIM == 0.85
@@ -34,7 +34,7 @@ def test_env_override():
         importlib.reload(sys.modules["backend.app.core.config"])
     
     # Import and test
-    from app.core.config import get_config
+    from backend.app.core.config import get_config
     cfg = get_config()
     assert cfg.CHUNK_SIM == 0.75
     assert cfg.TOP_K == 50
@@ -55,7 +55,7 @@ def test_yaml_override():
             importlib.reload(sys.modules["backend.app.core.config"])
         
         # Import and test
-        from app.core.config import get_config
+        from backend.app.core.config import get_config
         cfg = get_config(yaml_path)
         assert cfg.CHUNK_SIM == 0.80
         assert cfg.TOP_K == 25

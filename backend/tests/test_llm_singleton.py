@@ -4,8 +4,8 @@ import asyncio
 import os
 from pprint import pprint
 
-from app.core.singletons import LLMClientSingleton, get_config
-from app.core.config import get_config
+from backend.app.core.singletons import LLMClientSingleton, get_config
+from backend.app.core.config import get_config
 
 
 async def test_llm_singleton():

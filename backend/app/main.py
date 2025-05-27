@@ -179,8 +179,7 @@ def main():
         help="Log level (default: info)"
     )
     args = parser.parse_args()
-    
-    # Import uvicorn when starting the server
+      # Import uvicorn when starting the server
     import uvicorn
     
     print(f"🚀 Starting SocioGraph API server...")
@@ -189,7 +188,7 @@ def main():
     print(f"🔧 Auto-reload: {'enabled' if args.reload else 'disabled'}")
     
     uvicorn.run(
-        "app.main:app",
+        "backend.app.main:app",
         host=args.host,
         port=args.port,
         reload=args.reload,
