@@ -193,3 +193,8 @@ export async function updateLLMSettings(settings: LLMSettingsUpdate): Promise<{ 
   const response = await axios.put(`${BASE_URL}/api/admin/llm-settings`, settings);
   return response.data;
 }
+
+export async function getLLMSettings(): Promise<{ success: boolean; data: any }> {
+  const response = await axios.get(`${BASE_URL}/api/admin/llm-settings`);
+  return response.data;
+}

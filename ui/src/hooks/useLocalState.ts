@@ -53,7 +53,7 @@ const defaultSettings: Settings = {
   topKR: 3,
   
   // LLM parameters
-  temperature: 0.7,
+  temperature: 0.5,
   translateToArabic: false,
   
   // Model selection

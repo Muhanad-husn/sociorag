@@ -584,6 +584,44 @@ async def restart_system() -> StatusResponse:
         raise HTTPException(status_code=500, detail=f"Restart failed: {str(e)}")
 
 
+@router.get("/llm-settings")
+async def get_llm_settings() -> Dict[str, Any]:
+    """Get current LLM settings.
+    
+    Returns the current LLM model selections and parameters from the configuration.
+    """
+    try:
+        config = get_config()
+        
+        return {
+            "success": True,
+            "data": {
+                # Entity extraction settings
+                "entity_llm_model": config.ENTITY_LLM_MODEL,
+                "entity_llm_temperature": config.ENTITY_LLM_TEMPERATURE,
+                "entity_llm_max_tokens": config.ENTITY_LLM_MAX_TOKENS,
+                "entity_llm_stream": config.ENTITY_LLM_STREAM,
+                
+                # Answer generation settings
+                "answer_llm_model": config.ANSWER_LLM_MODEL,
+                "answer_llm_temperature": config.ANSWER_LLM_TEMPERATURE,
+                "answer_llm_max_tokens": config.ANSWER_LLM_MAX_TOKENS,
+                "answer_llm_context_window": config.ANSWER_LLM_CONTEXT_WINDOW,
+                "answer_llm_stream": config.ANSWER_LLM_STREAM,
+                
+                # Translation settings
+                "translate_llm_model": config.TRANSLATE_LLM_MODEL,
+                "translate_llm_temperature": config.TRANSLATE_LLM_TEMPERATURE,
+                "translate_llm_max_tokens": config.TRANSLATE_LLM_MAX_TOKENS,
+                "translate_llm_stream": config.TRANSLATE_LLM_STREAM,
+            }
+        }
+        
+    except Exception as e:
+        _logger.error(f"Failed to get LLM settings: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to get LLM settings: {str(e)}")
+
+
 @router.put("/llm-settings")
 async def update_llm_settings(settings: LLMSettingsUpdate) -> StatusResponse:
     """Update LLM settings.

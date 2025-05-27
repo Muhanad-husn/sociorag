@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'preact/hooks';
 import { useAppStore } from '../hooks/useLocalState';
-import { resetCorpus, getSystemConfig, getSystemHealth, updateApiKeys, updateLLMSettings } from '../lib/api';
+import { resetCorpus, getSystemConfig, getSystemHealth, updateApiKeys, updateLLMSettings, getLLMSettings } from '../lib/api';
 import type { SystemConfig, HealthStatus, ApiKeyUpdate } from '../lib/api';
 import { t } from '../lib/i18n';
 import { Card } from '../components/ui/Card';
@@ -12,20 +12,22 @@ export function Settings() {
   const { isDark, toggleTheme, settings, updateSettings } = useAppStore();
   const [isResetting, setIsResetting] = useState(false);
   const [showResetConfirm, setShowResetConfirm] = useState(false);
-  const [tempSettings, setTempSettings] = useState(settings);
-    // Admin state
+  const [tempSettings, setTempSettings] = useState(settings);  // Admin state
   const [systemConfig, setSystemConfig] = useState<SystemConfig | null>(null);
   const [healthStatus, setHealthStatus] = useState<HealthStatus | null>(null);
   const [loadingAdmin, setLoadingAdmin] = useState(false);
+  
+  // LLM settings loading state
+  const [loadingLLMSettings, setLoadingLLMSettings] = useState(false);
   
   // API Key editing state
   const [editingApiKey, setEditingApiKey] = useState(false);
   const [newApiKey, setNewApiKey] = useState('');
   const [savingApiKey, setSavingApiKey] = useState(false);
-
   // Load admin data on component mount
   useEffect(() => {
     loadAdminData();
+    loadLLMSettings();
   }, []);
 
   const loadAdminData = async () => {
@@ -44,7 +46,29 @@ export function Settings() {
       setLoadingAdmin(false);
     }
   };
-  const handleSaveSettings = async () => {
+  const loadLLMSettings = async () => {
+    setLoadingLLMSettings(true);
+    try {
+      const response = await getLLMSettings();
+      if (response.success) {
+        // Update tempSettings with backend values if they exist
+        setTempSettings(prev => ({
+          ...prev,
+          entityModel: response.data.entity_llm_model || prev.entityModel,
+          answerModel: response.data.answer_llm_model || prev.answerModel,
+          translateModel: response.data.translate_llm_model || prev.translateModel,
+          temperature: response.data.answer_llm_temperature !== undefined ? response.data.answer_llm_temperature : prev.temperature,
+          maxTokensAnswer: response.data.answer_llm_max_tokens || prev.maxTokensAnswer,
+          contextWindow: response.data.answer_llm_context_window || prev.contextWindow,
+        }));
+      }
+    } catch (error) {
+      console.error('Failed to load LLM settings:', error);
+      toast.error('Failed to load LLM settings');
+    } finally {
+      setLoadingLLMSettings(false);
+    }
+  };const handleSaveSettings = async () => {
     // Update local settings
     updateSettings(tempSettings);
     
@@ -65,6 +89,8 @@ export function Settings() {
         const response = await updateLLMSettings(llmSettingsToUpdate);
         if (response.success) {
           toast.success('Settings saved successfully on the server');
+          // Reload LLM settings to confirm the update
+          await loadLLMSettings();
         } else {
           toast.error('Failed to save LLM settings on the server');
         }
@@ -75,12 +101,11 @@ export function Settings() {
       console.error('Failed to update LLM settings:', error);
       toast.error('Failed to save LLM settings on the server');
     }
-  };
-  const handleResetDefaults = () => {
+  };const handleResetDefaults = () => {
     const defaultSettings = {
       topK: 5,
       topKR: 3,
-      temperature: 0.7,
+      temperature: 0.5,
       translateToArabic: false,
       entityModel: "google/gemini-flash-1.5",
       answerModel: "meta-llama/llama-3.3-70b-instruct:free",
@@ -303,75 +328,68 @@ export function Settings() {
             >
               Reset to Defaults
             </button>
-          </div>        </Card>
-
-        {/* Model Selection */}
+          </div>        </Card>        {/* Model Selection */}
         <Card className="p-6">
-          <h2 className="text-xl font-semibold mb-4">Model Selection</h2>
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-xl font-semibold">Model Selection</h2>
+            {loadingLLMSettings && (
+              <div className="animate-spin rounded-full h-4 w-4 border-b border-primary" />
+            )}
+          </div>
           
           <div className="space-y-6">
+            {/* Entities and Relationships Extraction Model */}
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Entities and Relationships Extraction Model</label>
+              <p className="text-xs text-muted-foreground">
+                Model used for extracting entities and relationships (Default: google/gemini-flash-1.5)
+              </p>
+              <input
+                type="text"
+                value={tempSettings.entityModel}
+                onChange={(e) => setTempSettings(prev => ({ 
+                  ...prev, 
+                  entityModel: (e.target as HTMLInputElement).value 
+                }))}
+                placeholder="google/gemini-flash-1.5"
+                className="w-full px-3 py-2 text-sm border border-border rounded-md bg-background focus:ring-2 focus:ring-primary focus:border-transparent"
+              />
+            </div>
+
             {/* Answer Generation Model */}
             <div className="space-y-2">
               <label className="text-sm font-medium">Answer Generation Model</label>
               <p className="text-xs text-muted-foreground">
-                Model used for generating answers to questions
+                Model used for generating answers to questions (Default: meta-llama/llama-3.3-70b-instruct:free)
               </p>
-              <select
+              <input
+                type="text"
                 value={tempSettings.answerModel}
                 onChange={(e) => setTempSettings(prev => ({ 
                   ...prev, 
-                  answerModel: (e.target as HTMLSelectElement).value 
+                  answerModel: (e.target as HTMLInputElement).value 
                 }))}
-                className="w-full px-3 py-2 text-sm border border-border rounded-md bg-background"
-              >
-                <option value="meta-llama/llama-3.3-70b-instruct:free">Llama 3.3 (70B) - Free</option>
-                <option value="anthropic/claude-3-sonnet:free">Claude 3 Sonnet - Free</option>
-                <option value="anthropic/claude-3-haiku:free">Claude 3 Haiku - Free</option>
-                <option value="google/gemini-pro:free">Gemini Pro - Free</option>
-                <option value="mistralai/mistral-large:free">Mistral Large - Free</option>
-              </select>
-            </div>
-
-            {/* Entity Extraction Model */}
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Entity Extraction Model</label>
-              <p className="text-xs text-muted-foreground">
-                Model used for extracting entities and relationships
-              </p>
-              <select
-                value={tempSettings.entityModel}
-                onChange={(e) => setTempSettings(prev => ({ 
-                  ...prev, 
-                  entityModel: (e.target as HTMLSelectElement).value 
-                }))}
-                className="w-full px-3 py-2 text-sm border border-border rounded-md bg-background"
-              >
-                <option value="google/gemini-flash-1.5">Gemini Flash 1.5</option>
-                <option value="anthropic/claude-3-haiku:free">Claude 3 Haiku - Free</option>
-                <option value="meta-llama/llama-3-8b-instruct:free">Llama 3 (8B) - Free</option>
-                <option value="mistralai/mistral-small:free">Mistral Small - Free</option>
-              </select>
+                placeholder="meta-llama/llama-3.3-70b-instruct:free"
+                className="w-full px-3 py-2 text-sm border border-border rounded-md bg-background focus:ring-2 focus:ring-primary focus:border-transparent"
+              />
             </div>
 
             {/* Translation Model */}
             <div className="space-y-2">
               <label className="text-sm font-medium">Translation Model</label>
               <p className="text-xs text-muted-foreground">
-                Model used for language translation
+                Model used for language translation (Default: mistralai/mistral-nemo:free)
               </p>
-              <select
+              <input
+                type="text"
                 value={tempSettings.translateModel}
                 onChange={(e) => setTempSettings(prev => ({ 
                   ...prev, 
-                  translateModel: (e.target as HTMLSelectElement).value 
+                  translateModel: (e.target as HTMLInputElement).value 
                 }))}
-                className="w-full px-3 py-2 text-sm border border-border rounded-md bg-background"
-              >
-                <option value="mistralai/mistral-nemo:free">Mistral Nemo - Free</option>
-                <option value="anthropic/claude-3-haiku:free">Claude 3 Haiku - Free</option>
-                <option value="meta-llama/llama-3-8b-instruct:free">Llama 3 (8B) - Free</option>
-                <option value="google/gemini-pro:free">Gemini Pro - Free</option>
-              </select>
+                placeholder="mistralai/mistral-nemo:free"
+                className="w-full px-3 py-2 text-sm border border-border rounded-md bg-background focus:ring-2 focus:ring-primary focus:border-transparent"
+              />
             </div>
           </div>
         </Card>
