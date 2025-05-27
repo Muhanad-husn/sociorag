@@ -5,7 +5,7 @@ It handles language detection, vector retrieval, graph retrieval, and context
 merging for answering user queries.
 """
 
-from backend.app.retriever.pipeline import retrieve_context
+from app.retriever.pipeline import retrieve_context
 
 # Export the main entry point
 __all__ = ["retrieve_context"]

@@ -1,7 +1,12 @@
 """Comprehensive API tests for SocioGraph Phase 6.
 
 This module tests all API endpoints to ensure they work correctly
-and meet the Phase 6 requirements.
+and meet the Phase 6    
+
+def test_get_history_endpoint(self, client):
+        "
+Test the /api/history endpoint."
+        with patch('backend.app.api.history_new.get_recent_history') as mock_get_history:quirements.
 """
 
 import pytest
@@ -13,7 +18,7 @@ from fastapi.testclient import TestClient
 from fastapi import WebSocket
 
 # Import the FastAPI app
-from backend.app.main import create_app
+from app.main import create_app
 
 
 @pytest.fixture
@@ -116,19 +121,18 @@ class TestQAEndpoints:
                     yield token
             
             mock_generate.return_value = mock_answer_gen()
-            
-            # Test the endpoint
-            response = client.post("/api/qa/ask", json={"question": "What is climate change?"})
+              # Test the endpoint
+            response = client.post("/api/qa/ask", json={"query": "What is climate change?"})
             
             assert response.status_code == 200
             assert response.headers["content-type"] == "text/event-stream; charset=utf-8"
     
     def test_ask_endpoint_empty_question(self, client):
         """Test the /api/qa/ask endpoint with empty question."""
-        response = client.post("/api/qa/ask", json={"question": ""})
+        response = client.post("/api/qa/ask", json={"query": ""})
         
         assert response.status_code == 400
-        assert "Question cannot be empty" in response.json()["detail"]
+        assert "Query cannot be empty" in response.json()["detail"]
     
     def test_ask_endpoint_missing_question(self, client):
         """Test the /api/qa/ask endpoint with missing question field."""
@@ -138,10 +142,11 @@ class TestQAEndpoints:
 
 
 class TestHistoryEndpoints:
-    """Test cases for the history API endpoints."""
+    """Test cases for the history API endpoints."""    
+    
     def test_get_history_endpoint(self, client):
         """Test the /api/history/ endpoint."""
-        with patch('backend.app.api.history.get_recent_history') as mock_get_history:
+        with patch('backend.app.api.history_new.get_recent_history') as mock_get_history:
             mock_get_history.return_value = [
                 {
                     "query": "What is AI?",
@@ -163,7 +168,7 @@ class TestHistoryEndpoints:
     
     def test_get_history_with_pagination(self, client):
         """Test the /api/history/ endpoint with pagination parameters."""
-        with patch('backend.app.api.history.get_recent_history') as mock_get_history:
+        with patch('backend.app.api.history_new.get_recent_history') as mock_get_history:
             mock_get_history.return_value = []
             
             response = client.get("/api/history/?page=2&per_page=10")
@@ -174,7 +179,7 @@ class TestHistoryEndpoints:
             assert data["per_page"] == 10
     def test_get_history_with_search(self, client):
         """Test the /api/history/ endpoint with search parameter."""
-        with patch('backend.app.api.history.get_recent_history') as mock_get_history:
+        with patch('backend.app.api.history_new.get_recent_history') as mock_get_history:
             mock_get_history.return_value = []
             
             response = client.get("/api/history/?search=climate")
@@ -185,7 +190,7 @@ class TestHistoryEndpoints:
     
     def test_get_specific_history_record(self, client):
         """Test the /api/history/{record_id} endpoint."""
-        with patch('backend.app.api.history.get_recent_history') as mock_get_history:
+        with patch('backend.app.api.history_new.get_recent_history') as mock_get_history:
             mock_get_history.return_value = [
                 {
                     "query": "What is AI?",
@@ -205,7 +210,7 @@ class TestHistoryEndpoints:
 
     def test_get_nonexistent_history_record(self, client):
         """Test the /api/history/{record_id} endpoint with nonexistent record."""
-        with patch('backend.app.api.history.get_recent_history') as mock_get_history:
+        with patch('backend.app.api.history_new.get_recent_history') as mock_get_history:
             mock_get_history.return_value = []  # Empty history
             
             response = client.get("/api/history/999")
@@ -215,7 +220,7 @@ class TestHistoryEndpoints:
     
     def test_delete_history_record(self, client):
         """Test the DELETE /api/history/{record_id} endpoint."""
-        with patch('backend.app.api.history.get_recent_history') as mock_get_history:
+        with patch('backend.app.api.history_new.get_recent_history') as mock_get_history:
             mock_get_history.return_value = [{"query": "test"}]
             
             response = client.delete("/api/history/1")
@@ -227,7 +232,7 @@ class TestHistoryEndpoints:
     
     def test_clear_all_history(self, client):
         """Test the DELETE /api/history/ endpoint."""
-        with patch('backend.app.api.history.cleanup_old_history') as mock_cleanup:
+        with patch('backend.app.api.history_new.cleanup_old_history') as mock_cleanup:
             mock_cleanup.return_value = 5  # 5 records removed
             
             response = client.delete("/api/history/")
@@ -240,7 +245,7 @@ class TestHistoryEndpoints:
     
     def test_get_history_stats(self, client):
         """Test the /api/history/stats endpoint."""
-        with patch('backend.app.api.history.get_history_stats') as mock_stats:
+        with patch('backend.app.api.history_new.get_history_stats') as mock_stats:
             mock_stats.return_value = {
                 "total_queries": 10,
                 "total_tokens": 500,
@@ -407,7 +412,7 @@ class TestIntegrationFlows:
         with patch('backend.app.api.qa.retrieve_context') as mock_retrieve, \
              patch('backend.app.api.qa.generate_answer') as mock_generate, \
              patch('backend.app.api.qa.append_record') as mock_append, \
-             patch('backend.app.api.history.get_recent_history') as mock_get_history:
+             patch('backend.app.api.history_new.get_recent_history') as mock_get_history:
             
             # Setup mocks
             mock_retrieve.return_value = {"chunks": []}

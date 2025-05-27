@@ -1,0 +1,32 @@
+{
+  "name": "ui",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc -b && vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "axios": "^1.9.0",
+    "clsx": "^2.1.1",
+    "lucide-preact": "^0.511.0",
+    "markdown-it": "^14.1.0",
+    "preact": "^10.26.5",
+    "preact-router": "^4.1.2",
+    "sonner": "^2.0.3",
+    "zustand": "^5.0.5"
+  },
+  "devDependencies": {
+    "@preact/preset-vite": "^2.10.1",
+    "@tailwindcss/forms": "^0.5.10",
+    "@tailwindcss/typography": "^0.5.16",
+    "@types/markdown-it": "^14.1.2",
+    "autoprefixer": "^10.4.21",
+    "postcss": "^8.5.3",
+    "tailwindcss": "^4.1.7",
+    "typescript": "~5.8.3",
+    "vite": "^6.3.5"
+  }
+}

@@ -49,14 +49,14 @@ from fastapi.staticfiles import StaticFiles
 
 def create_app() -> FastAPI:
     """Create and configure the FastAPI application."""
-    from backend.app.api.ingest import router as ingest_router
-    from backend.app.api.qa import router as qa_router
-    from backend.app.api.history_new import router as history_router
-    from backend.app.api.documents import router as documents_router
-    from backend.app.api.search import router as search_router
-    from backend.app.api.export import router as export_router
-    from backend.app.api.admin import router as admin_router
-    from backend.app.api.websocket_new import router as websocket_router
+    from .api.ingest import router as ingest_router
+    from .api.qa import router as qa_router
+    from .api.history_new import router as history_router
+    from .api.documents import router as documents_router
+    from .api.search import router as search_router
+    from .api.export import router as export_router
+    from .api.admin import router as admin_router
+    from .api.websocket_new import router as websocket_router
       # Create FastAPI application
     app = FastAPI(
         title="SocioGraph API",

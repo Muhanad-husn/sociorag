@@ -148,11 +148,12 @@ class TestLLMClientSingleton:
         """Test that the same client instance is returned."""
         client1 = LLMClientSingleton()
         client2 = LLMClientSingleton()
-        assert client1 is client2
-
+        assert client1 is client2    
+    
     @patch.dict('os.environ', {'OPENROUTER_API_KEY': 'test-key'})
     def test_api_key_retrieval(self):
-        """Test API key retrieval from environment."""        client = LLMClientSingleton()
+        """Test API key retrieval from environment."""
+        client = LLMClientSingleton()
         assert client.get_api_key() == 'test-key'
 
     def test_missing_api_key_raises_error(self):

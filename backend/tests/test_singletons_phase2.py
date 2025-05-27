@@ -14,7 +14,7 @@ from spacy.language import Language
 from sentence_transformers import SentenceTransformer
 from langchain_community.vectorstores import Chroma
 
-from backend.app.core.singletons import (
+from app.core.singletons import (
     LoggerSingleton,
     EmbeddingSingleton,
     ChromaSingleton,
@@ -93,7 +93,7 @@ class TestChromaSingleton:
 
     def test_persistence_directory_created(self):
         """Test that vector directory is created."""
-        from backend.app.core.config import get_config
+        from app.core.config import get_config
         config = get_config()
         chroma = ChromaSingleton().get()
         assert config.VECTOR_DIR.exists()

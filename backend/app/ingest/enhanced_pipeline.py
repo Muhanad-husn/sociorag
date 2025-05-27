@@ -18,17 +18,17 @@ from typing import Dict, List, Any, Union, Optional, Generator, AsyncGenerator, 
 import numpy as np
 from numpy.linalg import norm
 
-from backend.app.core.config import get_config
-from backend.app.core.singletons import (
+from app.core.config import get_config
+from app.core.singletons import (
     get_logger, 
     get_chroma, 
     embed_texts, 
     get_sqlite
 )
-from backend.app.ingest.loader import load_pages
-from backend.app.ingest.chunker import chunk_page
-from backend.app.ingest.reset import reset_corpus
-from backend.app.ingest.enhanced_entity_extraction import (
+from app.ingest.loader import load_pages
+from app.ingest.chunker import chunk_page
+from app.ingest.reset import reset_corpus
+from app.ingest.enhanced_entity_extraction import (
     extract_entities_from_text,
     batch_process_chunks
 )

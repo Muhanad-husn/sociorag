@@ -26,7 +26,7 @@ from .config import get_config
 
 # Import the embedding cache if available, with fallback
 try:
-    from backend.app.retriever.embedding_cache import get_embedding_cache
+    from app.retriever.embedding_cache import get_embedding_cache
     _EMBEDDING_CACHE_AVAILABLE = True
 except ImportError:
     _EMBEDDING_CACHE_AVAILABLE = False

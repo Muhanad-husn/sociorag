@@ -9,7 +9,7 @@ import sys
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 # Import the configuration module
-from backend.app.core.config import get_config
+from app.core.config import get_config
 
 def test_config():
     """Test the configuration system."""
@@ -23,7 +23,7 @@ def test_config():
     # Test .env override
     os.environ["ENTITY_SIM"] = "0.88"
     importlib.reload(sys.modules["backend.app.core.config"])
-    from backend.app.core.config import get_config as get_config_reloaded
+    from app.core.config import get_config as get_config_reloaded
     cfg2 = get_config_reloaded()
     print("\n.env override:")
     print(f"ENTITY_SIM = {cfg2.ENTITY_SIM}")
@@ -31,7 +31,7 @@ def test_config():
     print("✅ .env override works")    # Test YAML override
     yaml_path = Path("config.yaml")
     importlib.reload(sys.modules["backend.app.core.config"])
-    from backend.app.core.config import get_config as get_config_reloaded2
+    from app.core.config import get_config as get_config_reloaded2
     cfg3 = get_config_reloaded2(yaml_path)
     print("\nYAML override:")
     print(f"TOP_K = {cfg3.TOP_K}")

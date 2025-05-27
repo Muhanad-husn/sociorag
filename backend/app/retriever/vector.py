@@ -5,9 +5,9 @@ from sentence_transformers import CrossEncoder
 from transformers import AutoTokenizer, AutoModelForSequenceClassification
 from transformers.pipelines import pipeline
 import torch
-from backend.app.core.singletons import get_logger, get_chroma, embed_texts
-from backend.app.retriever.vector_utils import batch_similarity, text_similarity
-from backend.app.core.config import get_config
+from app.core.singletons import get_logger, get_chroma, embed_texts
+from app.retriever.vector_utils import batch_similarity, text_similarity
+from app.core.config import get_config
 
 # Initialize logger and config
 _logger = get_logger()

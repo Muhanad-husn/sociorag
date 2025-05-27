@@ -20,9 +20,9 @@ from fastapi import APIRouter, Query, HTTPException
 from fastapi.responses import FileResponse, StreamingResponse
 from pydantic import BaseModel
 
-from backend.app.core.config import get_config
-from backend.app.core.singletons import LoggerSingleton, SQLiteSingleton
-from backend.app.answer.history import get_recent_history
+from app.core.config import get_config
+from app.core.singletons import LoggerSingleton, SQLiteSingleton
+from app.answer.history import get_recent_history
 
 _logger = LoggerSingleton().get()
 
@@ -76,7 +76,7 @@ class AnalyticsReportRequest(BaseModel):
 
 async def generate_report_pdf(content: str, title: str, output_path: str, metadata: Optional[Dict] = None, custom_css: Optional[str] = None):
     """Generate PDF report using existing PDF generation system."""
-    from backend.app.answer.pdf import save_pdf
+    from app.answer.pdf import save_pdf
     
     # Use existing PDF generation with the content
     pdf_path = save_pdf(content, title)

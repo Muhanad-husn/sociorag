@@ -6,8 +6,8 @@ import time
 from dataclasses import dataclass
 from typing import List, Dict, Any, Optional
 
-from backend.app.core.singletons import LLMClientSingleton
-from backend.app.core.config import get_config
+from app.core.singletons import LLMClientSingleton
+from app.core.config import get_config
 
 
 @dataclass

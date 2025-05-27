@@ -3,7 +3,7 @@
 import time
 import pytest
 
-from backend.app.retriever import retrieve_context
+from app.retriever import retrieve_context
 
 @pytest.mark.parametrize("query", [
     "What is a knowledge graph?",

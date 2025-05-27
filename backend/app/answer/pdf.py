@@ -10,8 +10,8 @@ from typing import Optional
 
 from markdown_it import MarkdownIt
 
-from backend.app.core.config import get_config
-from backend.app.core.singletons import LoggerSingleton
+from app.core.config import get_config
+from app.core.singletons import LoggerSingleton
 
 _cfg = get_config()
 _logger = LoggerSingleton().get()
