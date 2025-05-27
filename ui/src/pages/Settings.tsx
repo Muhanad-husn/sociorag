@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'preact/hooks';
 import { useAppStore } from '../hooks/useLocalState';
-import { resetCorpus, getSystemConfig, getSystemHealth, updateApiKeys } from '../lib/api';
+import { resetCorpus, getSystemConfig, getSystemHealth, updateApiKeys, updateLLMSettings } from '../lib/api';
 import type { SystemConfig, HealthStatus, ApiKeyUpdate } from '../lib/api';
 import { t } from '../lib/i18n';
 import { Card } from '../components/ui/Card';
@@ -44,18 +44,49 @@ export function Settings() {
       setLoadingAdmin(false);
     }
   };
-
-  const handleSaveSettings = () => {
+  const handleSaveSettings = async () => {
+    // Update local settings
     updateSettings(tempSettings);
-    toast.success('Settings saved successfully');
+    
+    // Update LLM settings on the backend
+    try {
+      // Only send changed LLM-related settings to the backend
+      const llmSettingsToUpdate = {
+        entity_llm_model: tempSettings.entityModel !== settings.entityModel ? tempSettings.entityModel : undefined,
+        answer_llm_model: tempSettings.answerModel !== settings.answerModel ? tempSettings.answerModel : undefined,
+        translate_llm_model: tempSettings.translateModel !== settings.translateModel ? tempSettings.translateModel : undefined,
+        answer_llm_temperature: tempSettings.temperature !== settings.temperature ? tempSettings.temperature : undefined,
+        answer_llm_max_tokens: tempSettings.maxTokensAnswer !== settings.maxTokensAnswer ? tempSettings.maxTokensAnswer : undefined,
+        answer_llm_context_window: tempSettings.contextWindow !== settings.contextWindow ? tempSettings.contextWindow : undefined
+      };
+      
+      // Only make API call if there are settings to update
+      if (Object.values(llmSettingsToUpdate).some(val => val !== undefined)) {
+        const response = await updateLLMSettings(llmSettingsToUpdate);
+        if (response.success) {
+          toast.success('Settings saved successfully on the server');
+        } else {
+          toast.error('Failed to save LLM settings on the server');
+        }
+      } else {
+        toast.success('Settings saved successfully');
+      }
+    } catch (error) {
+      console.error('Failed to update LLM settings:', error);
+      toast.error('Failed to save LLM settings on the server');
+    }
   };
-
   const handleResetDefaults = () => {
     const defaultSettings = {
       topK: 5,
       topKR: 3,
       temperature: 0.7,
       translateToArabic: false,
+      entityModel: "google/gemini-flash-1.5",
+      answerModel: "meta-llama/llama-3.3-70b-instruct:free",
+      translateModel: "mistralai/mistral-nemo:free",
+      maxTokensAnswer: 4000,
+      contextWindow: 128000,
     };
     setTempSettings(defaultSettings);
     updateSettings(defaultSettings);
@@ -273,6 +304,134 @@ export function Settings() {
               Reset to Defaults
             </button>
           </div>        </Card>
+
+        {/* Model Selection */}
+        <Card className="p-6">
+          <h2 className="text-xl font-semibold mb-4">Model Selection</h2>
+          
+          <div className="space-y-6">
+            {/* Answer Generation Model */}
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Answer Generation Model</label>
+              <p className="text-xs text-muted-foreground">
+                Model used for generating answers to questions
+              </p>
+              <select
+                value={tempSettings.answerModel}
+                onChange={(e) => setTempSettings(prev => ({ 
+                  ...prev, 
+                  answerModel: (e.target as HTMLSelectElement).value 
+                }))}
+                className="w-full px-3 py-2 text-sm border border-border rounded-md bg-background"
+              >
+                <option value="meta-llama/llama-3.3-70b-instruct:free">Llama 3.3 (70B) - Free</option>
+                <option value="anthropic/claude-3-sonnet:free">Claude 3 Sonnet - Free</option>
+                <option value="anthropic/claude-3-haiku:free">Claude 3 Haiku - Free</option>
+                <option value="google/gemini-pro:free">Gemini Pro - Free</option>
+                <option value="mistralai/mistral-large:free">Mistral Large - Free</option>
+              </select>
+            </div>
+
+            {/* Entity Extraction Model */}
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Entity Extraction Model</label>
+              <p className="text-xs text-muted-foreground">
+                Model used for extracting entities and relationships
+              </p>
+              <select
+                value={tempSettings.entityModel}
+                onChange={(e) => setTempSettings(prev => ({ 
+                  ...prev, 
+                  entityModel: (e.target as HTMLSelectElement).value 
+                }))}
+                className="w-full px-3 py-2 text-sm border border-border rounded-md bg-background"
+              >
+                <option value="google/gemini-flash-1.5">Gemini Flash 1.5</option>
+                <option value="anthropic/claude-3-haiku:free">Claude 3 Haiku - Free</option>
+                <option value="meta-llama/llama-3-8b-instruct:free">Llama 3 (8B) - Free</option>
+                <option value="mistralai/mistral-small:free">Mistral Small - Free</option>
+              </select>
+            </div>
+
+            {/* Translation Model */}
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Translation Model</label>
+              <p className="text-xs text-muted-foreground">
+                Model used for language translation
+              </p>
+              <select
+                value={tempSettings.translateModel}
+                onChange={(e) => setTempSettings(prev => ({ 
+                  ...prev, 
+                  translateModel: (e.target as HTMLSelectElement).value 
+                }))}
+                className="w-full px-3 py-2 text-sm border border-border rounded-md bg-background"
+              >
+                <option value="mistralai/mistral-nemo:free">Mistral Nemo - Free</option>
+                <option value="anthropic/claude-3-haiku:free">Claude 3 Haiku - Free</option>
+                <option value="meta-llama/llama-3-8b-instruct:free">Llama 3 (8B) - Free</option>
+                <option value="google/gemini-pro:free">Gemini Pro - Free</option>
+              </select>
+            </div>
+          </div>
+        </Card>
+
+        {/* Advanced Settings */}
+        <Card className="p-6">
+          <h2 className="text-xl font-semibold mb-4">Advanced Settings</h2>
+          
+          <div className="space-y-6">
+            {/* Max Tokens for Answer */}
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Max Tokens (Answer)</label>
+              <p className="text-xs text-muted-foreground">
+                Maximum tokens for answer generation (1000-8000)
+              </p>
+              <div className="flex items-center space-x-3">
+                <input
+                  type="range"
+                  min="1000"
+                  max="8000"
+                  step="500"
+                  value={tempSettings.maxTokensAnswer}
+                  onChange={(e) => setTempSettings(prev => ({ 
+                    ...prev, 
+                    maxTokensAnswer: parseInt((e.target as HTMLInputElement).value) 
+                  }))}
+                  className="flex-1"
+                />
+                <span className="text-sm font-mono w-16 text-center">
+                  {tempSettings.maxTokensAnswer}
+                </span>
+              </div>
+            </div>
+
+            {/* Context Window */}
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Context Window</label>
+              <p className="text-xs text-muted-foreground">
+                Context window size for large models (16K-128K)
+              </p>
+              <div className="flex items-center space-x-3">
+                <input
+                  type="range"
+                  min="16000"
+                  max="128000"
+                  step="16000"
+                  value={tempSettings.contextWindow}
+                  onChange={(e) => setTempSettings(prev => ({ 
+                    ...prev, 
+                    contextWindow: parseInt((e.target as HTMLInputElement).value) 
+                  }))}
+                  className="flex-1"
+                />
+                <span className="text-sm font-mono w-16 text-center">
+                  {Math.round(tempSettings.contextWindow / 1000)}K
+                </span>
+              </div>
+            </div>
+          </div>
+        </Card>
 
         {/* System Configuration */}
         <Card className="p-6">

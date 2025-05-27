@@ -58,6 +58,9 @@ export function createSearchStream(query: string, settings: any = {}) {
     top_k: settings.topK || '5',
     top_k_r: settings.topKR || '3',
     temperature: settings.temperature || '0.7',
+    answer_model: settings.answerModel || '',
+    max_tokens: settings.maxTokensAnswer || '4000',
+    context_window: settings.contextWindow || '128000'
   });
 
   return new EventSource(`${BASE_URL}/api/qa/ask?${params}`, {
@@ -165,5 +168,28 @@ export interface ApiKeyUpdate {
 
 export async function updateApiKeys(apiKeys: ApiKeyUpdate): Promise<{ success: boolean; message: string }> {
   const response = await axios.put(`${BASE_URL}/api/admin/api-keys`, apiKeys);
+  return response.data;
+}
+
+export interface LLMSettingsUpdate {
+  entity_llm_model?: string;
+  entity_llm_temperature?: number;
+  entity_llm_max_tokens?: number;
+  entity_llm_stream?: boolean;
+  
+  answer_llm_model?: string;
+  answer_llm_temperature?: number;
+  answer_llm_max_tokens?: number;
+  answer_llm_context_window?: number;
+  answer_llm_stream?: boolean;
+  
+  translate_llm_model?: string;
+  translate_llm_temperature?: number;
+  translate_llm_max_tokens?: number;
+  translate_llm_stream?: boolean;
+}
+
+export async function updateLLMSettings(settings: LLMSettingsUpdate): Promise<{ success: boolean; message: string }> {
+  const response = await axios.put(`${BASE_URL}/api/admin/llm-settings`, settings);
   return response.data;
 }

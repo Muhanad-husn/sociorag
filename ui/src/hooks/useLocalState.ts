@@ -2,10 +2,22 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
 export interface Settings {
+  // Search parameters
   topK: number;
   topKR: number;
+  
+  // LLM parameters
   temperature: number;
   translateToArabic: boolean;
+  
+  // Model selection
+  entityModel: string;
+  answerModel: string;
+  translateModel: string;
+  
+  // Advanced parameters
+  maxTokensAnswer: number;
+  contextWindow: number;
 }
 
 export interface AppState {
@@ -36,10 +48,22 @@ export interface AppState {
 }
 
 const defaultSettings: Settings = {
+  // Search parameters
   topK: 5,
   topKR: 3,
+  
+  // LLM parameters
   temperature: 0.7,
   translateToArabic: false,
+  
+  // Model selection
+  entityModel: "google/gemini-flash-1.5",
+  answerModel: "meta-llama/llama-3.3-70b-instruct:free",
+  translateModel: "mistralai/mistral-nemo:free",
+  
+  // Advanced parameters
+  maxTokensAnswer: 4000,
+  contextWindow: 128000,
 };
 
 export const useAppStore = create<AppState>()(
