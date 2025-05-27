@@ -178,7 +178,6 @@ def main():
         choices=["critical", "error", "warning", "info", "debug", "trace"],
         help="Log level (default: info)"
     )
-    
     args = parser.parse_args()
     
     # Import uvicorn when starting the server
@@ -190,7 +189,7 @@ def main():
     print(f"🔧 Auto-reload: {'enabled' if args.reload else 'disabled'}")
     
     uvicorn.run(
-        "backend.app.main:app",
+        "app.main:app",
         host=args.host,
         port=args.port,
         reload=args.reload,

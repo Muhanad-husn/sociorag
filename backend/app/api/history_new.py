@@ -11,8 +11,8 @@ from fastapi import APIRouter, Query, HTTPException, Path
 from pydantic import BaseModel
 from datetime import datetime
 
-from backend.app.answer.history import get_recent_history, get_history_stats, cleanup_old_history
-from backend.app.core.singletons import LoggerSingleton
+from app.answer.history import get_recent_history, get_history_stats, cleanup_old_history
+from app.core.singletons import LoggerSingleton
 
 _logger = LoggerSingleton().get()
 

@@ -16,9 +16,9 @@ import hashlib
 from typing import List, Dict, Any, Tuple, Optional, Set, Union
 from functools import lru_cache
 
-from backend.app.core.config import get_config
-from backend.app.core.singletons import get_logger, get_llm_client
-from backend.app.prompts import graph_prompts as gp
+from app.core.config import get_config
+from app.core.singletons import get_logger, get_llm_client
+from app.prompts import graph_prompts as gp
 
 config = get_config()
 logger = get_logger()
@@ -319,32 +319,14 @@ async def extract_entities_with_retry(text: str, max_retries: int = 3,
     for attempt in range(max_retries):
         debug_info["attempts"] += 1
         
-        try:
-            # Import here to avoid circular imports
-            from openrouter.client import create_chat_completion
-            from openrouter.models.request import ChatCompletionRequest
-            
-            # Create request with simple dict messages
-            request_data = {
-                "model": config.ENTITY_LLM_MODEL,
-                "messages": prompt,
-                "temperature": 0.3,
-                "stream": False,
-                "max_tokens": 1000
-            }
-            
-            # Create request and get response
-            request = ChatCompletionRequest(**request_data)
-            response = await create_chat_completion(request)
-            
-            # Extract content from response
+        try:            # Use the task-specific method for entity extraction
             json_line = ""
-            if hasattr(response, 'choices') and response.choices:
-                choice = response.choices[0]
-                if hasattr(choice, 'message') and choice.message:
-                    content = getattr(choice.message, 'content', None)
-                    if content:
-                        json_line = content
+            async for content in client.create_entity_extraction_chat(
+                messages=prompt,
+                max_tokens=config.ENTITY_LLM_MAX_TOKENS  # Use the config value
+            ):
+                if content:
+                    json_line += content
             
             if not json_line:
                 logger.warning(f"No content extracted from response (attempt {attempt+1})")

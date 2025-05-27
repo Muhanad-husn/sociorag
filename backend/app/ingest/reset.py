@@ -8,8 +8,8 @@ import shutil
 import sqlite3
 from pathlib import Path
 
-from backend.app.core.config import get_config
-from backend.app.core.singletons import SQLiteSingleton
+from app.core.config import get_config
+from app.core.singletons import SQLiteSingleton
 
 
 def reset_corpus():

@@ -6,18 +6,18 @@ including streaming responses and PDF generation.
 
 import asyncio
 import time
-from typing import Dict, Any
+from typing import Dict, Any, Optional
 
 from fastapi import APIRouter, Request, HTTPException
 from fastapi.responses import JSONResponse
 from sse_starlette.sse import EventSourceResponse
 from pydantic import BaseModel
 
-from backend.app.core.singletons import LoggerSingleton
-from backend.app.retriever import retrieve_context
-from backend.app.answer.generator import generate_answer, generate_answer_complete
-from backend.app.answer.pdf import save_pdf, get_pdf_url
-from backend.app.answer.history import append_record, get_recent_history, get_history_stats
+from app.core.singletons import LoggerSingleton
+from app.retriever import retrieve_context
+from app.answer.generator import generate_answer, generate_answer_complete
+from app.answer.pdf import save_pdf, get_pdf_url
+from app.answer.history import append_record, get_recent_history, get_history_stats
 
 _logger = LoggerSingleton().get()
 
@@ -28,6 +28,10 @@ class AskRequest(BaseModel):
     """Request model for asking questions."""
     query: str
     stream: bool = True  # Whether to stream the response
+    answer_model: Optional[str] = None
+    temperature: Optional[float] = None
+    max_tokens: Optional[int] = None
+    context_window: Optional[int] = None
 
 
 class AskResponse(BaseModel):
@@ -65,23 +69,22 @@ async def ask_question(request: AskRequest) -> Any:
             
         context_count = len(context_items)
         _logger.info(f"Retrieved {context_count} context items")
-        
         if request.stream:
             # Return streaming response
             return EventSourceResponse(
-                _stream_answer_events(query, context_items, start_time),
+                _stream_answer_events(query, context_items, start_time, request),
                 media_type="text/plain"
             )
         else:
             # Return complete response
-            return await _generate_complete_answer(query, context_items, start_time)
+            return await _generate_complete_answer(query, context_items, start_time, request)
             
     except Exception as e:
         _logger.error(f"Error processing question: {e}")
         raise HTTPException(status_code=500, detail=f"Error processing question: {str(e)}")
 
 
-async def _stream_answer_events(query: str, context_items: list, start_time: float):
+async def _stream_answer_events(query: str, context_items: list, start_time: float, request: AskRequest):
     """Generate Server-Sent Events for streaming answer."""
     complete_answer = ""
     token_count = 0
@@ -93,8 +96,21 @@ async def _stream_answer_events(query: str, context_items: list, start_time: flo
             "data": f"Starting answer generation for: {query[:100]}..."
         }
         
+        # Get the LLM parameters
+        model = request.answer_model
+        temperature = request.temperature
+        max_tokens = request.max_tokens
+        context_window = request.context_window
+        
         # Stream answer tokens
-        async for token in generate_answer(query, context_items):
+        async for token in generate_answer(
+            query, 
+            context_items, 
+            model=model, 
+            temperature=temperature, 
+            max_tokens=max_tokens, 
+            context_window=context_window
+        ):
             complete_answer += token
             token_count += 1
             
@@ -140,11 +156,31 @@ async def _stream_answer_events(query: str, context_items: list, start_time: flo
         }
 
 
-async def _generate_complete_answer(query: str, context_items: list, start_time: float) -> AskResponse:
+async def _generate_complete_answer(query: str, context_items: list, start_time: float, request: AskRequest) -> AskResponse:
     """Generate a complete (non-streaming) answer."""
     try:
-        # Generate complete answer
-        complete_answer = await generate_answer_complete(query, context_items)
+        # Generate complete answer with parameters from request
+        model = request.answer_model
+        temperature = request.temperature
+        max_tokens = request.max_tokens
+        context_window = request.context_window
+        
+        # Get parameters from the request for LLM
+        llm_params = {}
+        if model:
+            llm_params["model"] = model
+        if temperature:
+            llm_params["temperature"] = temperature
+        if max_tokens:
+            llm_params["max_tokens"] = max_tokens
+        if context_window:
+            llm_params["context_window"] = context_window
+        
+        # Generate answer with parameters
+        complete_answer = ""
+        async for token in generate_answer(query, context_items, **llm_params):
+            complete_answer += token
+            
         token_count = len(complete_answer.split())  # Rough token estimate
         
         # Generate PDF
@@ -207,3 +243,29 @@ async def get_stats() -> Dict[str, Any]:
     except Exception as e:
         _logger.error(f"Error retrieving stats: {e}")
         raise HTTPException(status_code=500, detail=f"Error retrieving stats: {str(e)}")
+
+
+@router.get("/ask")
+async def ask_question_get(
+    query: str,
+    translate_to_arabic: bool = False,
+    top_k: int = 5,
+    top_k_r: int = 3,
+    temperature: float = 0.7,
+    answer_model: Optional[str] = None,
+    max_tokens: Optional[int] = None,
+    context_window: Optional[int] = None
+) -> Any:
+    """Ask a question via GET method with query parameters.
+    
+    This endpoint is primarily for compatibility with SSE streaming from the frontend.
+    """
+    request = AskRequest(
+        query=query,
+        stream=True,
+        answer_model=answer_model,
+        temperature=temperature,
+        max_tokens=max_tokens,
+        context_window=context_window
+    )
+    return await ask_question(request)

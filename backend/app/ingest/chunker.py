@@ -8,7 +8,7 @@ external dependencies.
 from typing import List
 import re
 
-from backend.app.core.singletons import get_logger
+from app.core.singletons import get_logger
 
 logger = get_logger()
 

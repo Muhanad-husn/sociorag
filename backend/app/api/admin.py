@@ -15,8 +15,8 @@ from typing import Dict, List, Optional, Any
 from fastapi import APIRouter, HTTPException, Depends
 from pydantic import BaseModel
 
-from backend.app.core.config import get_config
-from backend.app.core.singletons import (
+from app.core.config import get_config
+from app.core.singletons import (
     LoggerSingleton, SQLiteSingleton, ChromaSingleton, 
     EmbeddingSingleton, LLMClientSingleton
 )
@@ -77,6 +77,25 @@ class MaintenanceResult(BaseModel):
     success: bool
     details: Dict[str, Any]
     duration: float
+
+
+class LLMSettingsUpdate(BaseModel):
+    """LLM settings update model."""
+    entity_llm_model: Optional[str] = None
+    entity_llm_temperature: Optional[float] = None
+    entity_llm_max_tokens: Optional[int] = None
+    entity_llm_stream: Optional[bool] = None
+    
+    answer_llm_model: Optional[str] = None
+    answer_llm_temperature: Optional[float] = None
+    answer_llm_max_tokens: Optional[int] = None
+    answer_llm_context_window: Optional[int] = None
+    answer_llm_stream: Optional[bool] = None
+    
+    translate_llm_model: Optional[str] = None
+    translate_llm_temperature: Optional[float] = None
+    translate_llm_max_tokens: Optional[int] = None
+    translate_llm_stream: Optional[bool] = None
 
 
 # Global system start time for uptime calculation
@@ -336,12 +355,22 @@ async def get_system_config() -> SystemConfig:
             "saved_dir": str(cfg.SAVED_DIR),
             "vector_dir": str(cfg.VECTOR_DIR),
             "graph_db": str(cfg.GRAPH_DB),
-            
-            # Model settings
+              # Model settings
             "embedding_model": cfg.EMBEDDING_MODEL,
             "reranker_model": cfg.RERANKER_MODEL,
             "entity_llm_model": cfg.ENTITY_LLM_MODEL,
+            "entity_llm_temperature": cfg.ENTITY_LLM_TEMPERATURE,
+            "entity_llm_max_tokens": cfg.ENTITY_LLM_MAX_TOKENS,
+            "entity_llm_stream": cfg.ENTITY_LLM_STREAM,
             "answer_llm_model": cfg.ANSWER_LLM_MODEL,
+            "answer_llm_temperature": cfg.ANSWER_LLM_TEMPERATURE,
+            "answer_llm_max_tokens": cfg.ANSWER_LLM_MAX_TOKENS,
+            "answer_llm_context_window": cfg.ANSWER_LLM_CONTEXT_WINDOW,
+            "answer_llm_stream": cfg.ANSWER_LLM_STREAM,
+            "translate_llm_model": cfg.TRANSLATE_LLM_MODEL,
+            "translate_llm_temperature": cfg.TRANSLATE_LLM_TEMPERATURE,
+            "translate_llm_max_tokens": cfg.TRANSLATE_LLM_MAX_TOKENS,
+            "translate_llm_stream": cfg.TRANSLATE_LLM_STREAM,
             
             # Similarity thresholds
             "chunk_similarity": cfg.CHUNK_SIM,
@@ -553,6 +582,78 @@ async def restart_system() -> StatusResponse:
     except Exception as e:
         _logger.error(f"Failed to restart system: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Restart failed: {str(e)}")
+
+
+@router.put("/llm-settings")
+async def update_llm_settings(settings: LLMSettingsUpdate) -> StatusResponse:
+    """Update LLM settings.
+    
+    Updates LLM model selections and parameters.
+    """
+    try:
+        cfg = get_config()
+        
+        # Track what was updated
+        updated_settings = []
+        
+        # Update entity extraction settings
+        if settings.entity_llm_model is not None:
+            cfg.ENTITY_LLM_MODEL = settings.entity_llm_model
+            updated_settings.append("entity_llm_model")
+        if settings.entity_llm_temperature is not None:
+            cfg.ENTITY_LLM_TEMPERATURE = settings.entity_llm_temperature
+            updated_settings.append("entity_llm_temperature")
+        if settings.entity_llm_max_tokens is not None:
+            cfg.ENTITY_LLM_MAX_TOKENS = settings.entity_llm_max_tokens
+            updated_settings.append("entity_llm_max_tokens")
+        if settings.entity_llm_stream is not None:
+            cfg.ENTITY_LLM_STREAM = settings.entity_llm_stream
+            updated_settings.append("entity_llm_stream")
+            
+        # Update answer generation settings
+        if settings.answer_llm_model is not None:
+            cfg.ANSWER_LLM_MODEL = settings.answer_llm_model
+            updated_settings.append("answer_llm_model")
+        if settings.answer_llm_temperature is not None:
+            cfg.ANSWER_LLM_TEMPERATURE = settings.answer_llm_temperature
+            updated_settings.append("answer_llm_temperature")
+        if settings.answer_llm_max_tokens is not None:
+            cfg.ANSWER_LLM_MAX_TOKENS = settings.answer_llm_max_tokens
+            updated_settings.append("answer_llm_max_tokens")
+        if settings.answer_llm_context_window is not None:
+            cfg.ANSWER_LLM_CONTEXT_WINDOW = settings.answer_llm_context_window
+            updated_settings.append("answer_llm_context_window")
+        if settings.answer_llm_stream is not None:
+            cfg.ANSWER_LLM_STREAM = settings.answer_llm_stream
+            updated_settings.append("answer_llm_stream")
+            
+        # Update translation settings
+        if settings.translate_llm_model is not None:
+            cfg.TRANSLATE_LLM_MODEL = settings.translate_llm_model
+            updated_settings.append("translate_llm_model")
+        if settings.translate_llm_temperature is not None:
+            cfg.TRANSLATE_LLM_TEMPERATURE = settings.translate_llm_temperature
+            updated_settings.append("translate_llm_temperature")
+        if settings.translate_llm_max_tokens is not None:
+            cfg.TRANSLATE_LLM_MAX_TOKENS = settings.translate_llm_max_tokens
+            updated_settings.append("translate_llm_max_tokens")
+        if settings.translate_llm_stream is not None:
+            cfg.TRANSLATE_LLM_STREAM = settings.translate_llm_stream
+            updated_settings.append("translate_llm_stream")
+        
+        _logger.info(f"Updated LLM settings: {updated_settings}")
+        
+        return StatusResponse(
+            success=True,
+            message=f"LLM settings updated successfully: {len(updated_settings)} settings changed",
+            data={
+                "updated_settings": updated_settings
+            }
+        )
+        
+    except Exception as e:
+        _logger.error(f"Failed to update LLM settings: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to update LLM settings: {str(e)}")
 
 
 # Dependency for admin-only endpoints (placeholder)

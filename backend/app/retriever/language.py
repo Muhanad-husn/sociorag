@@ -2,7 +2,7 @@
 
 from langdetect import detect
 from transformers import MarianMTModel, MarianTokenizer
-from backend.app.core.singletons import get_logger
+from app.core.singletons import get_logger
 
 _tok, _model = None, None
 
@@ -69,3 +69,47 @@ def normalize_query(text: str) -> tuple[str, str]:
     except Exception as e:
         logger.error(f"Language detection error: {e}")
         return "en", text  # Default to English on error
+
+async def translate_with_llm(text: str, source_lang: str, target_lang: str) -> str:
+    """Translate text using the LLM.
+    
+    Args:
+        text: The text to translate
+        source_lang: The source language code (e.g., 'en', 'ar')
+        target_lang: The target language code (e.g., 'en', 'ar')
+        
+    Returns:
+        The translated text
+    """    
+    logger = get_logger()
+    logger.info(f"Translating text with LLM from {source_lang} to {target_lang}")
+    
+    # Skip translation if source and target are the same
+    if source_lang == target_lang:
+        return text
+    
+    # Get LLM client
+    from app.core.singletons import LLMClientSingleton
+    client = LLMClientSingleton()
+    
+    # Prepare messages
+    system_prompt = f"You are a professional translator. Translate the text from {source_lang} to {target_lang} accurately."
+    user_prompt = f"Translate the following text from {source_lang} to {target_lang}:\n\n{text}"
+    
+    messages = [
+        {"role": "system", "content": system_prompt},
+        {"role": "user", "content": user_prompt}
+    ]
+    
+    # Translate using LLM
+    try:
+        translation = ""
+        async for token in client.create_translation_chat(messages=messages):
+            translation += token
+        
+        logger.info(f"Translation completed successfully")
+        return translation
+    except Exception as e:
+        logger.error(f"Translation error: {e}")
+        # Return original text if translation fails
+        return text

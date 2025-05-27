@@ -12,8 +12,8 @@ import sqlite3
 import concurrent.futures
 from functools import partial
 
-from backend.app.core.singletons import get_logger, get_sqlite, embed_texts
-from backend.app.retriever.vector_utils import calculate_cosine_similarity, extract_vector
+from app.core.singletons import get_logger, get_sqlite, embed_texts
+from app.retriever.vector_utils import calculate_cosine_similarity, extract_vector
 
 # Initialize logger
 _logger = get_logger()

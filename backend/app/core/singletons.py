@@ -26,7 +26,7 @@ from .config import get_config
 
 # Import the embedding cache if available, with fallback
 try:
-    from backend.app.retriever.embedding_cache import get_embedding_cache
+    from app.retriever.embedding_cache import get_embedding_cache
     _EMBEDDING_CACHE_AVAILABLE = True
 except ImportError:
     _EMBEDDING_CACHE_AVAILABLE = False
@@ -336,7 +336,6 @@ class LLMClientSingleton(metaclass=_SingletonMeta):
             if not self._api_key:
                 raise ValueError("OPENROUTER_API_KEY not set in configuration or environment variables")
         return self._api_key
-    
     async def create_chat(
         self,
         model: str,
@@ -428,6 +427,97 @@ class LLMClientSingleton(metaclass=_SingletonMeta):
         except (AttributeError, IndexError, TypeError):
             pass
         return None
+
+    async def create_entity_extraction_chat(
+        self,
+        messages: List[Dict[str, str]],
+        model: Optional[str] = None,
+        temperature: Optional[float] = None,
+        max_tokens: Optional[int] = None,
+        stream: Optional[bool] = None,
+        **kwargs
+    ) -> AsyncGenerator[str, None]:
+        """Create a chat completion for entity extraction with task-specific defaults."""
+        from .config import get_config
+        config = get_config()
+        
+        # Use task-specific defaults from config, but allow overrides
+        model = model or config.ENTITY_LLM_MODEL
+        temperature = temperature if temperature is not None else config.ENTITY_LLM_TEMPERATURE
+        max_tokens = max_tokens if max_tokens is not None else config.ENTITY_LLM_MAX_TOKENS
+        stream = stream if stream is not None else config.ENTITY_LLM_STREAM
+        
+        async for token in self.create_chat(
+            model=model,
+            messages=messages,
+            temperature=temperature,
+            max_tokens=max_tokens,
+            stream=stream,
+            **kwargs
+        ):
+            yield token
+            
+    async def create_answer_generation_chat(
+        self,
+        messages: List[Dict[str, str]],
+        model: Optional[str] = None,
+        temperature: Optional[float] = None,
+        max_tokens: Optional[int] = None,
+        stream: Optional[bool] = None,
+        **kwargs
+    ) -> AsyncGenerator[str, None]:
+        """Create a chat completion for answer generation with task-specific defaults."""
+        from .config import get_config
+        config = get_config()
+        
+        # Use task-specific defaults from config, but allow overrides
+        model = model or config.ANSWER_LLM_MODEL
+        temperature = temperature if temperature is not None else config.ANSWER_LLM_TEMPERATURE
+        max_tokens = max_tokens if max_tokens is not None else config.ANSWER_LLM_MAX_TOKENS
+        stream = stream if stream is not None else config.ANSWER_LLM_STREAM
+        
+        # Add context window if specified in config
+        if hasattr(config, 'ANSWER_LLM_CONTEXT_WINDOW') and 'context_window' not in kwargs:
+            kwargs['context_window'] = config.ANSWER_LLM_CONTEXT_WINDOW
+        
+        async for token in self.create_chat(
+            model=model,
+            messages=messages,
+            temperature=temperature,
+            max_tokens=max_tokens,
+            stream=stream,
+            **kwargs
+        ):
+            yield token
+            
+    async def create_translation_chat(
+        self,
+        messages: List[Dict[str, str]],
+        model: Optional[str] = None,
+        temperature: Optional[float] = None,
+        max_tokens: Optional[int] = None,
+        stream: Optional[bool] = None,
+        **kwargs
+    ) -> AsyncGenerator[str, None]:
+        """Create a chat completion for translation with task-specific defaults."""
+        from .config import get_config
+        config = get_config()
+        
+        # Use task-specific defaults from config, but allow overrides
+        model = model or config.TRANSLATE_LLM_MODEL
+        temperature = temperature if temperature is not None else config.TRANSLATE_LLM_TEMPERATURE
+        max_tokens = max_tokens if max_tokens is not None else config.TRANSLATE_LLM_MAX_TOKENS
+        stream = stream if stream is not None else config.TRANSLATE_LLM_STREAM
+        
+        async for token in self.create_chat(
+            model=model,
+            messages=messages,
+            temperature=temperature,
+            max_tokens=max_tokens,
+            stream=stream,
+            **kwargs
+        ):
+            yield token
 
 
 class NLPSingleton(metaclass=_SingletonMeta):
