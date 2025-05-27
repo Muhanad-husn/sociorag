@@ -118,3 +118,52 @@ export async function triggerProcessing(): Promise<{ success: boolean; message: 
   const response = await axios.post(`${BASE_URL}/api/ingest/process`);
   return response.data;
 }
+
+// Admin API Types
+export interface SystemConfig {
+  config_values: Record<string, any>;
+  config_source: string;
+  last_modified: string | null;
+}
+
+export interface HealthStatus {
+  status: string;
+  timestamp: string;
+  version: string;
+  uptime: number;
+  components: Record<string, any>;
+}
+
+export interface SystemMetrics {
+  cpu_usage: number;
+  memory_usage: Record<string, any>;
+  disk_usage: Record<string, any>;
+  database_stats: Record<string, any>;
+  vector_store_stats: Record<string, any>;
+  timestamp: string;
+}
+
+// Admin API Functions
+export async function getSystemConfig(): Promise<SystemConfig> {
+  const response = await axios.get(`${BASE_URL}/api/admin/config`);
+  return response.data;
+}
+
+export async function getSystemHealth(): Promise<HealthStatus> {
+  const response = await axios.get(`${BASE_URL}/api/admin/health`);
+  return response.data;
+}
+
+export async function getSystemMetrics(): Promise<SystemMetrics> {
+  const response = await axios.get(`${BASE_URL}/api/admin/metrics`);
+  return response.data;
+}
+
+export interface ApiKeyUpdate {
+  openrouter_api_key?: string;
+}
+
+export async function updateApiKeys(apiKeys: ApiKeyUpdate): Promise<{ success: boolean; message: string }> {
+  const response = await axios.put(`${BASE_URL}/api/admin/api-keys`, apiKeys);
+  return response.data;
+}

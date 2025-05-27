@@ -194,9 +194,22 @@ The project includes extensive documentation to help users and developers:
 
 2. **Configure API Keys**
 
+   You have two options for configuring your OpenRouter API key:
+
+   **Option A: Environment File (Traditional)**
    ```bash
    cp .env.example .env
    # Edit .env with your OpenRouter API key
+   ```
+
+   **Option B: Web Interface (Recommended)**
+   ```bash
+   # Start the application first
+   python -m backend.app.main
+   # Then open http://127.0.0.1:8000/settings in your browser
+   # Navigate to "System Configuration" section
+   # Click "Configure/Update" next to OpenRouter API Key
+   # Enter your API key and click "Save Key"
    ```
 
 3. **Test Installation**
@@ -255,7 +268,7 @@ The project includes extensive documentation to help users and developers:
    python scripts/test_phase6_api.py websocket
    ```
 
-## Current Features (Phase 6 Complete)
+## Current Features (Phase 7 Complete)
 
 - ✅ **Enhanced Entity Extraction** - LLM-powered entity and relationship extraction
 - ✅ **Vector Storage & Retrieval** - SQLite-vec based semantic search
@@ -268,6 +281,9 @@ The project includes extensive documentation to help users and developers:
 - ✅ **Ingestion API** - Document upload, processing, and monitoring endpoints
 - ✅ **History Management** - Full history tracking and retrieval with filtering
 - ✅ **API Documentation** - Interactive Swagger UI with endpoint reference
+- ✅ **Frontend Web Application** - Modern Preact-based UI with responsive design
+- ✅ **Administrative Interface** - System monitoring, configuration management, and API key management
+- ✅ **Real-time Configuration Updates** - Update OpenRouter API keys through web interface without server restart
 
 ## Next Steps
 

@@ -33,7 +33,7 @@ class HealthStatus(BaseModel):
     timestamp: datetime
     version: str
     uptime: float
-    components: Dict[str, Dict[str, Any]]
+    components: Dict[str, Any]
 
 
 class SystemMetrics(BaseModel):
@@ -50,13 +50,18 @@ class SystemConfig(BaseModel):
     """System configuration model."""
     config_values: Dict[str, Any]
     config_source: str
-    last_modified: Optional[datetime] = None
+    last_modified: Optional[str]
 
 
 class SystemConfigUpdate(BaseModel):
     """System configuration update model."""
     updates: Dict[str, Any]
     restart_required: bool = False
+
+
+class ApiKeyUpdate(BaseModel):
+    """API key update model."""
+    openrouter_api_key: Optional[str] = None
 
 
 class StatusResponse(BaseModel):
@@ -347,10 +352,12 @@ async def get_system_config() -> SystemConfig:
             "top_k": cfg.TOP_K,
             "top_k_rerank": cfg.TOP_K_RERANK,
             "max_context_fraction": cfg.MAX_CONTEXT_FRACTION,
-            
-            # Processing settings
+              # Processing settings
             "spacy_model": cfg.SPACY_MODEL,
             "history_limit": cfg.HISTORY_LIMIT,
+            
+            # API Configuration
+            "openrouter_api_key_configured": cfg.OPENROUTER_API_KEY is not None,
             
             # Logging
             "log_level": cfg.LOG_LEVEL
@@ -419,6 +426,72 @@ async def update_system_config(config: SystemConfigUpdate) -> StatusResponse:
     except Exception as e:
         _logger.error(f"Failed to update system config: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Config update failed: {str(e)}")
+
+
+@router.put("/api-keys")
+async def update_api_keys(api_keys: ApiKeyUpdate) -> StatusResponse:
+    """Update API keys configuration.
+    
+    Updates API keys and persists them to the .env file.
+    """
+    try:
+        import os
+        from pathlib import Path
+        
+        # Get the root directory (where .env should be)
+        root_dir = Path(__file__).parent.parent.parent.parent
+        env_file = root_dir / ".env"
+        
+        # Read existing .env file
+        env_lines = []
+        if env_file.exists():
+            with open(env_file, 'r', encoding='utf-8') as f:
+                env_lines = f.readlines()
+        
+        # Update or add API key entries
+        updated_keys = []
+        
+        if api_keys.openrouter_api_key is not None:
+            # Remove existing OPENROUTER_API_KEY lines
+            env_lines = [line for line in env_lines if not line.strip().startswith('OPENROUTER_API_KEY=')]
+            
+            # Add new OPENROUTER_API_KEY
+            if api_keys.openrouter_api_key.strip():
+                env_lines.append(f"OPENROUTER_API_KEY={api_keys.openrouter_api_key.strip()}\n")
+                updated_keys.append("OPENROUTER_API_KEY")
+            else:
+                # If empty string, remove the key
+                updated_keys.append("OPENROUTER_API_KEY (removed)")
+        
+        # Write updated .env file
+        with open(env_file, 'w', encoding='utf-8') as f:
+            f.writelines(env_lines)
+        
+        # Clear the configuration cache to force reload from the updated .env file
+        get_config.cache_clear()
+          # Clear cached API key in LLM singleton to force reload
+        try:
+            llm_singleton = LLMClientSingleton()
+            # Reset the singleton to pick up new configuration
+            if hasattr(llm_singleton, '_api_key'):
+                llm_singleton._api_key = None
+        except Exception as singleton_error:
+            _logger.warning(f"Could not reset LLM singleton: {singleton_error}")
+        
+        _logger.info(f"Updated API keys: {updated_keys}")
+        
+        return StatusResponse(
+            success=True,
+            message=f"API keys updated successfully: {', '.join(updated_keys)}",
+            data={
+                "updated_keys": updated_keys,
+                "env_file": str(env_file)
+            }
+        )
+        
+    except Exception as e:
+        _logger.error(f"Failed to update API keys: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"API key update failed: {str(e)}")
 
 
 @router.get("/logs")

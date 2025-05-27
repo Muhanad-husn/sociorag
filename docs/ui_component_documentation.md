@@ -434,7 +434,7 @@ interface SavedFile {
 ### Settings Page
 **Location**: `src/pages/Settings.tsx`
 
-Application configuration and preferences.
+Application configuration and preferences with system administration capabilities.
 
 **Settings Categories**:
 
@@ -453,6 +453,12 @@ Application configuration and preferences.
    - Corpus reset
    - Export settings
    - Cache management
+
+4. **System Configuration** ⭐ NEW
+   - OpenRouter API Key management with secure input
+   - System health monitoring with real-time status
+   - Configuration status indicators (green checkmark/red X)
+   - One-click API key updates with persistence to .env file
 
 ```typescript
 // Settings Form Structure

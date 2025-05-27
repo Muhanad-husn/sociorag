@@ -1,9 +1,10 @@
-import { useState } from 'preact/hooks';
+import { useState, useEffect } from 'preact/hooks';
 import { useAppStore } from '../hooks/useLocalState';
-import { resetCorpus } from '../lib/api';
+import { resetCorpus, getSystemConfig, getSystemHealth, updateApiKeys } from '../lib/api';
+import type { SystemConfig, HealthStatus, ApiKeyUpdate } from '../lib/api';
 import { t } from '../lib/i18n';
 import { Card } from '../components/ui/Card';
-import { Moon, Sun, Settings as SettingsIcon, AlertTriangle, Save } from 'lucide-preact';
+import { Moon, Sun, Settings as SettingsIcon, AlertTriangle, Save, Shield, CheckCircle, XCircle, RefreshCw } from 'lucide-preact';
 import { toast } from 'sonner';
 import clsx from 'clsx';
 
@@ -12,6 +13,37 @@ export function Settings() {
   const [isResetting, setIsResetting] = useState(false);
   const [showResetConfirm, setShowResetConfirm] = useState(false);
   const [tempSettings, setTempSettings] = useState(settings);
+    // Admin state
+  const [systemConfig, setSystemConfig] = useState<SystemConfig | null>(null);
+  const [healthStatus, setHealthStatus] = useState<HealthStatus | null>(null);
+  const [loadingAdmin, setLoadingAdmin] = useState(false);
+  
+  // API Key editing state
+  const [editingApiKey, setEditingApiKey] = useState(false);
+  const [newApiKey, setNewApiKey] = useState('');
+  const [savingApiKey, setSavingApiKey] = useState(false);
+
+  // Load admin data on component mount
+  useEffect(() => {
+    loadAdminData();
+  }, []);
+
+  const loadAdminData = async () => {
+    setLoadingAdmin(true);
+    try {
+      const [config, health] = await Promise.all([
+        getSystemConfig(),
+        getSystemHealth()
+      ]);
+      setSystemConfig(config);
+      setHealthStatus(health);
+    } catch (error) {
+      console.error('Failed to load admin data:', error);
+      toast.error('Failed to load system information');
+    } finally {
+      setLoadingAdmin(false);
+    }
+  };
 
   const handleSaveSettings = () => {
     updateSettings(tempSettings);
@@ -51,6 +83,39 @@ export function Settings() {
       setIsResetting(false);
       setShowResetConfirm(false);
     }
+  };
+
+  const handleApiKeyUpdate = async () => {
+    if (!newApiKey.trim()) {
+      toast.error('Please enter a valid API key');
+      return;
+    }    setSavingApiKey(true);
+    try {
+      const apiKeyData: ApiKeyUpdate = {
+        openrouter_api_key: newApiKey.trim()
+      };
+      const response = await updateApiKeys(apiKeyData);
+      
+      if (response.success) {
+        toast.success(response.message || 'API key updated successfully');
+        setEditingApiKey(false);
+        setNewApiKey('');
+        // Reload admin data to show updated status
+        await loadAdminData();
+      } else {
+        toast.error('Failed to update API key');
+      }
+    } catch (error) {
+      console.error('Failed to update API key:', error);
+      toast.error('Failed to update API key');
+    } finally {
+      setSavingApiKey(false);
+    }
+  };
+
+  const handleCancelApiKeyEdit = () => {
+    setEditingApiKey(false);
+    setNewApiKey('');
   };
 
   const hasUnsavedChanges = JSON.stringify(settings) !== JSON.stringify(tempSettings);
@@ -207,7 +272,169 @@ export function Settings() {
             >
               Reset to Defaults
             </button>
+          </div>        </Card>
+
+        {/* System Configuration */}
+        <Card className="p-6">
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center space-x-2">
+              <Shield className="h-5 w-5 text-primary" />
+              <h2 className="text-xl font-semibold">System Configuration</h2>
+            </div>
+            <button
+              onClick={loadAdminData}
+              disabled={loadingAdmin}
+              className="btn-secondary p-2"
+              title="Refresh system information"
+            >
+              <RefreshCw className={clsx('h-4 w-4', loadingAdmin && 'animate-spin')} />
+            </button>
           </div>
+
+          {loadingAdmin ? (
+            <div className="flex items-center justify-center py-8">
+              <div className="animate-spin rounded-full h-6 w-6 border-b border-primary" />
+              <span className="ml-2 text-sm text-muted-foreground">Loading system information...</span>
+            </div>
+          ) : (
+            <div className="space-y-4">              {/* OpenRouter API Key Status */}
+              <div className="p-3 bg-accent/50 rounded-lg">
+                <div className="flex items-center justify-between mb-3">
+                  <div className="space-y-1">
+                    <label className="text-sm font-medium">OpenRouter API Key</label>
+                    <p className="text-xs text-muted-foreground">
+                      Required for AI-powered responses
+                    </p>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    {systemConfig?.config_values?.openrouter_api_key_configured ? (
+                      <>
+                        <CheckCircle className="h-5 w-5 text-green-500" />
+                        <span className="text-sm font-medium text-green-700 dark:text-green-400">
+                          Configured
+                        </span>
+                      </>
+                    ) : (
+                      <>
+                        <XCircle className="h-5 w-5 text-red-500" />
+                        <span className="text-sm font-medium text-red-700 dark:text-red-400">
+                          Not Configured
+                        </span>
+                      </>
+                    )}
+                  </div>
+                </div>
+
+                {/* API Key Input/Edit Section */}
+                {editingApiKey ? (
+                  <div className="space-y-3">
+                    <div className="space-y-2">
+                      <label className="text-xs font-medium text-muted-foreground">
+                        Enter OpenRouter API Key:
+                      </label>
+                      <input
+                        type="password"
+                        value={newApiKey}
+                        onChange={(e) => setNewApiKey((e.target as HTMLInputElement).value)}
+                        placeholder="sk-or-v1-..."
+                        className="w-full px-3 py-2 text-sm border border-border rounded-md bg-background focus:ring-2 focus:ring-primary focus:border-transparent"
+                        disabled={savingApiKey}
+                      />
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <button
+                        onClick={handleApiKeyUpdate}
+                        disabled={savingApiKey || !newApiKey.trim()}
+                        className={clsx(
+                          'btn-primary text-xs',
+                          (savingApiKey || !newApiKey.trim()) && 'opacity-50 cursor-not-allowed'
+                        )}
+                      >
+                        {savingApiKey ? (
+                          <>
+                            <div className="animate-spin rounded-full h-3 w-3 border-b border-white mr-1" />
+                            Saving...
+                          </>
+                        ) : (
+                          <>
+                            <Save className="h-3 w-3 mr-1" />
+                            Save Key
+                          </>
+                        )}
+                      </button>
+                      <button
+                        onClick={handleCancelApiKeyEdit}
+                        disabled={savingApiKey}
+                        className="btn-secondary text-xs"
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs text-muted-foreground">
+                      {systemConfig?.config_values?.openrouter_api_key_configured 
+                        ? 'API key is configured and ready to use'
+                        : 'No API key configured'
+                      }
+                    </span>
+                    <button
+                      onClick={() => setEditingApiKey(true)}
+                      className="btn-secondary text-xs"
+                    >
+                      {systemConfig?.config_values?.openrouter_api_key_configured ? 'Update' : 'Configure'}
+                    </button>
+                  </div>
+                )}
+              </div>
+
+              {/* System Status */}
+              <div className="flex items-center justify-between p-3 bg-accent/50 rounded-lg">
+                <div className="space-y-1">
+                  <label className="text-sm font-medium">System Status</label>
+                  <p className="text-xs text-muted-foreground">
+                    Overall system health
+                  </p>
+                </div>
+                <div className="flex items-center space-x-2">
+                  {healthStatus?.status === 'healthy' ? (
+                    <>
+                      <CheckCircle className="h-5 w-5 text-green-500" />
+                      <span className="text-sm font-medium text-green-700 dark:text-green-400">
+                        Healthy
+                      </span>
+                    </>
+                  ) : (
+                    <>
+                      <AlertTriangle className="h-5 w-5 text-yellow-500" />
+                      <span className="text-sm font-medium text-yellow-700 dark:text-yellow-400">
+                        {healthStatus?.status || 'Unknown'}
+                      </span>
+                    </>
+                  )}
+                </div>
+              </div>
+
+              {/* Configuration Notice */}
+              {!systemConfig?.config_values?.openrouter_api_key_configured && (
+                <div className="p-3 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg">
+                  <div className="flex items-start space-x-2">
+                    <AlertTriangle className="h-4 w-4 text-yellow-500 mt-0.5" />
+                    <div className="space-y-1">
+                      <p className="text-sm font-medium text-yellow-800 dark:text-yellow-200">
+                        API Key Required
+                      </p>
+                      <p className="text-xs text-yellow-700 dark:text-yellow-300">
+                        The OPENROUTER_API_KEY must be configured in the .env file for AI responses to work. 
+                        Contact your system administrator to configure this setting.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
         </Card>
 
         {/* Danger Zone */}

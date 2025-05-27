@@ -487,4 +487,192 @@ export LOG_LEVEL=DEBUG
 python -m backend.app.main
 ```
 
+## Administrative API Endpoints
+
+### System Health Check
+
+#### GET /api/admin/health
+Get comprehensive system health status and component diagnostics.
+
+**Response:**
+```json
+{
+  "status": "healthy",
+  "timestamp": "2025-05-27T16:45:00Z",
+  "version": "0.1.0",
+  "uptime": 3600.5,
+  "components": {
+    "database": {
+      "status": "healthy",
+      "type": "SQLite"
+    },
+    "vector_store": {
+      "status": "healthy",
+      "type": "ChromaDB",
+      "document_count": 25
+    },
+    "embedding_service": {
+      "status": "healthy",
+      "model": "sentence-transformers",
+      "embedding_dim": 384
+    },
+    "llm_client": {
+      "status": "healthy",
+      "provider": "OpenRouter"
+    }
+  }
+}
+```
+
+### System Metrics
+
+#### GET /api/admin/metrics
+Get detailed system performance metrics including CPU, memory, and disk usage.
+
+**Response:**
+```json
+{
+  "cpu_usage": 15.2,
+  "memory_usage": {
+    "total_gb": 16.0,
+    "available_gb": 8.5,
+    "used_gb": 7.5,
+    "percentage": 46.9
+  },
+  "disk_usage": {
+    "total_gb": 500.0,
+    "free_gb": 250.0,
+    "used_gb": 250.0,
+    "percentage": 50.0
+  },
+  "database_stats": {
+    "entity_count": 1250,
+    "relation_count": 890,
+    "documents_count": 25,
+    "file_size_mb": 12.5
+  },
+  "vector_store_stats": {
+    "document_count": 25,
+    "storage_size_mb": 45.2
+  },
+  "timestamp": "2025-05-27T16:45:00Z"
+}
+```
+
+### System Configuration
+
+#### GET /api/admin/config
+Get current system configuration including API key status.
+
+**Response:**
+```json
+{
+  "config_values": {
+    "input_dir": "/path/to/input",
+    "saved_dir": "/path/to/saved",
+    "embedding_model": "sentence-transformers/all-MiniLM-L6-v2",
+    "entity_llm_model": "google/gemini-flash-1.5",
+    "openrouter_api_key_configured": true,
+    "chunk_similarity": 0.85,
+    "top_k": 100,
+    "log_level": "INFO"
+  },
+  "config_source": "environment variables and defaults",
+  "last_modified": null
+}
+```
+
+### API Key Management
+
+#### PUT /api/admin/api-keys
+Update API keys with automatic persistence to .env file and configuration reload.
+
+**Request Body:**
+```json
+{
+  "openrouter_api_key": "sk-or-v1-your-api-key-here"
+}
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "message": "API keys updated successfully: OPENROUTER_API_KEY",
+  "data": {
+    "updated_keys": ["OPENROUTER_API_KEY"],
+    "env_file": "/path/to/.env"
+  }
+}
+```
+
+**Features:**
+- Automatically updates `.env` file
+- Clears configuration cache for immediate effect
+- Resets LLM client to use new API key
+- Supports removing API key by sending empty string
+- No server restart required
+
+**Example Usage:**
+
+**Setting an API Key:**
+```bash
+curl -X PUT "http://127.0.0.1:8000/api/admin/api-keys" \
+  -H "Content-Type: application/json" \
+  -d '{"openrouter_api_key":"sk-or-v1-your-api-key"}'
+```
+
+**Removing an API Key:**
+```bash
+curl -X PUT "http://127.0.0.1:8000/api/admin/api-keys" \
+  -H "Content-Type: application/json" \
+  -d '{"openrouter_api_key":""}'
+```
+
+### System Maintenance
+
+#### POST /api/admin/maintenance/cleanup
+Perform system cleanup and optimization tasks.
+
+**Response:**
+```json
+{
+  "operation": "system_cleanup",
+  "success": true,
+  "details": {
+    "cleaned_files": 15,
+    "database_optimized": true,
+    "vector_store_checked": true,
+    "memory_cleanup": true
+  },
+  "duration": 2.34
+}
+```
+
+### System Logs
+
+#### GET /api/admin/logs
+Get recent system log entries with optional filtering.
+
+**Query Parameters:**
+- `lines` (optional): Number of log lines to return (default: 100)
+- `level` (optional): Log level filter (default: "INFO")
+
+**Response:**
+```json
+{
+  "logs": [
+    {
+      "timestamp": "2025-05-27T16:45:00Z",
+      "level": "INFO",
+      "message": "System is running normally",
+      "module": "admin"
+    }
+  ],
+  "total_lines": 1,
+  "requested_lines": 100,
+  "level_filter": "INFO"
+}
+```
+
 This comprehensive API documentation provides all the necessary information for integrating with the SocioGraph system and building applications on top of the Q&A and document analysis capabilities.

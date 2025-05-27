@@ -50,6 +50,19 @@ Authentication is not yet implemented in Phase 6. All endpoints are publicly acc
 | `DELETE` | `/api/history/record/{record_id}` | Delete a specific history record |
 | `DELETE` | `/api/history/clear` | Clear all history records |
 
+### Admin API
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `GET`  | `/api/admin/health` | Get system health status and component diagnostics |
+| `GET`  | `/api/admin/metrics` | Get system performance metrics (CPU, memory, disk) |
+| `GET`  | `/api/admin/config` | Get current system configuration and API key status |
+| `PUT`  | `/api/admin/config` | Update system configuration values |
+| `PUT`  | `/api/admin/api-keys` | Update API keys (OpenRouter) with persistence to .env |
+| `GET`  | `/api/admin/logs` | Get recent system log entries |
+| `POST` | `/api/admin/maintenance/cleanup` | Perform system cleanup and optimization |
+| `POST` | `/api/admin/restart` | Restart system components (development mode disabled) |
+
 ### WebSocket API
 
 | Endpoint | Description |

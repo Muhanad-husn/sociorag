@@ -323,15 +323,18 @@ class SQLiteSingleton(metaclass=_SingletonMeta):
 
 class LLMClientSingleton(metaclass=_SingletonMeta):
     """Singleton OpenRouter LLM client."""
+    
     def __init__(self):
         self._api_key = None
         
     def get_api_key(self) -> str:
-        """Get OpenRouter API key from environment."""
+        """Get OpenRouter API key from configuration."""
         if self._api_key is None:
-            self._api_key = os.getenv("OPENROUTER_API_KEY")
+            from .config import get_config
+            cfg = get_config()
+            self._api_key = cfg.OPENROUTER_API_KEY
             if not self._api_key:
-                raise ValueError("OPENROUTER_API_KEY environment variable not set")
+                raise ValueError("OPENROUTER_API_KEY not set in configuration or environment variables")
         return self._api_key
     
     async def create_chat(

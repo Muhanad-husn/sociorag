@@ -22,15 +22,16 @@ class _Config(BaseSettings):
     RERANKER_MODEL: str = "cross-encoder/ms-marco-MiniLM-L-6-v2"  # Fixed model name with hyphen in L-6
     ENTITY_LLM_MODEL: str = "google/gemini-flash-1.5"
     ANSWER_LLM_MODEL: str = "meta-llama/llama-3.3-70b-instruct:free"
-    TRANSLATE_LLM_MODEL: str = "mistralai/mistral-nemo:free"
-
-    # ---------------- thresholds & params -------------- #
+    TRANSLATE_LLM_MODEL: str = "mistralai/mistral-nemo:free"    # ---------------- thresholds & params -------------- #
     CHUNK_SIM: float = 0.85
     ENTITY_SIM: float = 0.90
     GRAPH_SIM: float = 0.95
     TOP_K: int = 100
     TOP_K_RERANK: int = 15
     MAX_CONTEXT_FRACTION: float = 0.4
+
+    # ---------------------- API keys ------------------- #
+    OPENROUTER_API_KEY: Optional[str] = None
 
     # ---------------- resources & misc ---------------- #
     SPACY_MODEL: str = "en_core_web_sm"
