@@ -1,17 +1,17 @@
 # SocioRAG Version Control Summary
 
 **Date:** May 27, 2025  
-**Commit:** `1ab0832`  
-**Tag:** `v1.0.0-production`  
+**Commit:** `110524f`  
+**Tag:** `v1.0.1`  
 **Status:** ✅ PRODUCTION READY
 
 ## 🏷️ Version Control Milestone
 
 ### Latest Commit Details
-- **Hash:** `1ab0832`
-- **Message:** "Fix: Update import paths in backend files from 'backend.app' to 'app'"
-- **Files Changed:** 28 files modified
-- **Branch:** `fix/backend-import-paths`
+- **Hash:** `110524f`
+- **Message:** "Fix backend import paths and LLM settings API endpoint"
+- **Files Changed:** 43 files modified, 897 insertions, 151 deletions
+- **Branch:** Merged from `fix/backend-import-paths` to `master`
 
 ### 📊 Repository State
 
