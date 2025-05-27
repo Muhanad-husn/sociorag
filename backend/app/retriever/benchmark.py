@@ -11,18 +11,18 @@ from typing import List, Dict, Any, Callable
 from pathlib import Path
 import json
 
-from app.core.singletons import get_logger, embed_texts
-from app.retriever.vector_utils import (
+from backend.app.core.singletons import get_logger, embed_texts
+from backend.app.retriever.vector_utils import (
     text_similarity, 
     parallel_text_similarity,
     batch_similarity,
     parallel_batch_similarity
 )
-from app.retriever.sqlite_vec_utils import (
+from backend.app.retriever.sqlite_vec_utils import (
     get_entity_by_embedding,
     get_entities_by_embeddings
 )
-from app.retriever.embedding_cache import get_embedding_cache
+from backend.app.retriever.embedding_cache import get_embedding_cache
 
 # Initialize logger
 _logger = get_logger()

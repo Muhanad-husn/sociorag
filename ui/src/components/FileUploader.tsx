@@ -92,7 +92,7 @@ export function FileUploader({ onUploadComplete, onUploadStart }: FileUploaderPr
       <div
         className={clsx(
           'border-2 border-dashed rounded-lg p-8 text-center cursor-pointer transition-colors',
-          isDragging ? 'border-primary bg-primary/5' : 'border-border hover:border-primary/50',
+          isDragging ? 'border-primary bg-primary/5' : 'border hover:border-primary/50',
           isUploading && 'opacity-50 cursor-not-allowed'
         )}
         onDragOver={handleDragOver}

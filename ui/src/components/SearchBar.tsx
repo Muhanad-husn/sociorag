@@ -74,7 +74,7 @@ export function SearchBar({ value, onChange, onSubmit, disabled = false }: Searc
             type="checkbox"
             checked={settings.translateToArabic}
             onChange={(e) => updateSettings({ translateToArabic: (e.target as HTMLInputElement).checked })}
-            className="rounded border-border text-primary focus:ring-primary"
+            className="rounded border text-primary focus:ring-primary"
           />
           <span className="text-sm text-muted-foreground">
             {t('search.translate')}

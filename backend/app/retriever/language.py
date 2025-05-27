@@ -2,7 +2,7 @@
 
 from langdetect import detect
 from transformers import MarianMTModel, MarianTokenizer
-from app.core.singletons import get_logger
+from backend.app.core.singletons import get_logger
 
 _tok, _model = None, None
 

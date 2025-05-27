@@ -3,10 +3,10 @@
 from typing import List, Dict
 import sqlite3
 
-from app.core.singletons import get_nlp, get_sqlite, get_logger
-from app.core.config import get_config
-from app.retriever.vector_utils import calculate_cosine_similarity
-from app.retriever.sqlite_vec_utils import (
+from backend.app.core.singletons import get_nlp, get_sqlite, get_logger
+from backend.app.core.config import get_config
+from backend.app.retriever.vector_utils import calculate_cosine_similarity
+from backend.app.retriever.sqlite_vec_utils import (
     get_entity_by_embedding, 
     get_entity_by_text, 
     binary_to_embedding

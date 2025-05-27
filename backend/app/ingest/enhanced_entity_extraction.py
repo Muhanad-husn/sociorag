@@ -16,9 +16,9 @@ import hashlib
 from typing import List, Dict, Any, Tuple, Optional, Set, Union
 from functools import lru_cache
 
-from app.core.config import get_config
-from app.core.singletons import get_logger, get_llm_client
-from app.prompts import graph_prompts as gp
+from backend.app.core.config import get_config
+from backend.app.core.singletons import get_logger, get_llm_client
+from backend.app.prompts import graph_prompts as gp
 
 config = get_config()
 logger = get_logger()

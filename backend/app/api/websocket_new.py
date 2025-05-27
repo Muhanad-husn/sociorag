@@ -15,10 +15,10 @@ from datetime import datetime
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect, HTTPException
 from pydantic import BaseModel
 
-from app.core.singletons import LoggerSingleton
-from app.retriever import retrieve_context
-from app.answer.generator import generate_answer
-from app.answer.history import append_record
+from backend.app.core.singletons import LoggerSingleton
+from backend.app.retriever import retrieve_context
+from backend.app.answer.generator import generate_answer
+from backend.app.answer.history import append_record
 
 _logger = LoggerSingleton().get()
 

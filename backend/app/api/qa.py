@@ -13,11 +13,11 @@ from fastapi.responses import JSONResponse
 from sse_starlette.sse import EventSourceResponse
 from pydantic import BaseModel
 
-from app.core.singletons import LoggerSingleton
-from app.retriever import retrieve_context
-from app.answer.generator import generate_answer, generate_answer_complete
-from app.answer.pdf import save_pdf, get_pdf_url
-from app.answer.history import append_record, get_recent_history, get_history_stats
+from backend.app.core.singletons import LoggerSingleton
+from backend.app.retriever import retrieve_context
+from backend.app.answer.generator import generate_answer, generate_answer_complete
+from backend.app.answer.pdf import save_pdf, get_pdf_url
+from backend.app.answer.history import append_record, get_recent_history, get_history_stats
 
 _logger = LoggerSingleton().get()
 

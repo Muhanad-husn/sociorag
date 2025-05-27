@@ -15,8 +15,8 @@ from typing import Dict, List, Optional, Any
 from fastapi import APIRouter, HTTPException, Depends
 from pydantic import BaseModel
 
-from app.core.config import get_config
-from app.core.singletons import (
+from backend.app.core.config import get_config
+from backend.app.core.singletons import (
     LoggerSingleton, SQLiteSingleton, ChromaSingleton, 
     EmbeddingSingleton, LLMClientSingleton
 )

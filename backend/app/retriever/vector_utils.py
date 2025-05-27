@@ -9,7 +9,7 @@ from typing import List, Union, Any, TypeVar, cast, Optional
 import concurrent.futures
 from functools import partial
 
-from app.core.singletons import embed_texts, get_logger
+from backend.app.core.singletons import embed_texts, get_logger
 
 # Initialize logger
 _logger = get_logger()

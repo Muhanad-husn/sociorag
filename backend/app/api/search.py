@@ -13,8 +13,8 @@ from datetime import datetime
 from fastapi import APIRouter, Query, HTTPException
 from pydantic import BaseModel
 
-from app.core.singletons import LoggerSingleton, SQLiteSingleton, EmbeddingSingleton
-from app.core.config import get_config
+from backend.app.core.singletons import LoggerSingleton, SQLiteSingleton, EmbeddingSingleton
+from backend.app.core.config import get_config
 
 _logger = LoggerSingleton().get()
 
@@ -375,7 +375,7 @@ async def semantic_search(request: SemanticSearchRequest) -> SemanticSearchResul
     relevant chunks and entities based on the query.
     """
     try:
-        from app.retriever import retrieve_context
+        from backend.app.retriever import retrieve_context
         
         # Use existing retrieval system for semantic search
         context = retrieve_context(request.query)
