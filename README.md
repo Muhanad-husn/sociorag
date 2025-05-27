@@ -2,6 +2,10 @@
 
 A system for analyzing and visualizing social dynamics in texts.
 
+## Project Status
+
+**All Major Development Phases Complete**: The core backend, API, and frontend application (Preact + Tailwind) are complete. The project is currently in Phase 8: Testing & Utilities. For more details, see the [Project Overview](./docs/project_overview.md) and the main [Rebuild Plan](./instructions/sociograph_rebuild_plan.md).
+
 ## Setup Instructions
 
 1. **Prerequisites**
@@ -23,7 +27,9 @@ A system for analyzing and visualizing social dynamics in texts.
    # Create environment from environment.yml
    conda env create -f environment.yml
    conda activate sociograph
-   ```   ### Using pip
+   ```
+
+   ### Using pip
 
    ```bash
    # Clone the repository
@@ -45,7 +51,9 @@ A system for analyzing and visualizing social dynamics in texts.
 
    Note: The `requirements.txt` file contains only the direct dependencies. Using conda with `environment.yml` is recommended as it provides a more complete and tested environment.
 
-3. **Repository Structure**   ```text
+3. **Repository Structure**
+
+   ```text
    backend/              # Backend service
      app/
        core/            # Core business logic
@@ -65,6 +73,7 @@ A system for analyzing and visualizing social dynamics in texts.
    ```
 
 4. **Development**
+
    - The project uses Python 3.12.9
    - Main dependencies include FastAPI, LangChain, ChromaDB, and spaCy
    - Vector storage using sqlite-vec for efficient similarity search
@@ -93,33 +102,18 @@ All configuration parameters are defined in `backend/app/core/config.py` and inc
 - **Resources**: SPACY_MODEL, LOG_LEVEL
 - **Limits**: HISTORY_LIMIT (15), SAVED_LIMIT (15)
 
-## Improved Entity Extraction
-
-SocioGraph includes a robust entity extraction system that uses LLMs to extract entities and relationships from text:
-
-- **Resilient JSON Parsing**: Handles various response formats from the OpenRouter API
-- **Multiple Fallback Strategies**: Ensures maximum data extraction even from malformed responses
-- **Entity Validation**: Guarantees that extracted entities conform to the required schema
-- **Detailed Documentation**: See [Entity Extraction Improvements](./docs/entity_extraction_improvements.md)
-
-To test the entity extraction:
-
-```powershell
-# Run the entity extraction module test
-python test_entity_extraction_module.py
-```
-
-For more details, see [Entity Extraction Documentation](./docs/entity_extraction_complete.md).
-
 ## Enhanced Entity Extraction
 
-Building on the improved entity extraction, SocioGraph now offers an enhanced version with advanced features:
+SocioGraph includes a robust entity extraction system that uses LLMs to extract entities and relationships from text. Key features include:
 
-- **Retry Mechanism**: Automatically retries failed API calls for higher reliability
-- **Response Caching**: Avoids redundant API calls for significant performance gains
-- **Batch Processing**: Processes multiple chunks concurrently with controlled concurrency
-- **Structured Error Reporting**: Provides detailed debug information for better troubleshooting
-- **Advanced JSON Parsing**: Adds additional parsing strategies for complex malformed responses
+- **Resilient JSON Parsing**: Handles various response formats from the OpenRouter API.
+- **Multiple Fallback Strategies**: Ensures maximum data extraction even from malformed responses.
+- **Entity Validation**: Guarantees that extracted entities conform to the required schema.
+- **Retry Mechanism**: Automatically retries failed API calls for higher reliability.
+- **Response Caching**: Avoids redundant API calls for significant performance gains.
+- **Batch Processing**: Processes multiple chunks concurrently with controlled concurrency.
+- **Structured Error Reporting**: Provides detailed debug information for better troubleshooting.
+- **Advanced JSON Parsing**: Adds additional parsing strategies for complex malformed responses.
 
 To use the enhanced entity extraction:
 
@@ -152,6 +146,7 @@ python tests/example_enhanced_entity_extraction.py
 ```
 
 For detailed documentation, see:
+
 - [Enhanced Entity Extraction](./docs/enhanced_entity_extraction.md)
 - [Complete Entity Extraction Documentation](./docs/entity_extraction_complete.md)
 - [Cleanup Summary](./docs/entity_extraction_cleanup_summary.md)
@@ -168,18 +163,21 @@ For detailed documentation, see:
 The project includes extensive documentation to help users and developers:
 
 ### User Documentation
+
 - **[Installation Guide](./docs/installation_guide.md)** - Complete setup instructions for all platforms
 - **[API Documentation](./docs/api_documentation.md)** - Comprehensive API reference with examples
 - **[API Endpoints Reference](./docs/api_endpoints_reference.md)** - Quick reference for all available endpoints
 - **[Project Overview](./docs/project_overview.md)** - High-level project summary and current status
 
 ### Developer Documentation
+
 - **[Architecture Documentation](./docs/architecture_documentation.md)** - System design and component overview
 - **[Developer Guide](./docs/developer_guide.md)** - Development environment, coding standards, and contribution guidelines
 - **[Phase 6 Implementation Summary](./docs/phase6_implementation_summary.md)** - FastAPI backend completion details
 - **[Phase 6 Implementation Plan](./docs/phase6_implementation_plan.md)** - Roadmap for FastAPI backend implementation
 
 ### Technical Documentation
+
 - **[Enhanced Entity Extraction](./docs/enhanced_entity_extraction.md)** - Advanced entity extraction capabilities
 - **[Phase 6 Implementation Summary](./docs/phase6_implementation_summary.md)** - API integration and WebSocket support
 - **[Phase 5 Implementation Summary](./docs/phase5_implementation_summary.md)** - Answer generation and PDF export details
@@ -195,17 +193,20 @@ The project includes extensive documentation to help users and developers:
    ```
 
 2. **Configure API Keys**
+
    ```bash
    cp .env.example .env
    # Edit .env with your OpenRouter API key
    ```
 
 3. **Test Installation**
+
    ```bash
    python test_phase5_simple.py
    ```
 
 4. **Start API Server**
+
    ```bash
    python -m backend.app.main
    # Server will be available at http://127.0.0.1:8000
@@ -213,40 +214,43 @@ The project includes extensive documentation to help users and developers:
    ```
 
 5. **Using the API**
-   
+
    **Document Management:**
+
    ```bash
    # Reset corpus (clear existing data)
    curl -X POST http://127.0.0.1:8000/api/ingest/reset
-   
+
    # Upload a PDF document
    curl -X POST -F "file=@./sample.pdf" http://127.0.0.1:8000/api/ingest/upload
-   
+
    # Manually trigger processing
    curl -X POST http://127.0.0.1:8000/api/ingest/process
-   
+
    # Stream processing progress (SSE)
    curl http://127.0.0.1:8000/api/ingest/progress
    ```
-   
+
    **Question Answering:**
+
    ```bash
    # Ask a question (streaming response)
    curl http://127.0.0.1:8000/api/qa/ask -H "Content-Type: application/json" \
      -d '{"question": "What are the main themes in the document?"}'
-   
+
    # Get query history
    curl http://127.0.0.1:8000/api/history/
-   
+
    # Get usage statistics
    curl http://127.0.0.1:8000/api/history/stats
    ```
 
 6. **Testing All Endpoints**
+
    ```bash
    # Test all API endpoints
    python scripts/test_phase6_api.py all
-   
+
    # Test specific endpoint (e.g., WebSocket)
    python scripts/test_phase6_api.py websocket
    ```
@@ -267,17 +271,16 @@ The project includes extensive documentation to help users and developers:
 
 ## Next Steps
 
-With the successful completion of Phase 6 (API Integration & FastAPI Backend), the project is now ready to move on to:
+With the successful completion of Phase 7 (Frontend Development), the project is now ready to move on to:
 
-### Phase 7: Frontend Development
+### Phase 8: Testing & Utilities
 
-- Modern React-based user interface
-- Real-time streaming answer display
-- Document management interface
-- History and analytics dashboard
-- Integration with backend API endpoints
+- **Unit tests** (`pytest`) for singletons, ingest, retrieval.
+- **Fixture PDF** in `tests/fixtures/`.
+- CLI helpers: `python -m sociograph.reset`, `python -m sociograph.ingest input/*.pdf`.
+- Optional GitHub Actions CI (runs tests).
 
-See the [Phase 7 Implementation Plan](./docs/phase7_implementation_plan.md) for detailed roadmap.
+See the [Phase 8 Deep Dive Plan](./instructions/phase8_deep_dive_plan.md) for detailed roadmap.
 
 ## Support and Contributing
 
