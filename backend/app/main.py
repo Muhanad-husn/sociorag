@@ -49,6 +49,11 @@ from fastapi.staticfiles import StaticFiles
 
 def create_app() -> FastAPI:
     """Create and configure the FastAPI application."""
+    # Initialize logging early
+    from backend.app.core.singletons import get_logger
+    logger = get_logger()
+    logger.info("Initializing SocioRAG FastAPI application...")
+    
     from .api.ingest import router as ingest_router
     from .api.qa import router as qa_router
     from .api.history_new import router as history_router
@@ -131,12 +136,15 @@ def create_app() -> FastAPI:
     app.include_router(export_router)
     app.include_router(admin_router)
     app.include_router(websocket_router)
+    
+    logger.info("All API routers registered successfully")
 
     @app.get("/")
     async def root():
         """Root endpoint for API health check."""
         return {"status": "ok", "message": "SocioGraph API is running"}
     
+    logger.info("SocioRAG FastAPI application initialization complete")
     return app
 
 
@@ -148,6 +156,10 @@ app = create_app()
 def main():
     """Main CLI entry point for SocioGraph API server."""
     import argparse
+    
+    # Initialize logging early for startup messages
+    from backend.app.core.singletons import get_logger
+    logger = get_logger()
     
     parser = argparse.ArgumentParser(description="SocioGraph API Server")
     parser.add_argument(
@@ -182,19 +194,29 @@ def main():
       # Import uvicorn when starting the server
     import uvicorn
     
+    logger.info("Starting SocioGraph API server...")
+    logger.info(f"Server configuration: host={args.host}, port={args.port}, reload={args.reload}")
+    logger.info(f"Log level: {args.log_level}")
+    
     print(f"🚀 Starting SocioGraph API server...")
     print(f"📍 Server will be available at: http://{args.host}:{args.port}")
     print(f"📚 API documentation at: http://{args.host}:{args.port}/docs")
     print(f"🔧 Auto-reload: {'enabled' if args.reload else 'disabled'}")
     
-    uvicorn.run(
-        "backend.app.main:app",
-        host=args.host,
-        port=args.port,
-        reload=args.reload,
-        workers=args.workers,
-        log_level=args.log_level
-    )
+    try:
+        uvicorn.run(
+            "backend.app.main:app",
+            host=args.host,
+            port=args.port,
+            reload=args.reload,
+            workers=args.workers,
+            log_level=args.log_level
+        )
+    except KeyboardInterrupt:
+        logger.info("Server shutdown requested by user")
+    except Exception as e:
+        logger.error(f"Server startup failed: {str(e)}", exc_info=True)
+        raise
 
 
 # If this file is run directly, start the server

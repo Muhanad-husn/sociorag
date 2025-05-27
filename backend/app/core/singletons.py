@@ -46,7 +46,7 @@ class _SingletonMeta(type):
 
 
 class LoggerSingleton(metaclass=_SingletonMeta):
-    """Singleton logger instance."""
+    """Singleton logger instance with file and console logging."""
     
     def __init__(self):
         self._logger = None
@@ -61,14 +61,55 @@ class LoggerSingleton(metaclass=_SingletonMeta):
             level = getattr(logging, config.LOG_LEVEL.upper(), logging.INFO)
             self._logger.setLevel(level)
             
-            # Add console handler if none exists
+            # Add handlers if none exist
             if not self._logger.handlers:
-                handler = logging.StreamHandler()
+                # Create logs directory
+                logs_dir = config.BASE_DIR / "logs"
+                logs_dir.mkdir(exist_ok=True)
+                
+                # Create formatter
                 formatter = logging.Formatter(
                     '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
                 )
-                handler.setFormatter(formatter)
-                self._logger.addHandler(handler)
+                
+                # Console handler
+                console_handler = logging.StreamHandler()
+                console_handler.setFormatter(formatter)
+                self._logger.addHandler(console_handler)
+                
+                # File handler with rotation
+                from logging.handlers import RotatingFileHandler
+                file_handler = RotatingFileHandler(
+                    logs_dir / "sociorag.log",
+                    maxBytes=10*1024*1024,  # 10MB
+                    backupCount=5
+                )
+                file_handler.setFormatter(formatter)
+                self._logger.addHandler(file_handler)
+                
+                # Debug file handler for detailed logs
+                debug_handler = RotatingFileHandler(
+                    logs_dir / "sociorag_debug.log",
+                    maxBytes=10*1024*1024,  # 10MB
+                    backupCount=3
+                )
+                debug_handler.setLevel(logging.DEBUG)
+                debug_handler.setFormatter(logging.Formatter(
+                    '%(asctime)s - %(name)s - %(levelname)s - %(filename)s:%(lineno)d - %(message)s'
+                ))
+                self._logger.addHandler(debug_handler)
+                
+                # Error file handler for errors only
+                error_handler = RotatingFileHandler(
+                    logs_dir / "sociorag_errors.log",
+                    maxBytes=5*1024*1024,   # 5MB
+                    backupCount=3
+                )
+                error_handler.setLevel(logging.ERROR)
+                error_handler.setFormatter(logging.Formatter(
+                    '%(asctime)s - %(name)s - %(levelname)s - %(filename)s:%(lineno)d - %(message)s\n%(exc_info)s'
+                ))
+                self._logger.addHandler(error_handler)
                 
         return self._logger
 

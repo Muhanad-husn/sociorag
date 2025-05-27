@@ -81,4 +81,11 @@ instructions/
 phase*_backup_*/
 backend/app/answer/pdf.py
 .
-.gitignore
+
+# Logs
+logs/*.log
+logs/*.log.*
+*.log
+
+# Keep logs directory structure but ignore log files
+!logs/.gitkeep
