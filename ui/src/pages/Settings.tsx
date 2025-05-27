@@ -175,6 +175,90 @@ export function Settings() {
   };
 
   const hasUnsavedChanges = JSON.stringify(settings) !== JSON.stringify(tempSettings);
+  // Helper function to check if model selections have changed
+  const hasModelChanges = () => {
+    return tempSettings.entityModel !== settings.entityModel ||
+           tempSettings.answerModel !== settings.answerModel ||
+           tempSettings.translateModel !== settings.translateModel;
+  };
+
+  // Helper function to validate model selections
+  const validateModelSelections = () => {
+    const errors = [];
+    if (!tempSettings.entityModel.trim()) {
+      errors.push("Entity extraction model cannot be empty");
+    }
+    if (!tempSettings.answerModel.trim()) {
+      errors.push("Answer generation model cannot be empty");
+    }
+    if (!tempSettings.translateModel.trim()) {
+      errors.push("Translation model cannot be empty");
+    }
+    return errors;
+  };
+
+  // Helper function to get default models
+  const getDefaultModels = () => ({
+    entityModel: "google/gemini-flash-1.5",
+    answerModel: "meta-llama/llama-3.3-70b-instruct:free",
+    translateModel: "mistralai/mistral-nemo:free"
+  });
+
+  // Handler for confirming model selection
+  const handleConfirmModelSelection = async () => {
+    // Validate model selections
+    const validationErrors = validateModelSelections();
+    if (validationErrors.length > 0) {
+      toast.error(`Please fix the following issues:\n${validationErrors.join('\n')}`);
+      return;
+    }
+
+    try {
+      // Only update model-related settings
+      const modelSettings = {
+        entityModel: tempSettings.entityModel.trim(),
+        answerModel: tempSettings.answerModel.trim(),
+        translateModel: tempSettings.translateModel.trim()
+      };
+      
+      // Update local settings
+      updateSettings(modelSettings);
+      
+      // Update backend with LLM settings
+      const llmSettingsToUpdate = {
+        entity_llm_model: tempSettings.entityModel !== settings.entityModel ? tempSettings.entityModel.trim() : undefined,
+        answer_llm_model: tempSettings.answerModel !== settings.answerModel ? tempSettings.answerModel.trim() : undefined,
+        translate_llm_model: tempSettings.translateModel !== settings.translateModel ? tempSettings.translateModel.trim() : undefined
+      };
+      
+      // Only make API call if there are model settings to update
+      if (Object.values(llmSettingsToUpdate).some(val => val !== undefined)) {
+        const response = await updateLLMSettings(llmSettingsToUpdate);
+        if (response.success) {
+          toast.success('Model selection confirmed successfully! Note: Server restart may be required for changes to take effect.');
+          // Reload LLM settings to confirm the update
+          await loadLLMSettings();
+        } else {
+          toast.error('Failed to save model selection to server');
+        }
+      } else {
+        toast.success('Model selection confirmed!');
+      }
+    } catch (error) {
+      console.error('Failed to confirm model selection:', error);
+      toast.error('Failed to confirm model selection');
+    }
+  };
+
+  // Handler for resetting model selections to defaults
+  const handleResetModelsToDefaults = () => {
+    const defaults = getDefaultModels();
+    setTempSettings(prev => ({
+      ...prev,
+      ...defaults
+    }));
+    toast.success('Model selections reset to system defaults');
+  };
 
   return (
     <div className="container mx-auto px-4 py-8 max-w-2xl">
@@ -183,14 +267,19 @@ export function Settings() {
         <div className="flex items-center space-x-3">
           <SettingsIcon className="h-8 w-8 text-primary" />
           <h1 className="text-3xl font-bold">{t('settings.title')}</h1>
-        </div>
-
-        {/* Unsaved Changes Warning */}
+        </div>        {/* Unsaved Changes Warning */}
         {hasUnsavedChanges && (
           <Card className="p-4 border-yellow-500 bg-yellow-50 dark:bg-yellow-900/20">
             <div className="flex items-center space-x-2 text-yellow-700 dark:text-yellow-300">
               <AlertTriangle className="h-4 w-4" />
-              <span className="text-sm">You have unsaved changes</span>
+              <div className="space-y-1">
+                <span className="text-sm font-medium">You have unsaved changes</span>
+                {hasModelChanges() && (
+                  <p className="text-xs">
+                    Model selections need to be confirmed. Use the "Confirm Selection" button in the Model Selection panel.
+                  </p>
+                )}
+              </div>
             </div>
           </Card>
         )}
@@ -337,8 +426,7 @@ export function Settings() {
             )}
           </div>
           
-          <div className="space-y-6">
-            {/* Entities and Relationships Extraction Model */}
+          <div className="space-y-6">            {/* Entities and Relationships Extraction Model */}
             <div className="space-y-2">
               <label className="text-sm font-medium">Entities and Relationships Extraction Model</label>
               <p className="text-xs text-muted-foreground">
@@ -352,11 +440,15 @@ export function Settings() {
                   entityModel: (e.target as HTMLInputElement).value 
                 }))}
                 placeholder="google/gemini-flash-1.5"
-                className="w-full px-3 py-2 text-sm border border-border rounded-md bg-background focus:ring-2 focus:ring-primary focus:border-transparent"
+                className={clsx(
+                  "w-full px-3 py-2 text-sm border rounded-md bg-background focus:ring-2 focus:ring-primary focus:border-transparent",
+                  !tempSettings.entityModel.trim() ? "border-red-500" : "border-border"
+                )}
               />
-            </div>
-
-            {/* Answer Generation Model */}
+              {!tempSettings.entityModel.trim() && (
+                <p className="text-xs text-red-500">Entity extraction model is required</p>
+              )}
+            </div>            {/* Answer Generation Model */}
             <div className="space-y-2">
               <label className="text-sm font-medium">Answer Generation Model</label>
               <p className="text-xs text-muted-foreground">
@@ -370,11 +462,15 @@ export function Settings() {
                   answerModel: (e.target as HTMLInputElement).value 
                 }))}
                 placeholder="meta-llama/llama-3.3-70b-instruct:free"
-                className="w-full px-3 py-2 text-sm border border-border rounded-md bg-background focus:ring-2 focus:ring-primary focus:border-transparent"
+                className={clsx(
+                  "w-full px-3 py-2 text-sm border rounded-md bg-background focus:ring-2 focus:ring-primary focus:border-transparent",
+                  !tempSettings.answerModel.trim() ? "border-red-500" : "border-border"
+                )}
               />
-            </div>
-
-            {/* Translation Model */}
+              {!tempSettings.answerModel.trim() && (
+                <p className="text-xs text-red-500">Answer generation model is required</p>
+              )}
+            </div>            {/* Translation Model */}
             <div className="space-y-2">
               <label className="text-sm font-medium">Translation Model</label>
               <p className="text-xs text-muted-foreground">
@@ -388,8 +484,49 @@ export function Settings() {
                   translateModel: (e.target as HTMLInputElement).value 
                 }))}
                 placeholder="mistralai/mistral-nemo:free"
-                className="w-full px-3 py-2 text-sm border border-border rounded-md bg-background focus:ring-2 focus:ring-primary focus:border-transparent"
+                className={clsx(
+                  "w-full px-3 py-2 text-sm border rounded-md bg-background focus:ring-2 focus:ring-primary focus:border-transparent",
+                  !tempSettings.translateModel.trim() ? "border-red-500" : "border-border"
+                )}
               />
+              {!tempSettings.translateModel.trim() && (
+                <p className="text-xs text-red-500">Translation model is required</p>
+              )}
+            </div>
+          </div>          {/* Model Selection Confirmation */}
+          <div className="flex items-center justify-between mt-6 pt-4 border-t">
+            <div className="space-y-1">
+              <p className="text-sm font-medium">Confirm Model Selection</p>
+              <p className="text-xs text-muted-foreground">
+                {hasModelChanges() ? 
+                  "Click 'Confirm Selection' to apply your model choices" :
+                  "Model selections are up to date"}
+              </p>
+            </div>
+            <div className="flex items-center space-x-2">
+              <button
+                onClick={handleResetModelsToDefaults}
+                className="btn-secondary text-xs px-3 py-1"
+                title="Reset to default models"
+              >
+                <RefreshCw className="h-3 w-3 mr-1" />
+                Reset
+              </button>
+              <button
+                onClick={handleConfirmModelSelection}
+                disabled={!hasModelChanges() || loadingLLMSettings}
+                className={clsx(
+                  'btn-primary flex items-center',
+                  !hasModelChanges() && 'opacity-50 cursor-not-allowed'
+                )}
+              >
+                {loadingLLMSettings ? (
+                  <div className="animate-spin rounded-full h-4 w-4 border-b border-white mr-2" />
+                ) : (
+                  <CheckCircle className="h-4 w-4 mr-2" />
+                )}
+                Confirm Selection
+              </button>
             </div>
           </div>
         </Card>
