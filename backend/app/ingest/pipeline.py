@@ -309,68 +309,59 @@ def get_or_insert_entity(surface: str, typ: str, source_doc: str) -> int:
     # Normalize to a flat list of floats
     vec_new = normalize_embedding(embedding_result)
     
-    # Convert to bytes for SQLite-vec
+    # Convert to bytes for storage
     vec_bytes = array('f', vec_new).tobytes()
     
-    # Try to find similar entities using SQLite-vec
-    try:
-        # Try to use SQLite-vec for vector search if available
-        cur = con.execute(
-            """
-            SELECT id, name, vec_cosine(embedding, ?) as similarity 
-            FROM entity 
-            WHERE type = ? 
-            ORDER BY similarity DESC 
-            LIMIT 5
-            """,
-            (vec_bytes, typ)
-        )
+    # Use manual similarity calculation
+    cur = con.execute(
+        "SELECT id, name, embedding FROM entity WHERE type = ?",
+        (typ,)
+    )
+    
+    # Check existing entities for similarity manually
+    rows = cur.fetchall()
+    for row in rows:
+        row_id = row[0]
+        row_name = row[1]
+        row_embedding = row[2]
         
-        # Check if any entity is above similarity threshold
-        rows = cur.fetchall()
-        for row in rows:
-            row_id = row[0]
-            row_name = row[1]
-            similarity = row[2]  # Similarity from vec_cosine
+        # Skip if no embedding
+        if not row_embedding:
+            continue
+            
+        # Convert bytes back to list
+        try:
+            vec_existing = array('f', row_embedding).tolist()
+            
+            # Calculate similarity
+            similarity = cosine_similarity(vec_new, vec_existing)
             
             # If similarity is above threshold, return existing ID
             if similarity >= config.ENTITY_SIM:  # 0.90
                 logger.debug(f"Found similar entity: '{surface}' ~ '{row_name}' (sim={similarity:.3f})")
                 return row_id
-                
-    except Exception as e:
-        # Fall back to manual similarity calculation if SQLite-vec functions fail
-        logger.warning(f"SQLite-vec search failed: {e}. Falling back to manual calculation.")
-        
-        cur = con.execute(
-            "SELECT id, name, embedding FROM entity WHERE type = ?",
-            (typ,)
-        )
-        
-        # Check existing entities for similarity manually
-        rows = cur.fetchall()
-        for row in rows:
-            row_id = row[0]
-            row_name = row[1]
-            row_embedding = row[2]
-            
-            # Skip if no embedding
-            if not row_embedding:
-                continue
-                
-            # Convert bytes back to list
-            try:
-                vec_existing = array('f', row_embedding).tolist()
-                
-                # Calculate similarity
-                similarity = cosine_similarity(vec_new, vec_existing)
-                
-                # If similarity is above threshold, return existing ID
-                if similarity >= config.ENTITY_SIM:  # 0.90
-                    logger.debug(f"Found similar entity: '{surface}' ~ '{row_name}' (sim={similarity:.3f})")
-                    return row_id
-            except Exception as sim_err:
-                logger.error(f"Error calculating similarity: {sim_err}")
+        except Exception as sim_err:
+            logger.error(f"Error calculating similarity: {sim_err}")
+    
+    # If no similar entity found, insert new one
+    cur = con.execute(
+        "INSERT INTO entity(name, type, embedding, source_doc) VALUES(?,?,?,?)",
+        (surface, typ, vec_bytes, source_doc)
+    )
+    
+    entity_id = cur.lastrowid
+    if entity_id is None:
+        # This should not happen with an AUTOINCREMENT primary key
+        logger.error(f"Failed to get ID for newly inserted entity: {surface}")
+        # Get the ID via a separate query to be safe
+        cur = con.execute("SELECT id FROM entity WHERE name = ? AND type = ?", (surface, typ))
+        row = cur.fetchone()
+        if row:
+            return row[0]
+        # Last resort fallback
+        return -1
+    
+    return entity_id
     
     # If no similar entity found, insert new one
     cur = con.execute(
