@@ -63,6 +63,19 @@ Authentication is not yet implemented in Phase 6. All endpoints are publicly acc
 | `POST` | `/api/admin/maintenance/cleanup` | Perform system cleanup and optimization |
 | `POST` | `/api/admin/restart` | Restart system components (development mode disabled) |
 
+### Logs API
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `GET`  | `/api/logs/errors` | Get error summary and analysis with trends |
+| `GET`  | `/api/logs/performance` | Get performance metrics and timing analysis |
+| `GET`  | `/api/logs/user-activity` | Get user activity tracking and patterns |
+| `GET`  | `/api/logs/health` | Get system health monitoring and status |
+| `POST` | `/api/logs/search` | Search logs with filters and criteria |
+| `GET`  | `/api/logs/correlation/{correlation_id}` | Trace all logs for a correlation ID |
+| `POST` | `/api/logs/cleanup` | Cleanup old log files and manage retention |
+| `GET`  | `/api/logs/stats` | Get comprehensive log statistics |
+
 ### WebSocket API
 
 | Endpoint | Description |
@@ -256,6 +269,185 @@ WebSocket connection to ws://localhost:8000/api/ws/qa
 {"type": "token", "content": " main", "session_id": "user_session_123"}
 
 {"type": "answer_complete", "session_id": "user_session_123", "full_answer": "The main themes...", "context_count": 5, "timestamp": "2025-05-26T10:15:30"}
+```
+
+### `/api/logs/errors`
+
+Get error summary and analysis with trends.
+
+**Request:**
+```http
+GET /api/logs/errors?hours=24
+```
+
+**Parameters:**
+- `hours` (optional): Number of hours to look back (default: 24)
+
+**Response:**
+```json
+{
+  "total_errors": 15,
+  "error_rate": 0.02,
+  "top_errors": [
+    {
+      "message": "Database connection failed",
+      "count": 8,
+      "level": "ERROR",
+      "first_seen": "2024-01-15T10:00:00Z",
+      "last_seen": "2024-01-15T14:30:00Z"
+    }
+  ],
+  "error_trend": {
+    "hourly_counts": [2, 1, 0, 3, 5, 2, 1, 1]
+  }
+}
+```
+
+### `/api/logs/performance`
+
+Get performance metrics and timing analysis.
+
+**Request:**
+```http
+GET /api/logs/performance?hours=1
+```
+
+**Parameters:**
+- `hours` (optional): Number of hours to look back (default: 1)
+
+**Response:**
+```json
+{
+  "request_count": 1250,
+  "avg_response_time": 245.7,
+  "95th_percentile": 890.2,
+  "slow_requests": 15,
+  "endpoints": [
+    {
+      "path": "/api/qa/ask",
+      "method": "POST",
+      "avg_time": 1250.5,
+      "request_count": 45
+    }
+  ]
+}
+```
+
+### `/api/logs/health`
+
+Get system health monitoring and status.
+
+**Request:**
+```http
+GET /api/logs/health
+```
+
+**Response:**
+```json
+{
+  "status": "healthy",
+  "error_rate": 0.01,
+  "avg_response_time": 234.5,
+  "active_users": 12,
+  "last_error": "2024-01-15T12:00:00Z",
+  "uptime_hours": 168.5,
+  "log_file_sizes": {
+    "sociorag_main.log": 8.5,
+    "sociorag_error.log": 2.1
+  }
+}
+```
+
+### `/api/logs/search`
+
+Search logs with filters and criteria.
+
+**Request:**
+```http
+POST /api/logs/search
+Content-Type: application/json
+
+{
+  "query": "database error",
+  "level": "ERROR",
+  "start_time": "2024-01-15T00:00:00Z",
+  "end_time": "2024-01-15T23:59:59Z",
+  "limit": 100
+}
+```
+
+**Response:**
+```json
+{
+  "results": [
+    {
+      "timestamp": "2024-01-15T15:30:45.123Z",
+      "level": "ERROR",
+      "message": "Database connection failed",
+      "correlation_id": "req_abc123",
+      "extra": {
+        "error_type": "ConnectionError",
+        "retry_count": 3
+      }
+    }
+  ],
+  "total_count": 25,
+  "query_time_ms": 45.2
+}
+```
+
+### `/api/logs/correlation/{correlation_id}`
+
+Trace all logs for a specific correlation ID.
+
+**Request:**
+```http
+GET /api/logs/correlation/req_abc123def456
+```
+
+**Response:**
+```json
+[
+  {
+    "timestamp": "2024-01-15T15:30:45.123Z",
+    "level": "INFO",
+    "message": "Request started",
+    "correlation_id": "req_abc123def456"
+  },
+  {
+    "timestamp": "2024-01-15T15:30:46.789Z",
+    "level": "DEBUG",
+    "message": "Processing data",
+    "correlation_id": "req_abc123def456"
+  }
+]
+```
+
+### `/api/logs/stats`
+
+Get comprehensive log statistics.
+
+**Request:**
+```http
+GET /api/logs/stats
+```
+
+**Response:**
+```json
+{
+  "total_entries": 15420,
+  "file_count": 5,
+  "total_size_mb": 12.8,
+  "oldest_entry": "2024-01-01T00:00:00Z",
+  "newest_entry": "2024-01-15T15:30:00Z",
+  "entries_by_level": {
+    "INFO": 8950,
+    "DEBUG": 4200,
+    "WARNING": 1800,
+    "ERROR": 420,
+    "CRITICAL": 50
+  }
+}
 ```
 
 ## Error Responses

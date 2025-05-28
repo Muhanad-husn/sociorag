@@ -106,6 +106,7 @@ All configuration parameters are defined in `backend/app/core/config.py` and inc
 - **Thresholds/Parameters**: CHUNK_SIM (0.85), ENTITY_SIM (0.90), GRAPH_SIM (0.95), TOP_K (100), TOP_K_RERANK (15), MAX_CONTEXT_FRACTION (0.4)
 - **Resources**: SPACY_MODEL, LOG_LEVEL
 - **Limits**: HISTORY_LIMIT (15), SAVED_LIMIT (15)
+- **Enhanced Logging**: ENHANCED_LOGGING_ENABLED, LOG_STRUCTURED_FORMAT, LOG_CORRELATION_ENABLED, LOG_PERFORMANCE_TRACKING, retention and alerting settings
 
 ## Enhanced Entity Extraction
 
@@ -156,6 +157,76 @@ For detailed documentation, see:
 - [Complete Entity Extraction Documentation](./docs/entity_extraction_complete.md)
 - [Cleanup Summary](./docs/entity_extraction_cleanup_summary.md)
 
+## Enhanced Logging System
+
+SocioRAG includes a comprehensive, production-ready logging system with advanced monitoring, analysis, and debugging capabilities. The enhanced logging system provides:
+
+### Key Features
+
+- **Structured JSON Logging**: Machine-readable log entries with consistent formatting
+- **Correlation IDs**: Track requests across multiple components and services  
+- **Performance Monitoring**: Automatic timing and performance metrics collection
+- **Real-time Analysis**: Live log analysis with error summaries and performance insights
+- **REST API**: Complete API for log analysis, search, and monitoring
+- **Automatic Cleanup**: Configurable log rotation and retention policies
+- **Health Monitoring**: System health checks and alerting capabilities
+
+### Quick Configuration
+
+Add these settings to your `.env` file to enable enhanced logging:
+
+```bash
+# Enhanced Logging Features
+ENHANCED_LOGGING_ENABLED=true
+LOG_STRUCTURED_FORMAT=true
+LOG_CORRELATION_ENABLED=true
+LOG_PERFORMANCE_TRACKING=true
+
+# File Management & Monitoring
+LOG_FILE_RETENTION_DAYS=30
+LOG_SLOW_REQUEST_THRESHOLD_MS=1000
+LOG_ERROR_RATE_THRESHOLD=0.05
+```
+
+### Log Analysis API
+
+Access comprehensive logging analytics through REST endpoints:
+
+```bash
+# Error analysis
+GET /api/logs/errors?hours=24
+
+# Performance metrics  
+GET /api/logs/performance?hours=1
+
+# System health monitoring
+GET /api/logs/health
+
+# Search and correlation tracing
+POST /api/logs/search
+GET /api/logs/correlation/{correlation_id}
+```
+
+### Usage Examples
+
+```python
+from backend.app.core.enhanced_logger import EnhancedLogger
+
+logger = EnhancedLogger()
+
+# Structured logging with correlation tracking
+with logger.correlation_context("operation-123"):
+    logger.info("Processing request", extra={"user_id": "user123"})
+
+# Automatic performance timing
+@logger.time_operation("database_query") 
+async def query_database():
+    # Your database operation
+    pass
+```
+
+For complete documentation, see [Enhanced Logging System Documentation](./docs/logging_system_documentation.md).
+
 ## Project Organization
 
 - `backend/app/ingest/` - Core implementation files
@@ -184,6 +255,7 @@ The project includes extensive documentation to help users and developers:
 ### Technical Documentation
 
 - **[Enhanced Entity Extraction](./docs/enhanced_entity_extraction.md)** - Advanced entity extraction capabilities
+- **[Enhanced Logging System](./docs/logging_system_documentation.md)** - Comprehensive logging with monitoring, analysis, and REST API
 - **[Phase 6 Implementation Summary](./docs/phase6_implementation_summary.md)** - API integration and WebSocket support
 - **[Phase 5 Implementation Summary](./docs/phase5_implementation_summary.md)** - Answer generation and PDF export details
 - **Additional Phase Documentation** - Complete implementation reports for all phases
@@ -289,6 +361,7 @@ The project includes extensive documentation to help users and developers:
 - ✅ **Frontend Web Application** - Modern Preact-based UI with responsive design
 - ✅ **Administrative Interface** - System monitoring, configuration management, and API key management
 - ✅ **Real-time Configuration Updates** - Update OpenRouter API keys through web interface without server restart
+- ✅ **Enhanced Logging System** - Comprehensive logging with correlation IDs, performance monitoring, real-time analysis, and REST API for log management
 
 ## Next Steps
 
