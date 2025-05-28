@@ -4,7 +4,7 @@ A system for analyzing and visualizing social dynamics in texts.
 
 ## Project Status
 
-**All Major Development Phases Complete**: The core backend, API, and frontend application (Preact + Tailwind) are complete. The project is currently in Phase 8: Testing & Utilities. For more details, see the [Project Overview](./docs/project_overview.md) and the main [Rebuild Plan](./instructions/sociograph_rebuild_plan.md).
+**Production Ready**: The core backend, API, and frontend application (Preact + Tailwind) are complete and ready for production use. The application has been streamlined by removing E2E tests and non-essential files to focus on the core functionality. For more details, see the [Project Overview](./docs/project_overview.md).
 
 ## Setup Instructions
 
@@ -62,22 +62,27 @@ A system for analyzing and visualizing social dynamics in texts.
          pipeline_fixed_improved.py  # Improved ingestion pipeline
        retriever/      # Vector store and retrieval
        api/           # FastAPI endpoints
-     tests/           # Backend tests
    ui/src/            # Frontend code
    resources/         # Static resources
    input/            # Input data files
    saved/            # Saved models and states
    vector_store/     # Vector embeddings storage
    docs/             # Documentation
-     entity_extraction_improvements.md  # Entity extraction documentation
    ```
 
-4. **Development**
+4. **Starting the Application**
 
-   - The project uses Python 3.12.9
-   - Main dependencies include FastAPI, LangChain, ChromaDB, and spaCy
-   - Vector storage using sqlite-vec for efficient similarity search
-   - Frontend development path to be determined in later phases
+   The application can be started using the included quick start script:
+
+   ```powershell
+   # Start both backend and frontend
+   .\quick_start.ps1
+   ```
+
+   This will:
+   - Start the backend server on http://127.0.0.1:8000
+   - Start the frontend on http://localhost:5173
+   - Open the frontend in your default browser
 
 ## Global Configuration
 

@@ -6,15 +6,13 @@ Comprehensive testing strategy for the SocioGraph frontend application, covering
 ## 🧪 Testing Strategy
 
 ### Testing Pyramid
-1. **Unit Tests** (70%) - Component logic and utilities
+1. **Unit Tests** (80%) - Component logic and utilities
 2. **Integration Tests** (20%) - Component interactions and API integration
-3. **E2E Tests** (10%) - Complete user workflows
 
 ### Testing Stack
 - **Test Runner**: Vitest (Vite-native)
 - **Testing Library**: @testing-library/preact
 - **Mocking**: MSW (Mock Service Worker)
-- **E2E**: Playwright (recommended) or Cypress
 
 ## 🛠️ Setup Testing Environment
 
@@ -358,128 +356,6 @@ describe('Home Page Integration', () => {
 });
 ```
 
-## 🌐 End-to-End Testing
-
-### Playwright Setup
-**`playwright.config.ts`:**
-```typescript
-import { defineConfig, devices } from '@playwright/test';
-
-export default defineConfig({
-  testDir: './e2e',
-  fullyParallel: true,
-  forbidOnly: !!process.env.CI,
-  retries: process.env.CI ? 2 : 0,
-  workers: process.env.CI ? 1 : undefined,
-  reporter: 'html',
-  use: {
-    baseURL: 'http://localhost:5173',
-    trace: 'on-first-retry',
-  },
-  projects: [
-    {
-      name: 'chromium',
-      use: { ...devices['Desktop Chrome'] },
-    },
-    {
-      name: 'firefox',
-      use: { ...devices['Desktop Firefox'] },
-    },
-    {
-      name: 'webkit',
-      use: { ...devices['Desktop Safari'] },
-    },
-    {
-      name: 'Mobile Chrome',
-      use: { ...devices['Pixel 5'] },
-    },
-  ],
-  webServer: {
-    command: 'npm run dev',
-    url: 'http://localhost:5173',
-    reuseExistingServer: !process.env.CI,
-  },
-});
-```
-
-### E2E Test Examples
-**`e2e/search-workflow.spec.ts`:**
-```typescript
-import { test, expect } from '@playwright/test';
-
-test.describe('Search Workflow', () => {
-  test('complete search and view results', async ({ page }) => {
-    await page.goto('/');
-
-    // Verify page loaded
-    await expect(page.getByText('SocioGraph')).toBeVisible();
-
-    // Perform search
-    await page.fill('[placeholder*="Ask a question"]', 'What is machine learning?');
-    await page.click('button[type="submit"]');
-
-    // Verify loading state
-    await expect(page.getByText('Searching...')).toBeVisible();
-
-    // Wait for results
-    await expect(page.getByTestId('search-results')).toBeVisible({ timeout: 10000 });
-
-    // Verify answer is displayed
-    await expect(page.getByTestId('search-answer')).toContainText('machine learning');
-
-    // Verify search is in history
-    await page.click('[data-testid="history-tab"]');
-    await expect(page.getByText('What is machine learning?')).toBeVisible();
-  });
-
-  test('handles search errors gracefully', async ({ page }) => {
-    // Mock API error
-    await page.route('/api/v1/search', route => {
-      route.fulfill({
-        status: 500,
-        body: JSON.stringify({ error: 'Internal server error' })
-      });
-    });
-
-    await page.goto('/');
-    await page.fill('[placeholder*="Ask a question"]', 'test query');
-    await page.click('button[type="submit"]');
-
-    // Verify error message
-    await expect(page.getByText(/error occurred/i)).toBeVisible();
-  });
-});
-```
-
-**`e2e/file-upload.spec.ts`:**
-```typescript
-import { test, expect } from '@playwright/test';
-import path from 'path';
-
-test.describe('File Upload', () => {
-  test('uploads PDF file successfully', async ({ page }) => {
-    await page.goto('/');
-
-    // Navigate to upload section
-    await page.click('[data-testid="upload-tab"]');
-
-    // Select file
-    const fileInput = page.locator('input[type="file"]');
-    await fileInput.setInputFiles(path.join(__dirname, 'fixtures/sample.pdf'));
-
-    // Verify upload progress
-    await expect(page.getByText('Uploading...')).toBeVisible();
-
-    // Verify completion
-    await expect(page.getByText('Upload complete')).toBeVisible({ timeout: 30000 });
-
-    // Verify file appears in saved documents
-    await page.click('[data-testid="saved-tab"]');
-    await expect(page.getByText('sample.pdf')).toBeVisible();
-  });
-});
-```
-
 ## 🌍 Accessibility Testing
 
 ### Automated Accessibility Tests
@@ -677,7 +553,6 @@ export const createMockDocument = (overrides = {}) => ({
 ### Coverage Goals
 - **Unit Tests**: 80%+ line coverage
 - **Integration Tests**: 70%+ critical paths
-- **E2E Tests**: 90%+ user workflows
 
 ### Coverage Report
 ```bash
@@ -737,9 +612,6 @@ jobs:
     
     - name: Run unit tests
       run: cd ui && npm run test:run
-    
-    - name: Run E2E tests
-      run: cd ui && npm run test:e2e
     
     - name: Upload coverage
       uses: codecov/codecov-action@v3

@@ -1,5 +1,25 @@
 # SocioGraph Installation & Setup Guide
 
+## Quick Start
+
+For a quick start experience, use the provided script:
+
+```powershell
+# From the project root
+.\quick_start.ps1
+```
+
+This script will:
+1. Start the backend server
+2. Wait for the backend to be fully ready
+3. Start the frontend development server
+4. Open the application in your default web browser
+
+You can then access:
+- Frontend: http://localhost:5173
+- Backend API: http://127.0.0.1:8000
+- API Documentation: http://127.0.0.1:8000/docs
+
 ## System Requirements
 
 ### Minimum Requirements

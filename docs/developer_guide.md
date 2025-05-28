@@ -208,20 +208,19 @@ disallow_untyped_defs = True
 
 ## Testing Strategy
 
+The project uses a simplified testing approach focusing on pipeline tests rather than comprehensive end-to-end tests. This makes the codebase more maintainable and focuses on testing core functionality.
+
 ### Test Structure
 
 ```
 tests/
-├── unit/                   # Unit tests for individual components
-│   ├── test_answer/       # Answer generation tests
-│   ├── test_retriever/    # Retrieval system tests
-│   └── test_core/         # Core infrastructure tests
-├── integration/           # Integration tests
-│   ├── test_pipeline/     # End-to-end pipeline tests
-│   └── test_api/          # API endpoint tests
-├── fixtures/              # Test data and fixtures
-├── conftest.py           # Pytest configuration
-└── test_helpers.py       # Common test utilities
+├── retriever/             # Tests for the retrieval system
+│   ├── test_embedding.py  # Tests for embedding functionality
+│   ├── test_similarity_functions.py  # Tests for similarity functions
+│   └── test_sqlite_vec_utils.py  # Tests for SQLite vector utilities
+├── test_enhanced_entity_extraction.py  # Tests for enhanced entity extraction
+├── test_entity_extraction_module.py    # Tests for entity extraction module
+└── __init__.py            # Test package initialization
 ```
 
 ### Writing Tests
