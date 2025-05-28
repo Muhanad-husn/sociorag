@@ -1,7 +1,7 @@
 # Phase 7 Implementation Summary
 
 ## Overview
-Phase 7 successfully implements a modern, fast, and offline-capable front-end for the SocioGraph project using Preact + Tailwind CSS. The implementation provides a complete user interface that consumes the Phase 6 API with real-time streaming capabilities and full internationalization support.
+Phase 7 successfully implements a modern, fast, and offline-capable front-end for the SocioRAG project using Preact + Tailwind CSS. The implementation provides a complete user interface that consumes the Phase 6 API with real-time streaming capabilities and full internationalization support.
 
 ## 🎯 Objectives Achieved
 

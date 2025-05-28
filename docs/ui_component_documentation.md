@@ -1,7 +1,7 @@
 # UI Component Documentation
 
 ## Overview
-This document provides comprehensive documentation for all UI components in the SocioGraph frontend application. Each component is designed to be reusable, accessible, and support both light/dark themes with internationalization.
+This document provides comprehensive documentation for all UI components in the SocioRAG frontend application. Each component is designed to be reusable, accessible, and support both light/dark themes with internationalization.
 
 ## Base UI Components
 
@@ -299,9 +299,8 @@ Main application page with search and upload functionality.
 
 **Layout Structure**:
 ```typescript
-<div className="container mx-auto px-4 py-8">
-  <header className="text-center mb-8">
-    <h1>SocioGraph</h1>
+<div className="container mx-auto px-4 py-8">  <header className="text-center mb-8">
+    <h1>SocioRAG</h1>
     <p>Intelligent Document Analysis</p>
   </header>
   
@@ -736,4 +735,4 @@ function DataComponent() {
 
 ---
 
-This documentation covers all major UI components in the SocioGraph frontend. Each component is designed to be maintainable, accessible, and performant while providing a consistent user experience across the application.
+This documentation covers all major UI components in the SocioRAG frontend. Each component is designed to be maintainable, accessible, and performant while providing a consistent user experience across the application.

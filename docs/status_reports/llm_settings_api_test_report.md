@@ -4,7 +4,7 @@
 
 ## Overview
 
-This document summarizes the testing performed on the LLM settings API endpoint in the SocioGraph application, which was previously reporting a "Method Not Allowed" error.
+This document summarizes the testing performed on the LLM settings API endpoint in the SocioRAG application, which was previously reporting a "Method Not Allowed" error.
 
 ## Issue Analysis
 

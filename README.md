@@ -69,22 +69,20 @@ Our comprehensive testing has demonstrated:
 
    ### Using Conda (Recommended)
 
-   ```bash
-   # Clone the repository
+   ```bash   # Clone the repository
    git clone <repository-url>
-   cd sociograph
+   cd sociorag
 
    # Create environment from environment.yml
    conda env create -f environment.yml
-   conda activate sociograph
+   conda activate sociorag
    ```
 
    ### Using pip
 
-   ```bash
-   # Clone the repository
+   ```bash   # Clone the repository
    git clone <repository-url>
-   cd sociograph
+   cd sociorag
 
    # Create and activate virtual environment
    python -m venv .venv
@@ -160,7 +158,7 @@ All configuration parameters are defined in `backend/app/core/config.py` and inc
 
 ## Enhanced Entity Extraction
 
-SocioGraph includes a robust entity extraction system that uses LLMs to extract entities and relationships from text. Key features include:
+SocioRAG includes a robust entity extraction system that uses LLMs to extract entities and relationships from text. Key features include:
 
 - **Resilient JSON Parsing**: Handles various response formats from the OpenRouter API.
 - **Multiple Fallback Strategies**: Ensures maximum data extraction even from malformed responses.
@@ -315,7 +313,7 @@ The project includes extensive documentation to help users and developers:
 1. **Setup Environment**
    ```bash
    conda env create -f environment.yml
-   conda activate sociograph
+   conda activate sociorag
    python -m spacy download en_core_web_sm
    ```
 
@@ -437,7 +435,7 @@ The system is now validated for production use with comprehensive performance te
 
 #### Phase 8: Advanced Testing & Utilities
 - **Unit tests** (`pytest`) for comprehensive component testing
-- **CLI helpers**: `python -m sociograph.reset`, `python -m sociograph.ingest input/*.pdf`
+- **CLI helpers**: `python -m sociorag.reset`, `python -m sociorag.ingest input/*.pdf`
 - **CI/CD Pipeline**: GitHub Actions for automated testing
 - **Advanced Load Testing**: Extended performance scenarios for enterprise deployment
 

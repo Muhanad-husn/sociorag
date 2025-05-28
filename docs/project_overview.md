@@ -1,8 +1,8 @@
-# SocioGraph Project Overview
+# SocioRAG Project Overview
 
 ## Project Summary
 
-SocioGraph is a comprehensive system for analyzing and visualizing social dynamics in texts through advanced NLP, entity extraction, vector search, and answer generation capabilities. The system follows a modular architecture with distinct phases for data ingestion, storage, retrieval, and answer generation.
+SocioRAG is a comprehensive system for analyzing and visualizing social dynamics in texts through advanced NLP, entity extraction, vector search, and answer generation capabilities. The system follows a modular architecture with distinct phases for data ingestion, storage, retrieval, and answer generation.
 
 ## Current Status: Production Ready
 
@@ -241,4 +241,4 @@ cfg = get_config("custom_config.yaml")
 - **Testing Guide**: Test execution and validation procedures
 - **Troubleshooting**: Common issues and solutions
 
-The SocioGraph project represents a comprehensive solution for text analysis and social dynamics visualization, with a solid foundation for future enhancements and scalability.
+The SocioRAG project represents a comprehensive solution for text analysis and social dynamics visualization, with a solid foundation for future enhancements and scalability.

@@ -1,0 +1,226 @@
+{
+  "BaselineHealth": {
+    "Success": true,
+    "Errors": {
+      "total_errors": 1,
+      "error_counts": {
+        "Unknown": 1
+      },
+      "error_details": {
+        "Unknown": [
+          {
+            "timestamp": "2025-05-28 23:01:00,116",
+            "message": "Failed to get error summary: LogAnalyzer.get_error_summary() got an unexpected keyword argument 'since'",
+            "correlation_id": "none",
+            "module": "enhanced_logger"
+          }
+        ]
+      }
+    },
+    "Health": {
+      "status": "healthy",
+      "timestamp": "2025-05-28T23:58:25.712445",
+      "version": "0.1.0",
+      "uptime": 916.4726896286011,
+      "components": {
+        "database": {
+          "status": "healthy",
+          "type": "SQLite"
+        },
+        "vector_store": {
+          "status": "healthy",
+          "type": "ChromaDB",
+          "document_count": 0
+        },
+        "embedding_service": {
+          "status": "healthy",
+          "model": "sentence-transformers",
+          "embedding_dim": 384
+        },
+        "llm_client": {
+          "status": "healthy",
+          "provider": "OpenRouter"
+        }
+      }
+    },
+    "Metrics": {
+      "cpu_usage": 22.8,
+      "memory_usage": {
+        "total_gb": 15.33,
+        "available_gb": 3.18,
+        "used_gb": 12.15,
+        "percentage": 79.3
+      },
+      "disk_usage": {
+        "total_gb": 488.28,
+        "free_gb": 449.43,
+        "used_gb": 38.85,
+        "percentage": 7.96
+      },
+      "database_stats": {
+        "entity_count": 0,
+        "relation_count": 0,
+        "documents_count": 0,
+        "file_size_mb": 0.34
+      },
+      "vector_store_stats": {
+        "document_count": 0,
+        "storage_size_mb": 0.16
+      },
+      "timestamp": "2025-05-28T23:58:26.788333"
+    }
+  },
+  "Config": {
+    "MonitoringDuration": 15,
+    "LoadTestUsers": 3,
+    "Description": "Standard performance test (15 minutes)",
+    "LoadTestDuration": 10,
+    "HealthCheckInterval": 60
+  },
+  "TestId": "sociorag_test_20250528_235820",
+  "StartTime": "2025-05-28T23:58:20.9762464+02:00",
+  "EndTime": "2025-05-29T00:14:20.4868624+02:00",
+  "TestLevel": "standard",
+  "MonitoringData": [
+    {
+      "ErrorRate": 4.883333333333334,
+      "Timestamp": "2025-05-28T23:58:39.489956+02:00",
+      "Iteration": 1,
+      "Memory": 78.8,
+      "Disk": 7.96,
+      "Health": "healthy",
+      "ResponseTime": 0,
+      "CPU": 15.6
+    },
+    {
+      "ErrorRate": 5.466666666666667,
+      "Timestamp": "2025-05-28T23:59:46.4850936+02:00",
+      "Iteration": 2,
+      "Memory": 78.6,
+      "Disk": 7.96,
+      "Health": "healthy",
+      "ResponseTime": 0,
+      "CPU": 4.2
+    },
+    {
+      "ErrorRate": 6.033333333333333,
+      "Timestamp": "2025-05-29T00:00:55.5515903+02:00",
+      "Iteration": 3,
+      "Memory": 81.2,
+      "Disk": 7.96,
+      "Health": "healthy",
+      "ResponseTime": 0,
+      "CPU": 33.9
+    },
+    {
+      "ErrorRate": 6.45,
+      "Timestamp": "2025-05-29T00:02:10.4841502+02:00",
+      "Iteration": 4,
+      "Memory": 83.0,
+      "Disk": 7.96,
+      "Health": "healthy",
+      "ResponseTime": 0,
+      "CPU": 15.2
+    },
+    {
+      "ErrorRate": 6.9,
+      "Timestamp": "2025-05-29T00:03:22.2949685+02:00",
+      "Iteration": 5,
+      "Memory": 83.1,
+      "Disk": 7.96,
+      "Health": "healthy",
+      "ResponseTime": 0,
+      "CPU": 5.4
+    },
+    {
+      "ErrorRate": 7.216666666666667,
+      "Timestamp": "2025-05-29T00:04:36.4654953+02:00",
+      "Iteration": 6,
+      "Memory": 84.7,
+      "Disk": 7.96,
+      "Health": "healthy",
+      "ResponseTime": 0,
+      "CPU": 13.0
+    },
+    {
+      "ErrorRate": 7.666666666666667,
+      "Timestamp": "2025-05-29T00:05:49.8787589+02:00",
+      "Iteration": 7,
+      "Memory": 84.6,
+      "Disk": 7.96,
+      "Health": "healthy",
+      "ResponseTime": 0,
+      "CPU": 2.8
+    },
+    {
+      "ErrorRate": 8.25,
+      "Timestamp": "2025-05-29T00:07:02.631441+02:00",
+      "Iteration": 8,
+      "Memory": 84.1,
+      "Disk": 7.96,
+      "Health": "healthy",
+      "ResponseTime": 0,
+      "CPU": 5.1
+    },
+    {
+      "ErrorRate": 9.0,
+      "Timestamp": "2025-05-29T00:08:07.7881086+02:00",
+      "Iteration": 9,
+      "Memory": 82.6,
+      "Disk": 7.96,
+      "Health": "healthy",
+      "ResponseTime": 0,
+      "CPU": 16.0
+    },
+    {
+      "ErrorRate": 9.766666666666667,
+      "Timestamp": "2025-05-29T00:09:11.5192655+02:00",
+      "Iteration": 10,
+      "Memory": 84.1,
+      "Disk": 7.96,
+      "Health": "healthy",
+      "ResponseTime": 0,
+      "CPU": 12.1
+    },
+    {
+      "ErrorRate": 10.516666666666667,
+      "Timestamp": "2025-05-29T00:10:15.9692878+02:00",
+      "Iteration": 11,
+      "Memory": 84.6,
+      "Disk": 7.96,
+      "Health": "healthy",
+      "ResponseTime": 0,
+      "CPU": 5.3
+    },
+    {
+      "ErrorRate": 11.566666666666666,
+      "Timestamp": "2025-05-29T00:11:17.2704231+02:00",
+      "Iteration": 12,
+      "Memory": 83.8,
+      "Disk": 7.96,
+      "Health": "healthy",
+      "ResponseTime": 0,
+      "CPU": 14.8
+    },
+    {
+      "ErrorRate": 13.05,
+      "Timestamp": "2025-05-29T00:12:18.9930707+02:00",
+      "Iteration": 13,
+      "Memory": 83.2,
+      "Disk": 7.96,
+      "Health": "healthy",
+      "ResponseTime": 0,
+      "CPU": 10.3
+    },
+    {
+      "ErrorRate": 14.416666666666666,
+      "Timestamp": "2025-05-29T00:13:20.3155911+02:00",
+      "Iteration": 14,
+      "Memory": 83.2,
+      "Disk": 7.96,
+      "Health": "healthy",
+      "ResponseTime": 0,
+      "CPU": 15.1
+    }
+  ]
+}

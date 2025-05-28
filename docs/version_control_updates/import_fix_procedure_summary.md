@@ -40,4 +40,4 @@ a516145 (tag: v1.0.0-production) Phase 7 Complete: Production-ready SocioRAG wit
 - Frontend integration remains intact
 - Server functionality has been verified and is operational
 
-This summary documents the version control procedures completed to address the import path issues in the SocioGraph backend.
+This summary documents the version control procedures completed to address the import path issues in the SocioRAG backend.

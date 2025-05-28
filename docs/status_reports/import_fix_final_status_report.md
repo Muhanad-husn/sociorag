@@ -1,13 +1,13 @@
-# SocioGraph - Final Status Report
+# SocioRAG - Final Status Report
 
 ## Date: May 27, 2025
 
 ## 1. Project Overview
-SocioGraph is an AI-powered document analysis and knowledge graph generation system that provides entity extraction, relationship mapping, question answering, and translation capabilities. The system uses a FastAPI backend with a modern web frontend.
+SocioRAG is an AI-powered document analysis and knowledge graph generation system that provides entity extraction, relationship mapping, question answering, and translation capabilities. The system uses a FastAPI backend with a modern web frontend.
 
 ## 2. Current Status: ✅ OPERATIONAL
 
-The SocioGraph application is now fully operational with all critical import path issues resolved. The server is running successfully at http://127.0.0.1:8000 and responds correctly to API requests.
+The SocioRAG application is now fully operational with all critical import path issues resolved. The server is running successfully at http://127.0.0.1:8000 and responds correctly to API requests.
 
 ### System Components Status
 | Component | Status | Notes |
@@ -105,7 +105,7 @@ The server is currently running with the following configuration:
 
 ## 9. Conclusion
 
-The critical import path issues in the SocioGraph backend have been successfully resolved, allowing the application to run properly. The server is now operational, and all backend components are functioning correctly. The fixes have been properly documented and committed to a dedicated feature branch following best version control practices.
+The critical import path issues in the SocioRAG backend have been successfully resolved, allowing the application to run properly. The server is now operational, and all backend components are functioning correctly. The fixes have been properly documented and committed to a dedicated feature branch following best version control practices.
 
 Further testing is recommended to ensure all API endpoints function as expected, particularly focusing on the LLM parameters customization features. Once testing is complete, the changes can be merged to the master branch and tagged as a hotfix release.
 

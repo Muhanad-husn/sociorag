@@ -1,4 +1,4 @@
-# SocioGraph Phase 7 Implementation Plan
+# SocioRAG Phase 7 Implementation Plan
 
 ## Phase 7 Overview: Frontend Development
 
@@ -30,8 +30,8 @@ Phase 7 focuses on developing a modern React-based user interface that integrate
 #### 1.1 Project Initialization
 ```bash
 # Create React app with TypeScript
-npx create-react-app sociograph-ui --template typescript
-cd sociograph-ui
+npx create-react-app sociorag-ui --template typescript
+cd sociorag-ui
 
 # Install core dependencies
 npm install axios react-router-dom @mantine/core @mantine/hooks @emotion/react
@@ -39,7 +39,7 @@ npm install axios react-router-dom @mantine/core @mantine/hooks @emotion/react
 
 #### 1.2 Project Structure
 ```
-sociograph-ui/
+sociorag-ui/
 ├── public/
 ├── src/
 │   ├── api/                 # API integration

@@ -1,10 +1,10 @@
-# SocioGraph Documentation Index
+# SocioRAG Documentation Index
 
-Welcome to the comprehensive documentation for SocioGraph, a system for analyzing and visualizing social dynamics in texts. This index provides easy navigation to all available documentation.
+Welcome to the comprehensive documentation for SocioRAG, a system for analyzing and visualizing social dynamics in texts. This index provides easy navigation to all available documentation.
 
 ## 📖 Getting Started
 
-**New to SocioGraph? Start here:**
+**New to SocioRAG? Start here:**
 
 1. **[Project Overview](./project_overview.md)** - High-level introduction and current status
 2. **[Installation Guide](./installation_guide.md)** - Complete setup instructions for all platforms
@@ -136,7 +136,7 @@ Welcome to the comprehensive documentation for SocioGraph, a system for analyzin
 
 ## 📋 Documentation Standards
 
-All SocioGraph documentation follows these standards:
+All SocioRAG documentation follows these standards:
 - **Comprehensive**: Covers all aspects of the topic
 - **Practical**: Includes working examples and code snippets
 - **Up-to-date**: Reflects current implementation status
@@ -152,7 +152,7 @@ All SocioGraph documentation follows these standards:
 
 **Last Updated**: Phase 7 completion (May 2025)
 **Current Version**: Full-stack application complete with comprehensive frontend
-**Maintained by**: SocioGraph Development Team
-**Total Documentation**: 15+ comprehensive guides covering all aspects of the SocioGraph system
+**Maintained by**: SocioRAG Development Team
+**Total Documentation**: 15+ comprehensive guides covering all aspects of the SocioRAG system
 
 For the most current information, check the project repository and this documentation directory.

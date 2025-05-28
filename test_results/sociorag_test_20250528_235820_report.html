@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>SocioRAG Performance Test Report - sociorag_test_20250528_235820</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; background-color: #f5f5f5; }
+        .container { max-width: 1200px; margin: 0 auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 20px; border-radius: 8px; margin-bottom: 20px; }
+        .section { margin: 20px 0; padding: 15px; border-left: 4px solid #667eea; background: #f8f9fa; }
+        .metric { display: inline-block; margin: 10px; padding: 10px 15px; background: white; border-radius: 5px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+        .success { color: #28a745; }
+        .warning { color: #ffc107; }
+        .error { color: #dc3545; }
+        .chart { margin: 20px 0; padding: 15px; background: white; border-radius: 5px; }
+        table { width: 100%; border-collapse: collapse; margin: 15px 0; }
+        th, td { padding: 12px; text-align: left; border-bottom: 1px solid #ddd; }
+        th { background-color: #667eea; color: white; }
+        .status-healthy { background-color: #d4edda; color: #155724; }
+        .status-warning { background-color: #fff3cd; color: #856404; }
+        .status-error { background-color: #f8d7da; color: #721c24; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🚀 SocioRAG Performance Test Report</h1>
+            <p><strong>Test ID:</strong> sociorag_test_20250528_235820</p>
+            <p><strong>Test Level:</strong> standard (Standard performance test (15 minutes))</p>
+            <p><strong>Test Date:</strong> 2025-05-29 00:14:20</p>
+            <p><strong>Duration:</strong> 15 minutes</p>
+        </div>
+
+        <div class="section">
+            <h2>📊 Test Summary</h2>
+            <div class="metric">
+                <strong>System Health:</strong> 
+                <span class="success">✅ healthy</span>
+            </div>
+            <div class="metric">
+                <strong>Test Duration:</strong> 15 minutes
+            </div>
+            <div class="metric">
+                <strong>Load Test Users:</strong> 3
+            </div>
+            <div class="metric">
+                <strong>Monitoring Points:</strong> 14
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>🏥 System Health Status</h2>
+            <table>
+                <tr><th>Component</th><th>Status</th><th>Details</th></tr>                <tr class="status-healthy">
+                    <td>database</td>
+                    <td>healthy</td>
+                    <td>SQLite</td>
+                </tr>                <tr class="status-healthy">
+                    <td>vector_store</td>
+                    <td>healthy</td>
+                    <td>ChromaDB</td>
+                </tr>                <tr class="status-healthy">
+                    <td>embedding_service</td>
+                    <td>healthy</td>
+                    <td>N/A</td>
+                </tr>                <tr class="status-healthy">
+                    <td>llm_client</td>
+                    <td>healthy</td>
+                    <td>N/A</td>
+                </tr>            </table>
+        </div>
+
+        <div class="section">
+            <h2>📈 Performance Metrics</h2>
+            <table>
+                <tr><th>Metric</th><th>Value</th><th>Status</th></tr>
+                <tr>
+                    <td>CPU Usage</td>
+                    <td>22.8%</td>
+                    <td class="success">
+                        ✅ Good
+                    </td>
+                </tr>
+                <tr>
+                    <td>Memory Usage</td>
+                    <td>79.3%</td>
+                    <td class="warning">
+                        ⚠️ Moderate
+                    </td>
+                </tr>
+                <tr>
+                    <td>Disk Usage</td>
+                    <td>7.96%</td>
+                    <td class="success">
+                        ✅ Good
+                    </td>
+                </tr>
+            </table>
+        </div>
+
+        <div class="section">
+            <h2>📊 Monitoring Data Timeline</h2>
+            <div class="chart">
+                <p><strong>Monitoring Points:</strong> 14 samples over 15 minutes</p>                <p><strong>Average CPU:</strong> 12.1% | <strong>Peak CPU:</strong> 33.9%</p>
+                <p><strong>Average Memory:</strong> 82.8% | <strong>Peak Memory:</strong> 84.7%</p>
+                <table>
+                    <tr><th>Time</th><th>CPU %</th><th>Memory %</th><th>Health</th></tr>                    <tr>
+                        <td>23:58:39</td>
+                        <td>15.6%</td>
+                        <td>78.8%</td>
+                        <td>healthy</td>
+                    </tr>                    <tr>
+                        <td>23:59:46</td>
+                        <td>4.2%</td>
+                        <td>78.6%</td>
+                        <td>healthy</td>
+                    </tr>                    <tr>
+                        <td>00:00:55</td>
+                        <td>33.9%</td>
+                        <td>81.2%</td>
+                        <td>healthy</td>
+                    </tr>                    <tr>
+                        <td>00:02:10</td>
+                        <td>15.2%</td>
+                        <td>83%</td>
+                        <td>healthy</td>
+                    </tr>                    <tr>
+                        <td>00:03:22</td>
+                        <td>5.4%</td>
+                        <td>83.1%</td>
+                        <td>healthy</td>
+                    </tr>                    <tr>
+                        <td>00:04:36</td>
+                        <td>13%</td>
+                        <td>84.7%</td>
+                        <td>healthy</td>
+                    </tr>                    <tr>
+                        <td>00:05:49</td>
+                        <td>2.8%</td>
+                        <td>84.6%</td>
+                        <td>healthy</td>
+                    </tr>                    <tr>
+                        <td>00:07:02</td>
+                        <td>5.1%</td>
+                        <td>84.1%</td>
+                        <td>healthy</td>
+                    </tr>                    <tr>
+                        <td>00:08:07</td>
+                        <td>16%</td>
+                        <td>82.6%</td>
+                        <td>healthy</td>
+                    </tr>                    <tr>
+                        <td>00:09:11</td>
+                        <td>12.1%</td>
+                        <td>84.1%</td>
+                        <td>healthy</td>
+                    </tr><tr><td colspan='4'><em>... and 4 more data points</em></td></tr></table>            </div>
+        </div>
+
+        <div class="section">
+            <h2>💡 Recommendations</h2>
+            <ul>                <li class='success'>✅ Continue monitoring system performance during production use.</li>
+                <li class='success'>✅ Review log files regularly for any emerging issues.</li>
+                <li class='success'>✅ Consider setting up automated monitoring alerts.</li>
+                <li class='success'>✅ Test with actual document uploads for complete validation.</li>
+            </ul>
+        </div>
+
+        <div class="section">
+            <h2>📁 Test Artifacts</h2>
+            <ul>
+                <li><strong>Test Log:</strong> test_results\sociorag_test_20250528_235820.log</li>
+                <li><strong>Output Directory:</strong> test_results</li>
+                <li><strong>Backend URL:</strong> http://127.0.0.1:8000</li>
+                <li><strong>Frontend URL:</strong> http://localhost:5173</li>
+            </ul>
+        </div>
+
+        <div class="section">
+            <h2>🔗 Next Steps</h2>
+            <ol>
+                <li>Review this report for any performance concerns</li>
+                <li>Test document upload and Q&A functionality manually</li>
+                <li>Monitor the application during real-world usage</li>
+                <li>Set up production monitoring and alerting</li>
+                <li>Schedule regular performance testing</li>
+            </ol>
+        </div>
+
+        <footer style="margin-top: 30px; padding: 20px; background: #f8f9fa; border-radius: 5px; text-align: center; color: #666;">
+            <p>Report generated on 2025-05-29 00:14:20 by SocioRAG Test Runner</p>
+        </footer>
+    </div>
+</body>
+</html>
