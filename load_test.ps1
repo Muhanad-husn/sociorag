@@ -136,7 +136,7 @@ function Start-UserSimulation {
                 Endpoint = "/api/admin/health"
                 Error = $healthResult.Error
             }
-            Write-Log "❌ User $UserId: Health check failed - $($healthResult.Error)" "Red"
+            Write-Log "❌ User ${UserId}: Health check failed - $($healthResult.Error)" "Red"
         }
         
         # Test Q&A endpoint (if documents are loaded)
@@ -153,7 +153,7 @@ function Start-UserSimulation {
             $userResults.TotalResponseTime += $qaResult.ResponseTime
             $userResults.MinResponseTime = [math]::Min($userResults.MinResponseTime, $qaResult.ResponseTime)
             $userResults.MaxResponseTime = [math]::Max($userResults.MaxResponseTime, $qaResult.ResponseTime)
-            Write-Log "✅ User $UserId: Q&A request completed in $($qaResult.ResponseTime)ms" "Green"
+            Write-Log "✅ User ${UserId}: Q&A request completed in $($qaResult.ResponseTime)ms" "Green"
         }
         else {
             $userResults.FailedRequests++
@@ -163,7 +163,7 @@ function Start-UserSimulation {
                 Query = $query
                 Error = $qaResult.Error
             }
-            Write-Log "❌ User $UserId: Q&A request failed - $($qaResult.Error)" "Red"
+            Write-Log "❌ User ${UserId}: Q&A request failed - $($qaResult.Error)" "Red"
         }
         
         # Test metrics endpoint
