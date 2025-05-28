@@ -47,13 +47,23 @@ class _Config(BaseSettings):
     MAX_CONTEXT_FRACTION: float = 0.4
 
     # ---------------------- API keys ------------------- #
-    OPENROUTER_API_KEY: Optional[str] = None
-
-    # ---------------- resources & misc ---------------- #
+    OPENROUTER_API_KEY: Optional[str] = None    # ---------------- resources & misc ---------------- #
     SPACY_MODEL: str = "en_core_web_sm"
     LOG_LEVEL: str = "INFO"
     HISTORY_LIMIT: int = 15
     SAVED_LIMIT: int = 15
+    
+    # -------------- enhanced logging settings ---------- #
+    ENHANCED_LOGGING_ENABLED: bool = True
+    LOG_STRUCTURED_FORMAT: bool = True
+    LOG_CORRELATION_ENABLED: bool = True
+    LOG_PERFORMANCE_TRACKING: bool = True
+    LOG_FILE_RETENTION_DAYS: int = 30
+    LOG_MAX_FILE_SIZE_MB: int = 10
+    LOG_ROTATION_BACKUP_COUNT: int = 5
+    LOG_ASYNC_ENABLED: bool = False
+    LOG_ALERT_ERROR_THRESHOLD: int = 10  # errors per minute
+    LOG_ALERT_PERFORMANCE_THRESHOLD: float = 5.0  # seconds
 
     # pydantic-settings behavior
     model_config = SettingsConfigDict(

@@ -4,6 +4,7 @@ This module initializes the FastAPI application and includes all routers.
 """
 
 import sys
+import time
 
 # Check for help command early to avoid loading heavy dependencies
 if "--help" in sys.argv or "-h" in sys.argv:
@@ -46,13 +47,19 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 
+from .core.logging_middleware import LoggingMiddleware
+
 
 def create_app() -> FastAPI:
     """Create and configure the FastAPI application."""
-    # Initialize logging early
-    from backend.app.core.singletons import get_logger
-    logger = get_logger()
-    logger.info("Initializing SocioRAG FastAPI application...")
+    # Initialize enhanced logging early
+    from .core.enhanced_logger import get_enhanced_logger
+    logger = get_enhanced_logger()
+    
+    start_time = time.time()
+    with logger.correlation_context() as correlation_id:
+        logger.info(f"Initializing SocioRAG FastAPI application... [correlation_id: {correlation_id}]")
+        logger.log_operation_start("app_initialization")
     
     from .api.ingest import router as ingest_router
     from .api.qa import router as qa_router
@@ -62,7 +69,9 @@ def create_app() -> FastAPI:
     from .api.export import router as export_router
     from .api.admin import router as admin_router
     from .api.websocket_new import router as websocket_router
-      # Create FastAPI application
+    from .api.logs import router as logs_router
+    
+    # Create FastAPI application
     app = FastAPI(
         title="SocioGraph API",
         description="SocioGraph: AI-powered document analysis and knowledge graph generation",
@@ -101,9 +110,18 @@ def create_app() -> FastAPI:
             {
                 "name": "admin",
                 "description": "Administrative endpoints for system management"
+            },
+            {
+                "name": "logs",
+                "description": "Log analysis and monitoring endpoints"
             }
         ]
-    )# Add CORS middleware
+    )
+    
+    # Add logging middleware first
+    app.add_middleware(LoggingMiddleware)
+    
+    # Add CORS middleware
     app.add_middleware(
         CORSMiddleware,
         allow_origins=["*"],  # Allow all origins for development
@@ -112,7 +130,9 @@ def create_app() -> FastAPI:
         allow_headers=["*"],
         expose_headers=["Content-Disposition"],
         max_age=600,  # Cache preflight requests for 10 minutes
-    )    # Mount static files for serving saved PDFs
+    )
+    
+    # Mount static files for serving saved PDFs
     import os
     from pathlib import Path
     
@@ -127,8 +147,7 @@ def create_app() -> FastAPI:
     
     app.mount("/static/saved", StaticFiles(directory=str(saved_dir)), name="saved")
 
-    # Include routers
-    app.include_router(ingest_router)
+    # Include routers    app.include_router(ingest_router)
     app.include_router(qa_router)
     app.include_router(history_router)
     app.include_router(documents_router)
@@ -136,6 +155,7 @@ def create_app() -> FastAPI:
     app.include_router(export_router)
     app.include_router(admin_router)
     app.include_router(websocket_router)
+    app.include_router(logs_router)
     
     logger.info("All API routers registered successfully")
 
@@ -144,7 +164,9 @@ def create_app() -> FastAPI:
         """Root endpoint for API health check."""
         return {"status": "ok", "message": "SocioGraph API is running"}
     
-    logger.info("SocioRAG FastAPI application initialization complete")
+    duration = time.time() - start_time
+    logger.log_operation_end("app_initialization", success=True, duration=duration)
+    logger.info(f"SocioRAG FastAPI application initialization complete in {duration:.2f}s")
     return app
 
 
@@ -157,9 +179,9 @@ def main():
     """Main CLI entry point for SocioGraph API server."""
     import argparse
     
-    # Initialize logging early for startup messages
-    from backend.app.core.singletons import get_logger
-    logger = get_logger()
+    # Initialize enhanced logging early for startup messages
+    from .core.enhanced_logger import get_enhanced_logger
+    logger = get_enhanced_logger()
     
     parser = argparse.ArgumentParser(description="SocioGraph API Server")
     parser.add_argument(
@@ -191,7 +213,8 @@ def main():
         help="Log level (default: info)"
     )
     args = parser.parse_args()
-      # Import uvicorn when starting the server
+    
+    # Import uvicorn when starting the server
     import uvicorn
     
     logger.info("Starting SocioGraph API server...")

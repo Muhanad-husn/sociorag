@@ -98,8 +98,7 @@ class LoggerSingleton(metaclass=_SingletonMeta):
                     '%(asctime)s - %(name)s - %(levelname)s - %(filename)s:%(lineno)d - %(message)s'
                 ))
                 self._logger.addHandler(debug_handler)
-                
-                # Error file handler for errors only
+                  # Error file handler for errors only
                 error_handler = RotatingFileHandler(
                     logs_dir / "sociorag_errors.log",
                     maxBytes=5*1024*1024,   # 5MB
@@ -107,9 +106,12 @@ class LoggerSingleton(metaclass=_SingletonMeta):
                 )
                 error_handler.setLevel(logging.ERROR)
                 error_handler.setFormatter(logging.Formatter(
-                    '%(asctime)s - %(name)s - %(levelname)s - %(filename)s:%(lineno)d - %(message)s\n%(exc_info)s'
+                    '%(asctime)s - %(name)s - %(levelname)s - %(filename)s:%(lineno)d - %(message)s'
                 ))
                 self._logger.addHandler(error_handler)
+                
+                # Prevent duplicate messages
+                self._logger.propagate = False
                 
         return self._logger
 
