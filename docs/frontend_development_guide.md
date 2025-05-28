@@ -543,7 +543,7 @@ Create `.env` files for different environments:
 VITE_API_BASE_URL=http://localhost:8000
 
 # .env.production
-VITE_API_BASE_URL=https://api.sociograph.com
+VITE_API_BASE_URL=https://api.sociorag.com
 ```
 
 ## Troubleshooting
@@ -621,4 +621,4 @@ git push origin feature/new-component
 
 ---
 
-This guide provides the foundation for developing and maintaining the SocioGraph frontend. For specific implementation details, refer to the existing code examples in the project.
+This guide provides the foundation for developing and maintaining the SocioRAG frontend. For specific implementation details, refer to the existing code examples in the project.

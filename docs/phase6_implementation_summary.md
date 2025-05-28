@@ -1,4 +1,4 @@
-# SocioGraph Phase 6 Implementation Summary
+# SocioRAG Phase 6 Implementation Summary
 
 ## Overview
 

@@ -6,7 +6,7 @@
 
 ## Overview
 
-Phase 5 successfully implements the core answer generation and PDF export functionality for SocioGraph. This phase transforms retrieved context from Phase 4 into streaming, user-friendly answers with automatic PDF generation and history tracking.
+Phase 5 successfully implements the core answer generation and PDF export functionality for SocioRAG. This phase transforms retrieved context from Phase 4 into streaming, user-friendly answers with automatic PDF generation and history tracking.
 
 ## 🎯 Objectives Achieved
 

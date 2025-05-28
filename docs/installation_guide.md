@@ -1,4 +1,4 @@
-# SocioGraph Installation & Setup Guide
+# SocioRAG Installation & Setup Guide
 
 ## Quick Start
 
@@ -53,7 +53,7 @@ cd sociorag
 conda env create -f environment.yml
 
 # 4. Activate the environment
-conda activate sociograph
+conda activate sociorag
 
 # 5. Download required spaCy model
 python -m spacy download en_core_web_sm
@@ -539,4 +539,4 @@ See the contribution guidelines for:
 - Pull request process
 - Development workflow
 
-This installation guide should get you up and running with SocioGraph quickly and reliably. Follow the troubleshooting section if you encounter any issues during setup.
+This installation guide should get you up and running with SocioRAG quickly and reliably. Follow the troubleshooting section if you encounter any issues during setup.

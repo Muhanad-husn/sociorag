@@ -1,4 +1,4 @@
-# SocioGraph Configuration Guide
+# SocioRAG Configuration Guide
 
 ## Overview
 

@@ -2,7 +2,7 @@
 
 ## Overview
 
-This document summarizes the housekeeping tasks completed after the successful implementation of Phase 6 (API Integration & FastAPI Backend) of the SocioGraph project.
+This document summarizes the housekeeping tasks completed after the successful implementation of Phase 6 (API Integration & FastAPI Backend) of the SocioRAG project.
 
 ## Tasks Completed
 

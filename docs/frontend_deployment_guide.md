@@ -1,7 +1,7 @@
 # Frontend Deployment Guide
 
 ## Overview
-This guide covers deployment strategies, environment configuration, and production optimization for the SocioGraph frontend application built with Preact + Vite.
+This guide covers deployment strategies, environment configuration, and production optimization for the SocioRAG frontend application built with Preact + Vite.
 
 ## 🚀 Quick Deployment
 

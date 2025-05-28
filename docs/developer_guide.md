@@ -1,4 +1,4 @@
-# SocioGraph Developer Guide
+# SocioRAG Developer Guide
 
 ## Development Environment Setup
 
@@ -22,7 +22,7 @@ cd sociorag
 
 # Create development environment
 conda env create -f environment.yml
-conda activate sociograph
+conda activate sociorag
 
 # Or using pip
 python -m venv .venv
@@ -453,24 +453,24 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-class SocioGraphException(Exception):
-    """Base exception for SocioGraph application."""
+class SocioRAGException(Exception):
+    """Base exception for SocioRAG application."""
     def __init__(self, message: str, details: Dict[str, Any] = None):
         self.message = message
         self.details = details or {}
         super().__init__(message)
 
-class LLMError(SocioGraphException):
+class LLMError(SocioRAGException):
     """LLM-related errors."""
     pass
 
-class RetrievalError(SocioGraphException):
+class RetrievalError(SocioRAGException):
     """Document retrieval errors."""
     pass
 
 def handle_api_error(e: Exception) -> HTTPException:
     """Convert application exceptions to HTTP exceptions."""
-    if isinstance(e, SocioGraphException):
+    if isinstance(e, SocioRAGException):
         logger.error(f"Application error: {e.message}", extra=e.details)
         return HTTPException(status_code=400, detail=e.message)
     else:
@@ -797,4 +797,4 @@ async def debug_llm_connection():
    - Run migration scripts
    - Monitor for issues
 
-This developer guide provides comprehensive information for contributing to SocioGraph effectively. Follow these guidelines to maintain code quality and consistency across the project.
+This developer guide provides comprehensive information for contributing to SocioRAG effectively. Follow these guidelines to maintain code quality and consistency across the project.

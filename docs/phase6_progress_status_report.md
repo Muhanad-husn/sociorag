@@ -1,13 +1,13 @@
 # SocioRAG Phase 6 Progress Status Report
 
 **Date:** May 26, 2025  
-**Project:** SocioGraph  
+**Project:** SocioRAG  
 **Phase:** 6 (API Integration & FastAPI Backend)  
 **Status:** ✅ COMPLETED
 
 ## Executive Summary
 
-Phase 6 of the SocioGraph project has been successfully completed. This phase focused on implementing a comprehensive FastAPI backend with full API coverage for document management, real-time communication, and history tracking. All planned endpoints are operational, including REST API endpoints, Server-Sent Events (SSE) for streaming, and WebSocket support for bidirectional communication.
+Phase 6 of the SocioRAG project has been successfully completed. This phase focused on implementing a comprehensive FastAPI backend with full API coverage for document management, real-time communication, and history tracking. All planned endpoints are operational, including REST API endpoints, Server-Sent Events (SSE) for streaming, and WebSocket support for bidirectional communication.
 
 ## Key Accomplishments
 

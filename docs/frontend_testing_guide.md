@@ -1,7 +1,7 @@
 # Frontend Testing Guide
 
 ## Overview
-Comprehensive testing strategy for the SocioGraph frontend application, covering unit tests, integration tests, and end-to-end testing approaches.
+Comprehensive testing strategy for the SocioRAG frontend application, covering unit tests, integration tests, and end-to-end testing approaches.
 
 ## 🧪 Testing Strategy
 
@@ -221,7 +221,7 @@ describe('useLocalState', () => {
       result.current.setTheme('dark');
     });
 
-    const stored = JSON.parse(localStorage.getItem('sociograph-state') || '{}');
+    const stored = JSON.parse(localStorage.getItem('sociorag-state') || '{}');
     expect(stored.state.theme).toBe('dark');
   });
 });

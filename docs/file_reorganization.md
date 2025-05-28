@@ -2,7 +2,7 @@
 
 ## Overview
 
-This document records the reorganization of files in the SocioGraph project to improve the project structure and organization.
+This document records the reorganization of files in the SocioRAG project to improve the project structure and organization.
 
 ## Changes Made
 

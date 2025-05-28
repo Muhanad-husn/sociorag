@@ -1,4 +1,4 @@
-# SocioGraph Phase 6 Implementation Plan
+# SocioRAG Phase 6 Implementation Plan
 
 ## Phase 6 Overview: FastAPI Back-End Completion
 
@@ -563,4 +563,4 @@ async def test_complete_document_workflow(authenticated_client, sample_document)
 - [ ] Code review and quality checks completed
 - [ ] Documentation review and validation
 
-Phase 6 completion will provide a comprehensive, production-ready FastAPI backend that supports all core SocioGraph functionality with proper authentication, monitoring, and documentation. This foundation will enable the development of rich frontend applications and third-party integrations.
+Phase 6 completion will provide a comprehensive, production-ready FastAPI backend that supports all core SocioRAG functionality with proper authentication, monitoring, and documentation. This foundation will enable the development of rich frontend applications and third-party integrations.
