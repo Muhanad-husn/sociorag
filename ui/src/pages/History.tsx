@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'preact/hooks';
-import { getHistory, createSearchStream } from '../lib/api';
-import { useSSE } from '../hooks/useSSE';
+import { getHistory, askQuestion, type AskResponse } from '../lib/api';
+import { useAsyncRequest } from '../hooks/useAsyncRequest';
 import { useAppStore } from '../hooks/useLocalState';
 import { StreamAnswer } from '../components/StreamAnswer';
 import { t } from '../lib/i18n';
@@ -20,10 +20,9 @@ export function History() {
   const [historyItems, setHistoryItems] = useState<HistoryItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedItem, setSelectedItem] = useState<HistoryItem | null>(null);
-  const [searchSource, setSearchSource] = useState<EventSource | null>(null);
+  const [rerunAnswer, setRerunAnswer] = useState('');
   const { settings } = useAppStore();
-
-  const { text: rerunAnswer, isComplete, error } = useSSE(searchSource);
+  const { execute: executeRerun, loading: isRerunning, error } = useAsyncRequest<AskResponse>();
 
   useEffect(() => {
     loadHistory();
@@ -42,15 +41,19 @@ export function History() {
     }
   };
 
-  const handleRerun = (item: HistoryItem) => {
-    // Close existing search if any
-    if (searchSource) {
-      searchSource.close();
-    }
-    
+  const handleRerun = async (item: HistoryItem) => {
     setSelectedItem(item);
-    const source = createSearchStream(item.query, settings);
-    setSearchSource(source);
+    setRerunAnswer('');
+    
+    try {
+      const response = await executeRerun(() => askQuestion(item.query, settings));
+      if (response) {
+        setRerunAnswer(response.answer);
+      }
+    } catch (err) {
+      console.error('Rerun error:', err);
+      setRerunAnswer('');
+    }
   };
 
   const formatTimestamp = (timestamp: string) => {
@@ -92,14 +95,10 @@ export function History() {
           <Card className="p-6">
             <div className="space-y-4">
               <div className="flex items-center justify-between">
-                <h3 className="text-lg font-semibold">Rerun Results</h3>
-                <button
+                <h3 className="text-lg font-semibold">Rerun Results</h3>                <button
                   onClick={() => {
                     setSelectedItem(null);
-                    if (searchSource) {
-                      searchSource.close();
-                      setSearchSource(null);
-                    }
+                    setRerunAnswer('');
                   }}
                   className="btn-secondary"
                 >
@@ -114,7 +113,7 @@ export function History() {
               
               <StreamAnswer
                 markdown={rerunAnswer}
-                isComplete={isComplete}
+                isComplete={!isRerunning}
                 error={error}
               />
             </div>

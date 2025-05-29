@@ -3,38 +3,32 @@ import { SearchBar } from '../components/SearchBar';
 import { StreamAnswer } from '../components/StreamAnswer';
 import { FileUploader } from '../components/FileUploader';
 import { ProgressBar } from '../components/ProgressBar';
-import { useSSE } from '../hooks/useSSE';
+import { useAsyncRequest } from '../hooks/useAsyncRequest';
 import { useAppStore } from '../hooks/useLocalState';
-import { createSearchStream } from '../lib/api';
+import { askQuestion, type AskResponse } from '../lib/api';
 import { t } from '../lib/i18n';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '../components/ui/Tabs';
 import { Card } from '../components/ui/Card';
 
 export function Home() {
   const { currentQuery, setCurrentQuery, settings, isProcessing, setIsProcessing } = useAppStore();
-  const [searchSource, setSearchSource] = useState<EventSource | null>(null);
   const [activeTab, setActiveTab] = useState('search');
+  const [answer, setAnswer] = useState('');
   
-  const { text: answer, isComplete, error } = useSSE(searchSource, {
-    onComplete: () => {
-      console.log('Search completed');
-    },
-    onError: (error) => {
-      console.error('Search error:', error);
-    }
-  });
+  const { execute: executeSearch, loading: isSearching, error } = useAsyncRequest<AskResponse>();
 
-  const handleSearch = () => {
+  const handleSearch = async () => {
     if (!currentQuery.trim()) return;
     
-    // Close existing search if any
-    if (searchSource) {
-      searchSource.close();
+    try {
+      const response = await executeSearch(() => askQuestion(currentQuery, settings));
+      if (response) {
+        setAnswer(response.answer);
+      }
+    } catch (err) {
+      console.error('Search error:', err);
+      setAnswer('');
     }
-    
-    // Create new search stream
-    const source = createSearchStream(currentQuery, settings);
-    setSearchSource(source);
   };
 
   const handleUploadStart = () => {
@@ -75,13 +69,12 @@ export function Home() {
           </TabsList>
 
           <TabsContent value="search" className="space-y-6">
-            {/* Search Section */}
-            <Card className="p-6">
+            {/* Search Section */}            <Card className="p-6">
               <SearchBar
                 value={currentQuery}
                 onChange={setCurrentQuery}
                 onSubmit={handleSearch}
-                disabled={!!searchSource && !isComplete}
+                disabled={isSearching}
               />
             </Card>
 
@@ -89,7 +82,7 @@ export function Home() {
             {(answer || error) && (
               <StreamAnswer
                 markdown={answer}
-                isComplete={isComplete}
+                isComplete={!isSearching}
                 error={error}
               />
             )}

@@ -380,26 +380,26 @@ class LLMClientSingleton(metaclass=_SingletonMeta):
     def __init__(self):
         self._api_key = None
         self._logger = LoggerSingleton().get()
-        
+
     def get_api_key(self) -> str:
         """Get OpenRouter API key from configuration."""
         if self._api_key is None:
             from .config import get_config
             cfg = get_config()
             self._api_key = cfg.OPENROUTER_API_KEY
-            if not self._api_key:
-                raise ValueError("OPENROUTER_API_KEY not set in configuration or environment variables")
+        if not self._api_key:        raise ValueError("OPENROUTER_API_KEY not set in configuration or environment variables")
         return self._api_key
+
     async def create_chat(
         self,
         model: str,
         messages: List[Dict[str, str]],
         temperature: float = 0.7,
         max_tokens: Optional[int] = None,
-        stream: bool = True,
+        stream: bool = False,
         **kwargs
     ) -> AsyncGenerator[str, None]:
-        """Create a chat completion with streaming."""
+        """Create a chat completion (non-streaming only)."""
         # Ensure API key is available
         self.get_api_key()
         
@@ -408,12 +408,11 @@ class LLMClientSingleton(metaclass=_SingletonMeta):
             from openrouter.client import create_chat_completion
             from openrouter.models.request import ChatCompletionRequest
             
-            # Create request with simple dict messages
+            # Always use non-streaming mode
             request_data = {
                 "model": model,
                 "messages": messages,
-                "temperature": temperature,
-                "stream": stream,
+                "temperature": temperature,            "stream": False,  # Always disable streaming
                 **kwargs
             }
             
@@ -422,106 +421,34 @@ class LLMClientSingleton(metaclass=_SingletonMeta):
             
             request = ChatCompletionRequest(**request_data)
             
-            # For non-streaming, use a simpler approach
-            if not stream:
+            # Get complete response (non-streaming)
+            try:
                 response = await create_chat_completion(request)
-                content = self._extract_response_content(response)
+                content = self._extract_response_content(response)                
                 if content:
                     yield content
-                else:                    # Log raw response for debugging
+                else:
+                    # Log raw response for debugging
                     import logging
                     logging.debug(f"Raw non-streaming response: {response}")
                     yield f"Error: Could not extract content from response"
-                return
-              # For streaming, handle chunks
-            response = await create_chat_completion(request)
-            
-            # Debug: Log response details
-            self._logger.info(f"OpenRouter response type: {type(response)}")
-            self._logger.info(f"OpenRouter response attributes: {[attr for attr in dir(response) if not attr.startswith('_')]}")            # Check if response has __aiter__ method for async iteration
-            complete_content = ""
-            if hasattr(response, '__aiter__'):
-                self._logger.info("Using __aiter__ method for streaming")
-                try:
-                    async for chunk in response:  # type: ignore
-                        content = self._extract_chunk_content(chunk)
-                        if content:
-                            complete_content += content
-                            yield content
-                except Exception as e:
-                    self._logger.error(f"Error using __aiter__: {e}")
-                    yield f"Error: Failed to iterate response"
-            elif hasattr(response, 'iter_chunks'):
-                self._logger.info("Using iter_chunks method for streaming")
-                try:
-                    # Some clients use iter_chunks method
-                    async for chunk in response.iter_chunks():  # type: ignore
-                        content = self._extract_chunk_content(chunk)
-                        if content:
-                            complete_content += content
-                            yield content                
-                except Exception as e:
-                    self._logger.error(f"Error using iter_chunks: {e}")
-                    yield f"Error: Failed to iterate chunks"
-            elif hasattr(response, 'content'):
-                self._logger.info("Using content attribute directly")
-                # If response has content directly, extract it
-                content = self._extract_response_content(response)
+            except TypeError:
+                # If await fails, try without await (some client versions)
+                response = create_chat_completion(request)  # type: ignore
+                content = self._extract_response_content(response)                
                 if content:
                     yield content
-                    complete_content = content
-            elif hasattr(response, 'body_iterator'):
-                self._logger.info("Handling StreamingResponse with body_iterator")
-                # Handle Starlette StreamingResponse
-                try:
-                    async for chunk in response.body_iterator:  # type: ignore
-                        if isinstance(chunk, bytes):
-                            chunk_text = chunk.decode('utf-8')
-                        else:
-                            chunk_text = str(chunk)
-                        
-                        # Try to extract content from the chunk
-                        content = self._extract_chunk_content_from_text(chunk_text)
-                        if content:
-                            complete_content += content
-                            yield content
-                except Exception as e:
-                    self._logger.error(f"Error iterating StreamingResponse: {e}")
-                    yield f"Error: Failed to process streaming response"
-            else:
-                # Try to handle as a simple response object
-                self._logger.error(f"Unknown response format - Type: {type(response)}, Dir: {dir(response)}")
-                self._logger.error(f"Response content attempt: {getattr(response, 'content', 'NO CONTENT ATTR')}")
-                self._logger.error(f"Response choices attempt: {getattr(response, 'choices', 'NO CHOICES ATTR')}")
-                content = self._extract_response_content(response)
-                if content:
-                    yield content
-                    complete_content = content
                 else:
-                    yield f"Error: Unknown response format from streaming request"
-            
-            # If streaming resulted in empty content, log for debugging
-            if not complete_content:
-                import logging
-                logging.debug(f"Raw streaming response produced no content.")
-                yield f"Error: No content from streaming response"
+                    # Log raw response for debugging
+                    import logging
+                    logging.debug(f"Raw non-streaming response: {response}")
+                    yield f"Error: Could not extract content from response"
                         
         except ImportError:
             # Fallback for testing when openrouter is not available
             yield f"Mock LLM response for model {model}: {messages[-1]['content']}"
-        except Exception as e:            # Handle other errors gracefully
+        except Exception as e:              # Handle other errors gracefully
             yield f"Error: {str(e)}"
-
-    def _extract_chunk_content(self, chunk) -> Optional[str]:
-        """Extract content from a streaming chunk."""
-        try:
-            if hasattr(chunk, 'choices') and chunk.choices:
-                choice = chunk.choices[0]
-                if hasattr(choice, 'delta') and choice.delta:
-                    return getattr(choice.delta, 'content', None)
-        except (AttributeError, IndexError, TypeError):
-            pass
-        return None
 
     def _extract_response_content(self, response) -> Optional[str]:
         """Extract content from a complete response."""
@@ -532,34 +459,6 @@ class LLMClientSingleton(metaclass=_SingletonMeta):
                     return getattr(choice.message, 'content', None)
         except (AttributeError, IndexError, TypeError):
             pass
-        return None
-
-    def _extract_chunk_content_from_text(self, chunk_text: str) -> Optional[str]:
-        """Extract content from a text chunk (for StreamingResponse handling)."""
-        try:
-            import json
-            # Try to parse as JSON (common for SSE format)
-            if chunk_text.startswith('data: '):
-                json_str = chunk_text[6:].strip()
-                if json_str and json_str != '[DONE]':
-                    data = json.loads(json_str)
-                    if 'choices' in data and data['choices']:
-                        choice = data['choices'][0]
-                        if 'delta' in choice and 'content' in choice['delta']:
-                            return choice['delta']['content']
-            elif chunk_text.strip():
-                # Try to parse as direct JSON
-                data = json.loads(chunk_text)
-                if 'choices' in data and data['choices']:
-                    choice = data['choices'][0]
-                    if 'delta' in choice and 'content' in choice['delta']:
-                        return choice['delta']['content']
-                    elif 'message' in choice and 'content' in choice['message']:
-                        return choice['message']['content']
-        except (json.JSONDecodeError, KeyError, IndexError, TypeError):
-            # If JSON parsing fails, check if it's plain text content
-            if chunk_text.strip() and not chunk_text.startswith(('data:', 'event:', 'id:')):
-                return chunk_text
         return None
 
     async def create_entity_extraction_chat(

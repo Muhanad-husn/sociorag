@@ -2,7 +2,6 @@
 fastapi==0.115.9
 uvicorn[standard]==0.34.2
 starlette==0.45.3
-sse-starlette==2.2.0
 asgiref==3.8.1
 httpx==0.28.1
 

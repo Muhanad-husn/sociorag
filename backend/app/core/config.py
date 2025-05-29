@@ -18,8 +18,7 @@ class _Config(BaseSettings):
     PDF_THEME: Path = Field(default_factory=lambda: Path(__file__).resolve().parent.parent.parent.parent / "resources" / "pdf_theme.css")    # ---------------------- models --------------------- #
     EMBEDDING_MODEL: str = "sentence-transformers/all-MiniLM-L6-v2"
     RERANKER_MODEL: str = "cross-encoder/ms-marco-MiniLM-L-6-v2"  # Fixed model name with hyphen in L-6
-    
-    # Entity extraction LLM parameters
+      # Entity extraction LLM parameters
     ENTITY_LLM_MODEL: str = "google/gemini-flash-1.5"
     ENTITY_LLM_TEMPERATURE: float = 0.3
     ENTITY_LLM_MAX_TOKENS: int = 3000
@@ -30,13 +29,13 @@ class _Config(BaseSettings):
     ANSWER_LLM_TEMPERATURE: float = 0.5
     ANSWER_LLM_CONTEXT_WINDOW: int = 128000
     ANSWER_LLM_MAX_TOKENS: int = 4000
-    ANSWER_LLM_STREAM: bool = True
+    ANSWER_LLM_STREAM: bool = False
     
     # Translation LLM parameters
     TRANSLATE_LLM_MODEL: str = "mistralai/mistral-nemo:free"
     TRANSLATE_LLM_TEMPERATURE: float = 0.5
     TRANSLATE_LLM_MAX_TOKENS: int = 5000
-    TRANSLATE_LLM_STREAM: bool = True    # ---------------- thresholds & params -------------- #
+    TRANSLATE_LLM_STREAM: bool = False# ---------------- thresholds & params -------------- #
     CHUNK_SIM: float = 0.85
     ENTITY_SIM: float = 0.90
     GRAPH_SIM: float = 0.50

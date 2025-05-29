@@ -4,15 +4,15 @@ This module provides API endpoints for:
 1. Resetting the corpus (/reset)
 2. Uploading PDF files (/upload)
 3. Processing files in the input directory (/process)
-4. Streaming progress updates (/progress)
+4. Polling progress updates (/progress)
 """
 
 from fastapi import APIRouter, UploadFile, BackgroundTasks, HTTPException, status
-from fastapi.responses import StreamingResponse
+from fastapi.responses import JSONResponse
 import json
 import asyncio
 import time
-from typing import Dict, Any, List, AsyncGenerator
+from typing import Dict, Any, List
 from concurrent.futures import ThreadPoolExecutor
 
 from backend.app.core.config import get_config
@@ -152,50 +152,23 @@ async def process_endpoint(tasks: BackgroundTasks):
 
 
 @router.get("/progress",
-           summary="Stream processing progress",
-           description="Stream progress updates from the ingestion pipeline as Server-Sent Events (SSE).")
-async def progress():
-    """Stream progress updates from the ingestion pipeline.
+           summary="Get processing progress",
+           description="Get current progress status from the ingestion pipeline.")
+async def progress() -> Dict[str, Any]:
+    """Get current progress status from the ingestion pipeline.
     
-    Returns Server-Sent Events (SSE) with progress information.
-    This endpoint does NOT start processing - it only streams the status of existing processes.
+    Returns JSON with progress information including status, progress percentage,
+    current phase, and any error messages.
     """
-    
-    async def progress_stream():
-        """Generate progress updates as a stream with heartbeats."""
+    try:
         process_id = "ingest_pipeline"
-        heartbeat_interval = 5  # seconds
-        last_heartbeat = time.time()
         
-        try:
-            # Check if there's an active process
-            while True:
-                current_time = time.time()
-                
-                # Get current state
-                state = _process_manager.get_state(process_id)
-                
-                # Send state update
-                yield f"data: {json.dumps(state.to_dict())}\n\n"
-                
-                # If process is completed or error, send final update and exit
-                if state.status in [ProcessStatus.COMPLETED, ProcessStatus.ERROR]:
-                    yield f"event: complete\ndata: {json.dumps(state.to_dict())}\n\n"
-                    break
-                
-                # Add heartbeat if needed
-                if current_time - last_heartbeat > heartbeat_interval:
-                    last_heartbeat = current_time
-                    yield f"event: heartbeat\ndata: {current_time}\n\n"
-                
-                # Wait a bit before next update
-                await asyncio.sleep(1)
-                    
-        except Exception as e:
-            _logger.error(f"Error in progress stream: {str(e)}")
-            yield f"event: error\ndata: {json.dumps({'error': str(e)})}\n\n"
-    
-    return StreamingResponse(
-        progress_stream(),
-        media_type="text/event-stream"
-    )
+        # Get current state
+        state = _process_manager.get_state(process_id)
+        
+        # Return state as JSON
+        return state.to_dict()
+        
+    except Exception as e:
+        _logger.error(f"Error getting progress status: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Error getting progress status: {str(e)}")

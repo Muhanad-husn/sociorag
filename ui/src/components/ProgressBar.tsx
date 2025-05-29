@@ -1,6 +1,6 @@
-import { useEffect, useState } from 'preact/hooks';
-import { useProgressSSE } from '../hooks/useSSE';
-import { createProgressStream } from '../lib/api';
+import { useEffect } from 'preact/hooks';
+import { useProgressPolling } from '../hooks/useAsyncRequest';
+import { getProcessingProgress } from '../lib/api';
 import { t } from '../lib/i18n';
 import { CheckCircle, Loader } from 'lucide-preact';
 import clsx from 'clsx';
@@ -11,35 +11,14 @@ interface ProgressBarProps {
 }
 
 export function ProgressBar({ isVisible, onComplete }: ProgressBarProps) {
-  const [progressSource, setProgressSource] = useState<EventSource | null>(null);
-  const { progress, status, isComplete } = useProgressSSE(progressSource);
-
-  useEffect(() => {
-    if (isVisible && !progressSource) {
-      const source = createProgressStream();
-      setProgressSource(source);
-    } else if (!isVisible && progressSource) {
-      progressSource.close();
-      setProgressSource(null);
-    }
-
-    return () => {
-      if (progressSource) {
-        progressSource.close();
-      }
-    };
-  }, [isVisible]);
+  const { progress, status, isComplete } = useProgressPolling(
+    isVisible ? getProcessingProgress : null,
+    1000 // Poll every 1 second
+  );
 
   useEffect(() => {
     if (isComplete) {
       onComplete?.();
-      // Auto-hide after completion
-      setTimeout(() => {
-        if (progressSource) {
-          progressSource.close();
-          setProgressSource(null);
-        }
-      }, 3000);
     }
   }, [isComplete, onComplete]);
 
