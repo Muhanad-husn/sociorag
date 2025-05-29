@@ -49,8 +49,8 @@ export interface AppState {
 
 const defaultSettings: Settings = {
   // Search parameters
-  topK: 5,
-  topKR: 3,
+  topK: 80,  // Default for vector retrieval
+  topKR: 15, // Default for reranking
   
   // LLM parameters
   temperature: 0.5,

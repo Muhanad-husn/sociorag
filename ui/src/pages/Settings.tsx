@@ -2,7 +2,14 @@ import { useState, useEffect } from 'preact/hooks';
 import { useAppStore } from '../hooks/useLocalState';
 import { resetCorpus, getSystemConfig, getSystemHealth, updateApiKeys, updateLLMSettings, getLLMSettings } from '../lib/api';
 import type { SystemConfig, HealthStatus, ApiKeyUpdate } from '../lib/api';
-import { t } from '../lib/i18n';
+import { t } from              <p className="text-xs text-muted-foreground">
+                Number of top results to retrieve from vector store (5-250)
+              </p>
+              <div className="flex items-center space-x-3">
+                <input
+                  type="range"
+                  min="5"
+                  max="250"/i18n';
 import { Card } from '../components/ui/Card';
 import { Moon, Sun, Settings as SettingsIcon, AlertTriangle, Save, Shield, CheckCircle, XCircle, RefreshCw } from 'lucide-preact';
 import { toast } from 'sonner';
@@ -51,8 +58,7 @@ export function Settings() {
     try {
       const response = await getLLMSettings();
       if (response.success) {
-        // Update tempSettings with backend values if they exist
-        setTempSettings(prev => ({
+        // Update tempSettings with backend values if they exist        setTempSettings(prev => ({
           ...prev,
           entityModel: response.data.entity_llm_model || prev.entityModel,
           answerModel: response.data.answer_llm_model || prev.answerModel,
@@ -60,6 +66,8 @@ export function Settings() {
           temperature: response.data.answer_llm_temperature !== undefined ? response.data.answer_llm_temperature : prev.temperature,
           maxTokensAnswer: response.data.answer_llm_max_tokens || prev.maxTokensAnswer,
           contextWindow: response.data.answer_llm_context_window || prev.contextWindow,
+          topK: response.data.top_k || prev.topK,
+          topKR: response.data.top_k_rerank || prev.topKR,
         }));
       }
     } catch (error) {
@@ -74,14 +82,15 @@ export function Settings() {
     
     // Update LLM settings on the backend
     try {
-      // Only send changed LLM-related settings to the backend
-      const llmSettingsToUpdate = {
+      // Only send changed LLM-related settings to the backend      const llmSettingsToUpdate = {
         entity_llm_model: tempSettings.entityModel !== settings.entityModel ? tempSettings.entityModel : undefined,
         answer_llm_model: tempSettings.answerModel !== settings.answerModel ? tempSettings.answerModel : undefined,
         translate_llm_model: tempSettings.translateModel !== settings.translateModel ? tempSettings.translateModel : undefined,
         answer_llm_temperature: tempSettings.temperature !== settings.temperature ? tempSettings.temperature : undefined,
         answer_llm_max_tokens: tempSettings.maxTokensAnswer !== settings.maxTokensAnswer ? tempSettings.maxTokensAnswer : undefined,
-        answer_llm_context_window: tempSettings.contextWindow !== settings.contextWindow ? tempSettings.contextWindow : undefined
+        answer_llm_context_window: tempSettings.contextWindow !== settings.contextWindow ? tempSettings.contextWindow : undefined,
+        top_k: tempSettings.topK !== settings.topK ? tempSettings.topK : undefined,
+        top_k_rerank: tempSettings.topKR !== settings.topKR ? tempSettings.topKR : undefined
       };
       
       // Only make API call if there are settings to update
@@ -101,10 +110,10 @@ export function Settings() {
       console.error('Failed to update LLM settings:', error);
       toast.error('Failed to save LLM settings on the server');
     }
-  };const handleResetDefaults = () => {
+  };  const handleResetDefaults = () => {
     const defaultSettings = {
-      topK: 5,
-      topKR: 3,
+      topK: 80,
+      topKR: 15,
       temperature: 0.5,
       translateToArabic: false,
       entityModel: "google/gemini-flash-1.5",
@@ -323,18 +332,16 @@ export function Settings() {
         <Card className="p-6">
           <h2 className="text-xl font-semibold mb-4">{t('settings.search')}</h2>
           
-          <div className="space-y-6">
-            {/* Top K */}
-            <div className="space-y-2">
+          <div className="space-y-6">            {/* Top K */}            <div className="space-y-2">
               <label className="text-sm font-medium">{t('settings.topK')}</label>
               <p className="text-xs text-muted-foreground">
-                Number of top results to retrieve (1-20)
+                Number of top results to retrieve from vector store (5-250)
               </p>
               <div className="flex items-center space-x-3">
                 <input
                   type="range"
-                  min="1"
-                  max="20"
+                  min="5"
+                  max="250"
                   value={tempSettings.topK}
                   onChange={(e) => setTempSettings(prev => ({ 
                     ...prev, 
@@ -342,23 +349,20 @@ export function Settings() {
                   }))}
                   className="flex-1"
                 />
-                <span className="text-sm font-mono w-8 text-center">
+                <span className="text-sm font-mono w-12 text-center">
                   {tempSettings.topK}
                 </span>
               </div>
-            </div>
-
-            {/* Top K Rerank */}
+            </div>{/* Top K Rerank */}
             <div className="space-y-2">
-              <label className="text-sm font-medium">{t('settings.topKR')}</label>
-              <p className="text-xs text-muted-foreground">
-                Number of results to rerank (1-10)
+              <label className="text-sm font-medium">{t('settings.topKR')}</label>              <p className="text-xs text-muted-foreground">
+                Number of results to rerank and display (3-100)
               </p>
               <div className="flex items-center space-x-3">
                 <input
                   type="range"
-                  min="1"
-                  max="10"
+                  min="3"
+                  max="100"
                   value={tempSettings.topKR}
                   onChange={(e) => setTempSettings(prev => ({ 
                     ...prev, 
@@ -366,7 +370,7 @@ export function Settings() {
                   }))}
                   className="flex-1"
                 />
-                <span className="text-sm font-mono w-8 text-center">
+                <span className="text-sm font-mono w-12 text-center">
                   {tempSettings.topKR}
                 </span>
               </div>

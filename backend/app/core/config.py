@@ -40,8 +40,8 @@ class _Config(BaseSettings):
     CHUNK_SIM: float = 0.85
     ENTITY_SIM: float = 0.90
     GRAPH_SIM: float = 0.50
-    TOP_K: int = 100
-    TOP_K_RERANK: int = 15
+    TOP_K: int = 80  # Default value for vector retrieval
+    TOP_K_RERANK: int = 15  # Default value for reranking
     MAX_CONTEXT_FRACTION: float = 0.4
 
     # ---------------------- API keys ------------------- #

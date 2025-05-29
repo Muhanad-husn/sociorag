@@ -187,6 +187,10 @@ export interface LLMSettingsUpdate {
   translate_llm_temperature?: number;
   translate_llm_max_tokens?: number;
   translate_llm_stream?: boolean;
+  
+  // Search parameters
+  top_k?: number;
+  top_k_rerank?: number;
 }
 
 export async function updateLLMSettings(settings: LLMSettingsUpdate): Promise<{ success: boolean; message: string }> {

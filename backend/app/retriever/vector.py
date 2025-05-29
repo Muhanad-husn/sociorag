@@ -69,18 +69,21 @@ def _load_direct_transformer():
     
     return _tokenizer, _model, _direct_model_available
 
-def retrieve_chunks(query_emb=None, query_text=None, use_cache: bool = True):
+def retrieve_chunks(query_emb=None, query_text=None, use_cache: bool = True, top_k: int = None):
     """Retrieve chunks from vector store based on query embedding or text.
     
     Args:
         query_emb: Query embedding vector (optional if query_text is provided)
         query_text: Query text to embed (optional if query_emb is provided)
         use_cache: Whether to use the embedding cache (default: True)
+        top_k: Optional override for number of vector results to retrieve
         
     Returns:
         List of document chunks with similarity >= CHUNK_SIM
     """
-    _logger.info(f"Retrieving chunks with similarity >= {_cfg.CHUNK_SIM}, top_k={_cfg.TOP_K}")
+    # Use provided top_k or fall back to config value
+    k = top_k if top_k is not None else _cfg.TOP_K
+    _logger.info(f"Retrieving chunks with similarity >= {_cfg.CHUNK_SIM}, top_k={k}")
     vectordb = get_chroma()
     
     # Use EmbeddingSingleton if text is provided but no embedding
@@ -97,22 +100,23 @@ def retrieve_chunks(query_emb=None, query_text=None, use_cache: bool = True):
     if query_emb is None:
         _logger.error("No query embedding or text provided")
         return []
-    
-    # Get raw documents - removed incompatible parameters
+      # Get raw documents - use provided top_k or fall back to config value
+    k = top_k if top_k is not None else _cfg.TOP_K
     docs = vectordb.similarity_search_by_vector(
         query_emb, 
-        k=_cfg.TOP_K
+        k=k
     )
     
     _logger.info(f"Retrieved {len(docs)} initial chunks from vector store")
     return docs
 
-def rerank_chunks(query: str, docs):
+def rerank_chunks(query: str, docs, top_k_rerank: int = None):
     """Rerank chunks using cross-encoder model.
     
     Args:
         query: Original query string (English)
         docs: List of document chunks from vector retrieval
+        top_k_rerank: Optional override for number of results to keep after reranking
         
     Returns:
         List of reranked chunks (top TOP_K_RERANK)
@@ -133,10 +137,10 @@ def rerank_chunks(query: str, docs):
             
             # Get reranker scores
             scores = reranker.predict(pairs)
-            
-            # Sort by score and take top k
+              # Sort by score and take top k
             ranked = sorted(zip(docs, scores), key=lambda t: t[1], reverse=True)
-            top_k = ranked[:_cfg.TOP_K_RERANK]
+            k_rerank = top_k_rerank if top_k_rerank is not None else _cfg.TOP_K_RERANK
+            top_k = ranked[:k_rerank]
             
             _logger.info(f"Top reranked score: {top_k[0][1] if top_k else 'N/A'}")
             _logger.info(f"Returning top {len(top_k)} reranked chunks")
@@ -145,9 +149,8 @@ def rerank_chunks(query: str, docs):
         except Exception as e:
             _logger.error(f"Error during reranking: {e}")
             _logger.warning("Trying direct transformer fallback...")
-            
-            # Try direct transformer approach as a fallback
-            direct_results = _rerank_with_direct_transformer(query, docs)
+              # Try direct transformer approach as a fallback
+            direct_results = _rerank_with_direct_transformer(query, docs, top_k_rerank)
             if direct_results is not None:
                 _logger.info("Successfully used direct transformer reranker")
                 return direct_results
@@ -155,21 +158,26 @@ def rerank_chunks(query: str, docs):
             _logger.warning("All reranking methods failed, falling back to vector similarity ordering")
     else:
         _logger.warning("CrossEncoder reranker not available, trying direct transformer...")
-        
-        # Try direct transformer approach
-        direct_results = _rerank_with_direct_transformer(query, docs)
+          # Try direct transformer approach
+        direct_results = _rerank_with_direct_transformer(query, docs, top_k_rerank)
         if direct_results is not None:
             _logger.info("Successfully used direct transformer reranker")
             return direct_results
         
         # If direct transformer also fails, _rerank_with_direct_transformer will try embedding similarity
-    
-    # We shouldn't get here unless all fallbacks failed
+      # We shouldn't get here unless all fallbacks failed
     _logger.warning("All reranking methods failed, using original vector similarity ordering")
-    return docs[:min(len(docs), _cfg.TOP_K_RERANK)]
+    k_rerank = top_k_rerank if top_k_rerank is not None else _cfg.TOP_K_RERANK
+    return docs[:min(len(docs), k_rerank)]
 
-def _rerank_with_direct_transformer(query, docs):
-    """Rerank chunks using direct transformer model (without sentence_transformers)."""
+def _rerank_with_direct_transformer(query, docs, top_k_rerank=None):
+    """Rerank chunks using direct transformer model (without sentence_transformers).
+    
+    Args:
+        query: Original query string
+        docs: List of document chunks
+        top_k_rerank: Number of results to keep after reranking
+    """
     _logger.info("Attempting reranking with direct transformer model")
     
     tokenizer, model, is_available = _load_direct_transformer()
@@ -198,10 +206,10 @@ def _rerank_with_direct_transformer(query, docs):
                     # If model outputs multiple logits, take the highest one or most relevant
                     score = outputs.logits[0, 0].item()  # Often the first logit is relevance score
                 scores.append(score)
-        
-        # Sort by score and take top k
+          # Sort by score and take top k
         ranked = sorted(zip(docs, scores), key=lambda t: t[1], reverse=True)
-        top_k = ranked[:_cfg.TOP_K_RERANK]
+        k_rerank = top_k_rerank if top_k_rerank is not None else _cfg.TOP_K_RERANK
+        top_k = ranked[:k_rerank]
         
         _logger.info(f"Direct transformer top score: {top_k[0][1] if top_k else 'N/A'}")
         return [d for d, _ in top_k]
@@ -211,11 +219,16 @@ def _rerank_with_direct_transformer(query, docs):
         _logger.warning("Falling back to embedding similarity reranking")
         return _rerank_with_embeddings(query, docs)
 
-def _rerank_with_embeddings(query, docs):
+def _rerank_with_embeddings(query, docs, top_k_rerank=None):
     """Rerank chunks using embedding similarity as last resort fallback.
     
     This uses the EmbeddingSingleton to get consistent embeddings and compute
     cosine similarity between the query and each document.
+    
+    Args:
+        query: Original query string
+        docs: List of document chunks
+        top_k_rerank: Number of results to keep after reranking
     """
     _logger.info("Attempting reranking with embedding similarity")
     
@@ -228,14 +241,14 @@ def _rerank_with_embeddings(query, docs):
         
         # Use the text_similarity function from vector_utils
         scores = text_similarity(query, doc_texts)
-        
-        # Sort by similarity score and take top k
+          # Sort by similarity score and take top k
         ranked = sorted(zip(docs, scores), key=lambda t: t[1], reverse=True)
-        top_k = ranked[:_cfg.TOP_K_RERANK]
+        k_rerank = top_k_rerank if top_k_rerank is not None else _cfg.TOP_K_RERANK
+        top_k = ranked[:k_rerank]
         
         _logger.info(f"Embedding similarity top score: {top_k[0][1] if top_k else 'N/A'}")
         return [d for d, _ in top_k]
-        
     except Exception as e:
         _logger.error(f"Error during embedding similarity reranking: {e}")
-        return docs[:min(len(docs), _cfg.TOP_K_RERANK)]
+        k_rerank = top_k_rerank if top_k_rerank is not None else _cfg.TOP_K_RERANK
+        return docs[:min(len(docs), k_rerank)]

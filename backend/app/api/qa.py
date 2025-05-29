@@ -32,6 +32,8 @@ class AskRequest(BaseModel):
     temperature: Optional[float] = None
     max_tokens: Optional[int] = None
     context_window: Optional[int] = None
+    top_k: Optional[int] = None  # Number of vector results to retrieve
+    top_k_rerank: Optional[int] = None  # Number of results to keep after reranking
 
 
 class AskResponse(BaseModel):
@@ -52,7 +54,6 @@ async def ask_question(request: AskRequest) -> Any:
     """
     start_time = time.time()
     query = request.query.strip()
-    
     if not query:
         raise HTTPException(status_code=400, detail="Query cannot be empty")
     
@@ -61,7 +62,14 @@ async def ask_question(request: AskRequest) -> Any:
     try:
         # Retrieve context for the query
         _logger.info("Retrieving context...")
-        context_result = retrieve_context(query)
+        # Pass optional top_k parameters if provided in the request
+        retrieval_params = {}
+        if request.top_k is not None:
+            retrieval_params['top_k'] = request.top_k
+        if request.top_k_rerank is not None:
+            retrieval_params['top_k_rerank'] = request.top_k_rerank
+            
+        context_result = retrieve_context(query, **retrieval_params)
         context_items = context_result.get("context", [])
         
         if not context_items:
@@ -266,6 +274,8 @@ async def ask_question_get(
         answer_model=answer_model,
         temperature=temperature,
         max_tokens=max_tokens,
-        context_window=context_window
+        context_window=context_window,
+        top_k=top_k,
+        top_k_rerank=top_k_r
     )
     return await ask_question(request)
