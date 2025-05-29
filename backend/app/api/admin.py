@@ -96,6 +96,10 @@ class LLMSettingsUpdate(BaseModel):
     translate_llm_temperature: Optional[float] = None
     translate_llm_max_tokens: Optional[int] = None
     translate_llm_stream: Optional[bool] = None
+    
+    # Search parameters
+    top_k: Optional[int] = None
+    top_k_rerank: Optional[int] = None
 
 
 # Global system start time for uptime calculation
@@ -608,12 +612,15 @@ async def get_llm_settings() -> Dict[str, Any]:
                 "answer_llm_max_tokens": config.ANSWER_LLM_MAX_TOKENS,
                 "answer_llm_context_window": config.ANSWER_LLM_CONTEXT_WINDOW,
                 "answer_llm_stream": config.ANSWER_LLM_STREAM,
-                
-                # Translation settings
+                  # Translation settings
                 "translate_llm_model": config.TRANSLATE_LLM_MODEL,
                 "translate_llm_temperature": config.TRANSLATE_LLM_TEMPERATURE,
                 "translate_llm_max_tokens": config.TRANSLATE_LLM_MAX_TOKENS,
                 "translate_llm_stream": config.TRANSLATE_LLM_STREAM,
+                
+                # Search parameters
+                "top_k": config.TOP_K,
+                "top_k_rerank": config.TOP_K_RERANK,
             }
         }
         
@@ -647,8 +654,7 @@ async def update_llm_settings(settings: LLMSettingsUpdate) -> StatusResponse:
         if env_file.exists():
             with open(env_file, 'r', encoding='utf-8') as f:
                 env_lines = f.readlines()
-                
-        # List of env var name mappings
+                  # List of env var name mappings
         env_mappings = {
             # Entity extraction settings
             "entity_llm_model": "ENTITY_LLM_MODEL",
@@ -668,6 +674,10 @@ async def update_llm_settings(settings: LLMSettingsUpdate) -> StatusResponse:
             "translate_llm_temperature": "TRANSLATE_LLM_TEMPERATURE",
             "translate_llm_max_tokens": "TRANSLATE_LLM_MAX_TOKENS",
             "translate_llm_stream": "TRANSLATE_LLM_STREAM",
+            
+            # Search parameters
+            "top_k": "TOP_K",
+            "top_k_rerank": "TOP_K_RERANK",
         }
         
         # Process all settings
