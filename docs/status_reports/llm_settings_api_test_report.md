@@ -21,8 +21,8 @@ Fixed the import paths in all relevant files:
 
 ```python
 # Old imports
-from app.core.config import get_config
-from app.core.singletons import LoggerSingleton, SQLiteSingleton
+from backend.app.core.config import get_config
+from backend.app.core.singletons import LoggerSingleton, SQLiteSingleton
 
 # New imports
 from backend.app.core.config import get_config

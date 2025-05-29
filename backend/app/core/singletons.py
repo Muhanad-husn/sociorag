@@ -22,11 +22,16 @@ from sentence_transformers import SentenceTransformer
 from langchain_community.vectorstores import Chroma
 from langchain_community.embeddings import SentenceTransformerEmbeddings
 
+try:
+    import sqlite_vec
+except ImportError:
+    sqlite_vec = None
+
 from .config import get_config
 
 # Import the embedding cache if available, with fallback
 try:
-    from backend.app.retriever.embedding_cache import get_embedding_cache
+    from ..retriever.embedding_cache import get_embedding_cache
     _EMBEDDING_CACHE_AVAILABLE = True
 except ImportError:
     _EMBEDDING_CACHE_AVAILABLE = False
@@ -275,22 +280,28 @@ class SQLiteSingleton(metaclass=_SingletonMeta):
             
             # Set row_factory to return rows as dictionaries
             self._connection.row_factory = sqlite3.Row
+              # Enable WAL mode for better concurrency
+            self._connection.execute("PRAGMA journal_mode=WAL")
             
-            # Enable WAL mode for better concurrency
-            self._connection.execute("PRAGMA journal_mode=WAL")# Try to load sqlite-vec extension
+            # Try to load sqlite-vec extension
             try:
-                import sqlite_vec
-                # Use the load method from sqlite_vec
-                sqlite_vec.load(self._connection)
-                logger.info("Loaded sqlite-vec extension using sqlite_vec.load()")
+                if sqlite_vec is not None:
+                    # Use the load method from sqlite_vec
+                    sqlite_vec.load(self._connection)
+                    logger.info("Loaded sqlite-vec extension using sqlite_vec.load()")
+                else:
+                    logger.warning("sqlite_vec module not available")
             except Exception as e:
                 try:
-                    # Fallback to manual loading
-                    self._connection.enable_load_extension(True)
-                    extension_path = sqlite_vec.loadable_path()
-                    logger.info(f"SQLite-vec extension path: {extension_path}")
-                    self._connection.load_extension(extension_path)
-                    logger.info("Loaded sqlite-vec extension from path")
+                    if sqlite_vec is not None:
+                        # Fallback to manual loading
+                        self._connection.enable_load_extension(True)
+                        extension_path = sqlite_vec.loadable_path()
+                        logger.info(f"SQLite-vec extension path: {extension_path}")
+                        self._connection.load_extension(extension_path)
+                        logger.info("Loaded sqlite-vec extension from path")
+                    else:
+                        logger.warning("sqlite_vec module not available for manual loading")
                 except Exception as inner_e:
                     logger.warning(f"Could not load sqlite-vec extension: {inner_e}")
                     # Continue without vector extension for now
@@ -366,9 +377,9 @@ class SQLiteSingleton(metaclass=_SingletonMeta):
 
 class LLMClientSingleton(metaclass=_SingletonMeta):
     """Singleton OpenRouter LLM client."""
-    
     def __init__(self):
         self._api_key = None
+        self._logger = LoggerSingleton().get()
         
     def get_api_key(self) -> str:
         """Get OpenRouter API key from configuration."""
@@ -417,27 +428,80 @@ class LLMClientSingleton(metaclass=_SingletonMeta):
                 content = self._extract_response_content(response)
                 if content:
                     yield content
-                else:
-                    # Log raw response for debugging
+                else:                    # Log raw response for debugging
                     import logging
                     logging.debug(f"Raw non-streaming response: {response}")
                     yield f"Error: Could not extract content from response"
                 return
-            
-            # For streaming, handle chunks
+              # For streaming, handle chunks
             response = await create_chat_completion(request)
             
-            # Use type: ignore to suppress type checker warnings for dynamic typing
+            # Debug: Log response details
+            self._logger.info(f"OpenRouter response type: {type(response)}")
+            self._logger.info(f"OpenRouter response attributes: {[attr for attr in dir(response) if not attr.startswith('_')]}")            # Check if response has __aiter__ method for async iteration
             complete_content = ""
-            async for chunk in response:  # type: ignore
-                content = self._extract_chunk_content(chunk)
+            if hasattr(response, '__aiter__'):
+                self._logger.info("Using __aiter__ method for streaming")
+                try:
+                    async for chunk in response:  # type: ignore
+                        content = self._extract_chunk_content(chunk)
+                        if content:
+                            complete_content += content
+                            yield content
+                except Exception as e:
+                    self._logger.error(f"Error using __aiter__: {e}")
+                    yield f"Error: Failed to iterate response"
+            elif hasattr(response, 'iter_chunks'):
+                self._logger.info("Using iter_chunks method for streaming")
+                try:
+                    # Some clients use iter_chunks method
+                    async for chunk in response.iter_chunks():  # type: ignore
+                        content = self._extract_chunk_content(chunk)
+                        if content:
+                            complete_content += content
+                            yield content                
+                except Exception as e:
+                    self._logger.error(f"Error using iter_chunks: {e}")
+                    yield f"Error: Failed to iterate chunks"
+            elif hasattr(response, 'content'):
+                self._logger.info("Using content attribute directly")
+                # If response has content directly, extract it
+                content = self._extract_response_content(response)
                 if content:
-                    complete_content += content
                     yield content
+                    complete_content = content
+            elif hasattr(response, 'body_iterator'):
+                self._logger.info("Handling StreamingResponse with body_iterator")
+                # Handle Starlette StreamingResponse
+                try:
+                    async for chunk in response.body_iterator:  # type: ignore
+                        if isinstance(chunk, bytes):
+                            chunk_text = chunk.decode('utf-8')
+                        else:
+                            chunk_text = str(chunk)
+                        
+                        # Try to extract content from the chunk
+                        content = self._extract_chunk_content_from_text(chunk_text)
+                        if content:
+                            complete_content += content
+                            yield content
+                except Exception as e:
+                    self._logger.error(f"Error iterating StreamingResponse: {e}")
+                    yield f"Error: Failed to process streaming response"
+            else:
+                # Try to handle as a simple response object
+                self._logger.error(f"Unknown response format - Type: {type(response)}, Dir: {dir(response)}")
+                self._logger.error(f"Response content attempt: {getattr(response, 'content', 'NO CONTENT ATTR')}")
+                self._logger.error(f"Response choices attempt: {getattr(response, 'choices', 'NO CHOICES ATTR')}")
+                content = self._extract_response_content(response)
+                if content:
+                    yield content
+                    complete_content = content
+                else:
+                    yield f"Error: Unknown response format from streaming request"
             
-            # If streaming resulted in empty content, try to extract from the full response
+            # If streaming resulted in empty content, log for debugging
             if not complete_content:
-                # Log raw response for debugging
                 import logging
                 logging.debug(f"Raw streaming response produced no content.")
                 yield f"Error: No content from streaming response"
@@ -445,10 +509,9 @@ class LLMClientSingleton(metaclass=_SingletonMeta):
         except ImportError:
             # Fallback for testing when openrouter is not available
             yield f"Mock LLM response for model {model}: {messages[-1]['content']}"
-        except Exception as e:
-            # Handle other errors gracefully
+        except Exception as e:            # Handle other errors gracefully
             yield f"Error: {str(e)}"
-    
+
     def _extract_chunk_content(self, chunk) -> Optional[str]:
         """Extract content from a streaming chunk."""
         try:
@@ -459,7 +522,7 @@ class LLMClientSingleton(metaclass=_SingletonMeta):
         except (AttributeError, IndexError, TypeError):
             pass
         return None
-    
+
     def _extract_response_content(self, response) -> Optional[str]:
         """Extract content from a complete response."""
         try:
@@ -469,6 +532,34 @@ class LLMClientSingleton(metaclass=_SingletonMeta):
                     return getattr(choice.message, 'content', None)
         except (AttributeError, IndexError, TypeError):
             pass
+        return None
+
+    def _extract_chunk_content_from_text(self, chunk_text: str) -> Optional[str]:
+        """Extract content from a text chunk (for StreamingResponse handling)."""
+        try:
+            import json
+            # Try to parse as JSON (common for SSE format)
+            if chunk_text.startswith('data: '):
+                json_str = chunk_text[6:].strip()
+                if json_str and json_str != '[DONE]':
+                    data = json.loads(json_str)
+                    if 'choices' in data and data['choices']:
+                        choice = data['choices'][0]
+                        if 'delta' in choice and 'content' in choice['delta']:
+                            return choice['delta']['content']
+            elif chunk_text.strip():
+                # Try to parse as direct JSON
+                data = json.loads(chunk_text)
+                if 'choices' in data and data['choices']:
+                    choice = data['choices'][0]
+                    if 'delta' in choice and 'content' in choice['delta']:
+                        return choice['delta']['content']
+                    elif 'message' in choice and 'content' in choice['message']:
+                        return choice['message']['content']
+        except (json.JSONDecodeError, KeyError, IndexError, TypeError):
+            # If JSON parsing fails, check if it's plain text content
+            if chunk_text.strip() and not chunk_text.startswith(('data:', 'event:', 'id:')):
+                return chunk_text
         return None
 
     async def create_entity_extraction_chat(
@@ -674,8 +765,7 @@ def calculate_cosine_similarity(vec1: Union[List[float], List[List[float]]], vec
     # Calculate magnitudes
     magnitude1 = (sum(float(a) * float(a) for a in v1)) ** 0.5 # type: ignore
     magnitude2 = (sum(float(b) * float(b) for b in v2)) ** 0.5
-    
-    # Calculate cosine similarity
+      # Calculate cosine similarity
     if magnitude1 > 0 and magnitude2 > 0:
         return float(dot_product / (magnitude1 * magnitude2))
     else:
