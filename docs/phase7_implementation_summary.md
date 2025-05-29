@@ -1,5 +1,7 @@
 # Phase 7 Implementation Summary
 
+> **Note**: This document describes the historical implementation of Phase 7 when streaming functionality was included. As of the latest version, streaming functionality has been removed and replaced with standard HTTP request/response architecture for improved reliability. See the current API documentation for up-to-date implementation details.
+
 ## Overview
 Phase 7 successfully implements a modern, fast, and offline-capable front-end for the SocioRAG project using Preact + Tailwind CSS. The implementation provides a complete user interface that consumes the Phase 6 API with real-time streaming capabilities and full internationalization support.
 

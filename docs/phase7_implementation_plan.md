@@ -1,5 +1,7 @@
 # SocioRAG Phase 7 Implementation Plan
 
+> **Note**: This document describes the historical implementation plan for Phase 7 when streaming functionality was included. As of the latest version, streaming functionality has been removed and replaced with standard HTTP request/response architecture for improved reliability.
+
 ## Phase 7 Overview: Frontend Development
 
 Phase 7 focuses on developing a modern React-based user interface that integrates with the comprehensive FastAPI backend created in Phase 6. This frontend will provide an intuitive interface for document management, real-time Q&A with streaming responses, and visualization of history data.

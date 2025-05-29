@@ -357,30 +357,28 @@ The project includes extensive documentation to help users and developers:
 
    ```bash
    # Reset corpus (clear existing data)
-   curl -X POST http://127.0.0.1:8000/api/ingest/reset
-
-   # Upload a PDF document
+   curl -X POST http://127.0.0.1:8000/api/ingest/reset   # Upload a PDF document
    curl -X POST -F "file=@./sample.pdf" http://127.0.0.1:8000/api/ingest/upload
 
    # Manually trigger processing
    curl -X POST http://127.0.0.1:8000/api/ingest/process
 
-   # Stream processing progress (SSE)
+   # Get processing progress (polling)
    curl http://127.0.0.1:8000/api/ingest/progress
    ```
 
    **Question Answering:**
 
    ```bash
-   # Ask a question (streaming response)
-   curl http://127.0.0.1:8000/api/qa/ask -H "Content-Type: application/json" \
-     -d '{"question": "What are the main themes in the document?"}'
+   # Ask a question (complete JSON response)
+   curl -X POST http://127.0.0.1:8000/api/qa/ask -H "Content-Type: application/json" \
+     -d '{"query": "What are the main themes in the document?", "translate_to_arabic": false}'
 
    # Get query history
    curl http://127.0.0.1:8000/api/history/
 
    # Get usage statistics
-   curl http://127.0.0.1:8000/api/history/stats
+   curl http://127.0.0.1:8000/api/qa/stats
    ```
 
 6. **Testing All Endpoints**
@@ -397,11 +395,11 @@ The project includes extensive documentation to help users and developers:
 
 - ✅ **Enhanced Entity Extraction** - LLM-powered entity and relationship extraction
 - ✅ **Vector Storage & Retrieval** - SQLite-vec based semantic search
-- ✅ **Streaming Q&A System** - Real-time answer generation with citations
+- ✅ **Q&A System** - Complete answer generation with citations and context
 - ✅ **PDF Export** - Professional report generation with WeasyPrint
 - ✅ **Query History** - Analytics and tracking with JSONL logging
 - ✅ **FastAPI Integration** - Complete REST API with comprehensive endpoints
-- ✅ **Server-Sent Events** - Real-time streaming for progress and answers
+- ✅ **HTTP Request/Response Architecture** - Reliable standard HTTP communication
 - ✅ **WebSocket Support** - Bidirectional communication with heartbeat mechanisms
 - ✅ **Ingestion API** - Document upload, processing, and monitoring endpoints
 - ✅ **History Management** - Full history tracking and retrieval with filtering
