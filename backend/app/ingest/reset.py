@@ -1,7 +1,7 @@
 """Reset helper for SocioGraph.
 
 This module provides functions to reset the corpus state by clearing the vector store,
-input directory, saved directory, and graph database.
+input directory, saved directory, graph database, and embedding cache.
 """
 
 import shutil
@@ -9,7 +9,8 @@ import sqlite3
 from pathlib import Path
 
 from backend.app.core.config import get_config
-from backend.app.core.singletons import SQLiteSingleton
+from backend.app.core.singletons import SQLiteSingleton, ChromaSingleton, LoggerSingleton
+from backend.app.retriever.embedding_cache import get_embedding_cache
 
 
 def reset_corpus():
@@ -20,13 +21,44 @@ def reset_corpus():
     2. Removes and recreates the input directory
     3. Removes and recreates the saved directory
     4. Clears the graph database content
+    5. Clears the embedding cache
     """
     cfg = get_config()
+    logger = LoggerSingleton().get()
     
+    # Clear the embedding cache
+    try:
+        cache = get_embedding_cache()
+        cache_size = cache.size()
+        cache.clear()
+        logger.info(f"Cleared embedding cache ({cache_size} entries)")
+    except Exception as e:
+        logger.warning(f"Failed to clear embedding cache: {e}")
+    
+    # Get ChromaDB instance and delete all documents in the collection
+    try:
+        # First try to delete documents using the API
+        chroma_singleton = ChromaSingleton()
+        if chroma_singleton._chroma is not None:
+            collection = chroma_singleton._chroma._collection
+            # Get all IDs in the collection
+            all_ids = collection.get()["ids"]
+            if all_ids:
+                # Delete all documents by ID
+                collection.delete(all_ids)
+    except Exception as e:
+        # If API deletion fails, fall back to directory removal
+        pass
+        
     # Clear directories
     for path in [cfg.VECTOR_DIR, cfg.INPUT_DIR, cfg.SAVED_DIR]:
         shutil.rmtree(path, ignore_errors=True)
         path.mkdir(exist_ok=True)
+    
+    # Reset the ChromaSingleton's stored instance
+    # to ensure it reconnects to the now-empty vector store
+    chroma_singleton = ChromaSingleton()
+    chroma_singleton._chroma = None
     
     # Clear database content instead of deleting the file
     try:
