@@ -26,6 +26,7 @@ router = APIRouter(prefix="/api/qa", tags=["qa"])
 class AskRequest(BaseModel):
     """Request model for asking questions."""
     query: str
+    translate_to_arabic: Optional[bool] = False
     answer_model: Optional[str] = None
     temperature: Optional[float] = None
     max_tokens: Optional[int] = None
@@ -41,6 +42,7 @@ class AskResponse(BaseModel):
     context_count: int
     token_count: int
     duration: float
+    language: str = "en"  # Default language is English
 
 
 @router.post("/ask")
@@ -92,6 +94,7 @@ async def _generate_complete_answer(query: str, context_items: list, start_time:
         temperature = request.temperature
         max_tokens = request.max_tokens
         context_window = request.context_window
+        translate_to_arabic = request.translate_to_arabic
         
         # Get parameters from the request for LLM
         llm_params = {}
@@ -110,6 +113,21 @@ async def _generate_complete_answer(query: str, context_items: list, start_time:
             complete_answer += token
             
         token_count = len(complete_answer.split())  # Rough token estimate
+        
+        # Default language is English
+        language = "en"
+        
+        # Translate to Arabic if requested
+        if translate_to_arabic:
+            try:
+                from backend.app.retriever.language import translate_with_llm
+                _logger.info("Translating answer to Arabic")
+                complete_answer = await translate_with_llm(complete_answer, "en", "ar")
+                language = "ar"
+                _logger.info("Translation completed")
+            except Exception as e:
+                _logger.error(f"Translation error: {e}")
+                # Continue with English answer if translation fails
         
         # Generate PDF
         pdf_path = save_pdf(complete_answer, query)
@@ -132,7 +150,8 @@ async def _generate_complete_answer(query: str, context_items: list, start_time:
             pdf_url=pdf_url,
             context_count=len(context_items),
             token_count=token_count,
-            duration=duration
+            duration=duration,
+            language=language
         )
         
     except Exception as e:
@@ -190,6 +209,7 @@ async def ask_question_get(
     """
     request = AskRequest(
         query=query,
+        translate_to_arabic=translate_to_arabic,
         answer_model=answer_model,
         temperature=temperature,
         max_tokens=max_tokens,

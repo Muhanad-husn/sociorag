@@ -190,6 +190,7 @@ export async function getSystemMetrics(): Promise<SystemMetrics> {
 
 export interface ApiKeyUpdate {
   openrouter_api_key?: string;
+  huggingface_token?: string;
 }
 
 export async function updateApiKeys(apiKeys: ApiKeyUpdate): Promise<{ success: boolean; message: string }> {

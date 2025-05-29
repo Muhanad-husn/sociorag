@@ -62,6 +62,7 @@ class SystemConfigUpdate(BaseModel):
 class ApiKeyUpdate(BaseModel):
     """API key update model."""
     openrouter_api_key: Optional[str] = None
+    huggingface_token: Optional[str] = None
 
 
 class StatusResponse(BaseModel):
@@ -388,9 +389,9 @@ async def get_system_config() -> SystemConfig:
               # Processing settings
             "spacy_model": cfg.SPACY_MODEL,
             "history_limit": cfg.HISTORY_LIMIT,
-            
-            # API Configuration
+              # API Configuration
             "openrouter_api_key_configured": cfg.OPENROUTER_API_KEY is not None,
+            "huggingface_token_configured": cfg.HUGGINGFACE_TOKEN is not None,
             
             # Logging
             "log_level": cfg.LOG_LEVEL
@@ -480,8 +481,7 @@ async def update_api_keys(api_keys: ApiKeyUpdate) -> StatusResponse:
         if env_file.exists():
             with open(env_file, 'r', encoding='utf-8') as f:
                 env_lines = f.readlines()
-        
-        # Update or add API key entries
+          # Update or add API key entries
         updated_keys = []
         
         if api_keys.openrouter_api_key is not None:
@@ -496,6 +496,17 @@ async def update_api_keys(api_keys: ApiKeyUpdate) -> StatusResponse:
                 # If empty string, remove the key
                 updated_keys.append("OPENROUTER_API_KEY (removed)")
         
+        if api_keys.huggingface_token is not None:
+            # Remove existing HUGGINGFACE_TOKEN lines
+            env_lines = [line for line in env_lines if not line.strip().startswith('HUGGINGFACE_TOKEN=')]
+            
+            # Add new HUGGINGFACE_TOKEN
+            if api_keys.huggingface_token.strip():
+                env_lines.append(f"HUGGINGFACE_TOKEN={api_keys.huggingface_token.strip()}\n")
+                updated_keys.append("HUGGINGFACE_TOKEN")
+            else:
+                # If empty string, remove the key
+                updated_keys.append("HUGGINGFACE_TOKEN (removed)")
         # Write updated .env file
         with open(env_file, 'w', encoding='utf-8') as f:
             f.writelines(env_lines)

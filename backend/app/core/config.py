@@ -41,10 +41,9 @@ class _Config(BaseSettings):
     GRAPH_SIM: float = 0.50
     TOP_K: int = 80  # Default value for vector retrieval
     TOP_K_RERANK: int = 15  # Default value for reranking
-    MAX_CONTEXT_FRACTION: float = 0.4
-
-    # ---------------------- API keys ------------------- #
-    OPENROUTER_API_KEY: Optional[str] = None    # ---------------- resources & misc ---------------- #
+    MAX_CONTEXT_FRACTION: float = 0.4    # ---------------------- API keys ------------------- #
+    OPENROUTER_API_KEY: Optional[str] = None
+    HUGGINGFACE_TOKEN: Optional[str] = None  # Added HF token for model authentication# ---------------- resources & misc ---------------- #
     SPACY_MODEL: str = "en_core_web_sm"
     LOG_LEVEL: str = "INFO"
     HISTORY_LIMIT: int = 15
