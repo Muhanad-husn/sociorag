@@ -12,7 +12,7 @@ import pytest
 import spacy
 from spacy.language import Language
 from sentence_transformers import SentenceTransformer
-from langchain_community.vectorstores import Chroma
+from langchain_chroma import Chroma
 
 from backend.app.core.singletons import (
     LoggerSingleton,

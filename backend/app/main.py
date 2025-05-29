@@ -170,8 +170,24 @@ def create_app() -> FastAPI:
     return app
 
 
-# Create the app instance (will be imported by uvicorn)
-app = create_app()
+# Use lazy initialization to prevent double initialization during imports
+# This is especially important when using uvicorn with --reload
+def get_application():
+    """Application factory function to create FastAPI app."""
+    return create_app()
+
+# Only initialize when actually needed (not during imports)
+app = None
+
+def _get_app():
+    """Get the application instance, creating it if necessary."""
+    global app
+    if app is None:
+        app = get_application()
+    return app
+
+# This allows uvicorn to import the app without immediate initialization
+app = _get_app()
 
 
 # CLI support for the application

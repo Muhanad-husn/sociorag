@@ -19,8 +19,8 @@ import os
 
 import spacy
 from sentence_transformers import SentenceTransformer
-from langchain_community.vectorstores import Chroma
-from langchain_community.embeddings import SentenceTransformerEmbeddings
+from langchain_chroma import Chroma
+from langchain_huggingface import HuggingFaceEmbeddings
 
 try:
     import sqlite_vec
@@ -68,57 +68,67 @@ class LoggerSingleton(metaclass=_SingletonMeta):
             
             # Add handlers if none exist
             if not self._logger.handlers:
-                # Create logs directory
-                logs_dir = config.BASE_DIR / "logs"
-                logs_dir.mkdir(exist_ok=True)
-                
-                # Create formatter
-                formatter = logging.Formatter(
-                    '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
-                )
-                
-                # Console handler
-                console_handler = logging.StreamHandler()
-                console_handler.setFormatter(formatter)
-                self._logger.addHandler(console_handler)
-                
-                # File handler with rotation
-                from logging.handlers import RotatingFileHandler
-                file_handler = RotatingFileHandler(
-                    logs_dir / "sociorag.log",
-                    maxBytes=10*1024*1024,  # 10MB
-                    backupCount=5
-                )
-                file_handler.setFormatter(formatter)
-                self._logger.addHandler(file_handler)
-                
-                # Debug file handler for detailed logs
-                debug_handler = RotatingFileHandler(
-                    logs_dir / "sociorag_debug.log",
-                    maxBytes=10*1024*1024,  # 10MB
-                    backupCount=3
-                )
-                debug_handler.setLevel(logging.DEBUG)
-                debug_handler.setFormatter(logging.Formatter(
-                    '%(asctime)s - %(name)s - %(levelname)s - %(filename)s:%(lineno)d - %(message)s'
-                ))
-                self._logger.addHandler(debug_handler)
-                  # Error file handler for errors only
-                error_handler = RotatingFileHandler(
-                    logs_dir / "sociorag_errors.log",
-                    maxBytes=5*1024*1024,   # 5MB
-                    backupCount=3
-                )
-                error_handler.setLevel(logging.ERROR)
-                error_handler.setFormatter(logging.Formatter(
-                    '%(asctime)s - %(name)s - %(levelname)s - %(filename)s:%(lineno)d - %(message)s'
-                ))
-                self._logger.addHandler(error_handler)
+                self._setup_handlers(config)
                 
                 # Prevent duplicate messages
                 self._logger.propagate = False
                 
         return self._logger
+    
+    def _setup_handlers(self, config):
+        """Set up logging handlers efficiently."""
+        # Create logs directory only once
+        logs_dir = config.BASE_DIR / "logs"
+        logs_dir.mkdir(exist_ok=True)
+        
+        # Import once for all handlers
+        from logging.handlers import RotatingFileHandler
+        
+        # Create formatters
+        simple_formatter = logging.Formatter(
+            '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+        )
+        detailed_formatter = logging.Formatter(
+            '%(asctime)s - %(name)s - %(levelname)s - %(filename)s:%(lineno)d - %(message)s'
+        )
+        
+        # Console handler (most important for immediate feedback)
+        console_handler = logging.StreamHandler()
+        console_handler.setFormatter(simple_formatter)
+        self._logger.addHandler(console_handler)
+        
+        # Only create file handlers if log level suggests they'll be used
+        log_level = getattr(logging, config.LOG_LEVEL.upper(), logging.INFO)
+        
+        # Main log file (always created)
+        file_handler = RotatingFileHandler(
+            logs_dir / "sociorag.log",
+            maxBytes=10*1024*1024,  # 10MB
+            backupCount=5
+        )
+        file_handler.setFormatter(simple_formatter)
+        self._logger.addHandler(file_handler)
+        
+        # Debug handler only if debug level or below
+        if log_level <= logging.DEBUG:
+            debug_handler = RotatingFileHandler(
+                logs_dir / "sociorag_debug.log",
+                maxBytes=10*1024*1024,  # 10MB
+                backupCount=3
+            )
+            debug_handler.setLevel(logging.DEBUG)
+            debug_handler.setFormatter(detailed_formatter)
+            self._logger.addHandler(debug_handler)
+        
+        # Error handler (always useful)
+        error_handler = RotatingFileHandler(
+            logs_dir / "sociorag_errors.log",
+            maxBytes=5*1024*1024,   # 5MB
+            backupCount=3
+        )
+        error_handler.setLevel(logging.ERROR)
+        error_handler.setFormatter(detailed_formatter)
+        self._logger.addHandler(error_handler)
 
 
 class EmbeddingSingleton(metaclass=_SingletonMeta):
@@ -239,11 +249,10 @@ class ChromaSingleton(metaclass=_SingletonMeta):
             
             # Ensure vector directory exists
             config.VECTOR_DIR.mkdir(parents=True, exist_ok=True)
-            
             logger.info(f"Initializing Chroma at: {config.VECTOR_DIR}")
             
             # Create embedding function wrapper
-            embedding_function = SentenceTransformerEmbeddings(
+            embedding_function = HuggingFaceEmbeddings(
                 model_name=config.EMBEDDING_MODEL
             )
             

@@ -19,6 +19,10 @@ log_cli_date_format = "%Y-%m-%d %H:%M:%S"
 filterwarnings = [
     "ignore::DeprecationWarning:chromadb.*",
     "ignore::langchain_core._api.deprecation.LangChainDeprecationWarning",
+    "ignore::DeprecationWarning:langchain_community.*",
+    "ignore::UserWarning:langchain_huggingface.*",
+    "ignore::FutureWarning:langchain_chroma.*",
+    "ignore::PendingDeprecationWarning:sentence_transformers.*",
 ]
 
 # Test discovery
