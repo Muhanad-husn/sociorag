@@ -2,7 +2,7 @@
 
 ## Overview
 
-The SocioGraph API provides comprehensive endpoints for question-answering, document analysis, and social dynamics exploration. The API is built with FastAPI and supports real-time streaming responses, file uploads, and PDF export functionality.
+The SocioGraph API provides comprehensive endpoints for question-answering, document analysis, and social dynamics exploration. The API is built with FastAPI and supports complete JSON responses, file uploads, and PDF export functionality.
 
 ## Base URL
 
@@ -15,53 +15,64 @@ http://localhost:8000
 ### Question & Answer Endpoints
 
 #### POST /api/qa/ask
-Ask a question and receive a streaming answer with citations.
+Ask a question and receive a complete answer with citations.
 
 **Request Body:**
 ```json
 {
-  "question": "What are the main themes in the documents?",
-  "include_citations": true
+  "query": "What are the main themes in the documents?",
+  "translate_to_arabic": false,
+  "top_k": 5,
+  "top_k_r": 3,
+  "temperature": 0.7,
+  "answer_model": "",
+  "max_tokens": 4000,
+  "context_window": 128000
 }
 ```
 
-**Response:** Server-Sent Events (SSE) stream
+**Response:** Complete JSON response
+```json
+{
+  "answer": "Based on the documents analyzed, the main themes include social dynamics, political structures, and economic factors. [1] These themes are interconnected and influence each other significantly. [2]",
+  "query": "What are the main themes in the documents?",
+  "language": "en",
+  "entities": [
+    {
+      "name": "social dynamics",
+      "type": "concept",
+      "confidence": 0.95
+    }
+  ],
+  "context": [
+    {
+      "chunk_id": "chunk_1",
+      "content": "Social dynamics play a crucial role...",
+      "score": 0.87,
+      "source": "document1.pdf"
+    }
+  ]
+}
 ```
-data: {"type": "token", "content": "Based"}
-data: {"type": "token", "content": " on"}
-data: {"type": "token", "content": " the"}
-data: {"type": "citation", "content": "[1]"}
-data: {"type": "done", "content": ""}
-```
-
-**Event Types:**
-- `token`: Individual token from the LLM response
-- `citation`: Numbered citation reference
-- `done`: End of response stream
 
 **Example Usage:**
 ```javascript
-const eventSource = new EventSource('/api/qa/ask', {
+const response = await fetch('/api/qa/ask', {
   method: 'POST',
   headers: {
     'Content-Type': 'application/json',
   },
   body: JSON.stringify({
-    question: "What are the key relationships?",
-    include_citations: true
+    query: "What are the key relationships?",
+    translate_to_arabic: false,
+    top_k: 5
   })
 });
 
-eventSource.onmessage = function(event) {
-  const data = JSON.parse(event.data);
-  if (data.type === 'token') {
-    // Append token to answer
-    answer += data.content;
-  } else if (data.type === 'citation') {
-    // Handle citation display
-    citations.push(data.content);
-  }
-};
+const data = await response.json();
+console.log(data.answer); // Complete answer
+console.log(data.context); // Source context
+console.log(data.entities); // Extracted entities
 ```
 
 #### GET /api/qa/history
@@ -127,6 +138,93 @@ metadata: {"title": "Document Title", "author": "Author Name"}
   "entities_extracted": 45,
   "chunks_created": 12
 }
+```
+
+### Ingestion Endpoints
+
+#### POST /api/ingest/reset
+Reset the entire corpus and database.
+
+**Response:**
+```json
+{
+  "status": "reset_complete",
+  "message": "Corpus has been reset successfully"
+}
+```
+
+#### POST /api/ingest/upload
+Upload PDF files for processing.
+
+**Request:** Multipart form data
+```
+Content-Type: multipart/form-data
+
+file: <pdf_file>
+```
+
+**Response:**
+```json
+{
+  "status": "uploaded",
+  "file": "document.pdf",
+  "message": "Processing started in the background"
+}
+```
+
+#### POST /api/ingest/process
+Manually trigger processing of files in the input directory.
+
+**Response:**
+```json
+{
+  "status": "started",
+  "message": "Processing started in the background"
+}
+```
+
+#### GET /api/ingest/progress
+Get current processing progress status.
+
+**Response:**
+```json
+{
+  "status": "processing",
+  "progress": 45.5,
+  "phase": "extracting_entities",
+  "message": "Processing document 3 of 7",
+  "error": null,
+  "start_time": "2024-05-26T10:30:00Z",
+  "last_update": "2024-05-26T10:32:15Z"
+}
+```
+
+**Example Usage:**
+```javascript
+// Check processing status
+const checkProgress = async () => {
+  const response = await fetch('/api/ingest/progress');
+  const status = await response.json();
+  
+  console.log(`Progress: ${status.progress}%`);
+  console.log(`Phase: ${status.phase}`);
+  
+  if (status.status === 'completed') {
+    console.log('Processing finished!');
+  } else if (status.status === 'error') {
+    console.error('Processing failed:', status.error);
+  }
+};
+
+// Poll for updates
+const pollProgress = () => {
+  const interval = setInterval(async () => {
+    const status = await checkProgress();
+    if (status.status === 'completed' || status.status === 'error') {
+      clearInterval(interval);
+    }
+  }, 1000);
+};
 ```
 
 #### GET /api/documents/{document_id}
@@ -466,7 +564,7 @@ curl -X POST "http://localhost:8000/api/documents/upload" \
 - **PDF generation**: 2-5 seconds average
 
 ### Optimization Tips
-1. Use streaming for real-time user feedback
+1. Use complete JSON responses for user feedback
 2. Implement client-side caching for static data
 3. Batch multiple requests when possible
 4. Use appropriate timeout values

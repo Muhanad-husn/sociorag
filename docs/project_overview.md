@@ -25,7 +25,7 @@ The project is now production-ready with all major development phases completed.
    - Efficient similarity matching
 
 3. **Answer Generation** (`backend/app/answer/`)
-   - Streaming LLM responses via async generators
+   - Complete response generation with LLM integration
    - Citation management and source linking
    - PDF export with WeasyPrint/HTML fallback
    - Query history tracking with analytics
@@ -38,7 +38,7 @@ The project is now production-ready with all major development phases completed.
 
 5. **API Layer** (`backend/app/api/`)
    - FastAPI endpoints for Q&A functionality
-   - Server-Sent Events for real-time streaming
+   - Standard HTTP request/response architecture
    - File upload and static serving
    - RESTful interface design
 
@@ -51,13 +51,13 @@ The project is now production-ready with all major development phases completed.
 - **Graph Database**: SQLite for entity relationships
 - **Entity Extraction**: spaCy + Custom LLM pipeline
 - **PDF Generation**: WeasyPrint with HTML fallback
-- **Streaming**: Server-Sent Events (SSE)
+- **Architecture**: Request/Response with JSON APIs
 
 ### Dependencies
 - **Core**: Python 3.12.9, FastAPI, LangChain, Pydantic
 - **ML/NLP**: spaCy, sentence-transformers, sqlite-vec
 - **PDF**: WeasyPrint, Jinja2 templates
-- **Utilities**: python-multipart, sse-starlette, aiofiles
+- **Utilities**: python-multipart, aiofiles
 
 ### Development Tools
 - **Environment**: Conda/pip with virtual environments
@@ -81,11 +81,11 @@ The project is now production-ready with all major development phases completed.
 - Configurable similarity thresholds
 - Efficient storage with SQLite-vec
 
-### 3. Streaming Answer Generation
-- Real-time token streaming via async generators
+### 3. Complete Answer Generation
+- Comprehensive response generation with LLM integration
 - Citation management with numbered references
 - Context-aware prompt construction
-- Server-Sent Events for frontend integration
+- Standard JSON response format
 - Comprehensive error handling
 
 ### 4. PDF Export System
@@ -112,7 +112,7 @@ The project is now production-ready with all major development phases completed.
 - Core infrastructure and singletons
 
 ### ✅ Phase 5: Answer Generation & PDF Export
-- Streaming answer generation with citations
+- Complete answer generation with citations
 - PDF export with professional formatting
 - Query history tracking and analytics
 - FastAPI Q&A endpoints with SSE support
@@ -169,7 +169,7 @@ cfg = get_config("custom_config.yaml")
 - Connection pooling and resource management
 - Caching strategies for expensive operations
 - Batch processing for bulk operations
-- Memory-efficient streaming responses
+- Memory-efficient response handling
 
 ## Testing & Validation
 
@@ -201,7 +201,7 @@ cfg = get_config("custom_config.yaml")
 2. Execute integration tests
 3. Validate API endpoints
 4. Test PDF generation
-5. Verify streaming responses
+5. Verify JSON responses
 
 ### Deployment Considerations
 - Environment variable configuration
