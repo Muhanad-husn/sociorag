@@ -56,6 +56,42 @@ Our comprehensive testing has demonstrated:
 - [**Real-time Performance Analysis**](./test_results/performance_report_realtime_20250528.md) - Detailed performance metrics and system health assessment
 - **JSON Test Results** - Machine-readable test data in `./logs/load_test_results_*.json`
 
+## Testing
+
+### Integration Tests
+
+SocioRAG includes comprehensive integration tests for all major functionality:
+
+```bash
+# Run all tests
+pytest tests/ -v
+
+# Run integration tests only
+pytest tests/ -m integration -v
+
+# Run PDF generation workflow tests
+pytest tests/test_pdf_generation_workflow.py -v
+```
+
+### PDF Generation Tests
+
+The PDF generation user choice functionality is thoroughly tested:
+
+- **Backend API Testing**: Validates `generate_pdf` parameter handling
+- **English & Arabic Support**: Tests PDF generation with both languages
+- **Settings Integration**: Verifies frontend-backend integration
+- **Error Handling**: Tests edge cases and error scenarios
+
+See [PDF Generation Testing Guide](./tests/README_PDF_TESTS.md) for detailed testing instructions.
+
+### Manual UI Testing
+
+For comprehensive UI validation:
+
+1. Start backend: `python -m uvicorn backend.app.main:app --reload`
+2. Start frontend: `cd ui && npm run dev`
+3. Follow manual testing checklist in documentation
+
 ## Setup Instructions
 
 1. **Prerequisites**

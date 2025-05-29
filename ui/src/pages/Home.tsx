@@ -11,9 +11,10 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from '../components/ui/Tabs'
 import { Card } from '../components/ui/Card';
 
 export function Home() {
-  const { currentQuery, setCurrentQuery, settings, isProcessing, setIsProcessing } = useAppStore();
+  const { currentQuery, setCurrentQuery, settings, isProcessing, setIsProcessing, language } = useAppStore();
   const [activeTab, setActiveTab] = useState('search');
   const [answer, setAnswer] = useState('');
+  const [pdfUrl, setPdfUrl] = useState<string | null>(null);
   
   const { execute: executeSearch, loading: isSearching, error } = useAsyncRequest<AskResponse>();
 
@@ -24,10 +25,12 @@ export function Home() {
       const response = await executeSearch(() => askQuestion(currentQuery, settings));
       if (response) {
         setAnswer(response.answer);
+        setPdfUrl(response.pdf_url || null);
       }
     } catch (err) {
       console.error('Search error:', err);
       setAnswer('');
+      setPdfUrl(null);
     }
   };
 
@@ -49,9 +52,9 @@ export function Home() {
       <div className="space-y-8">
         {/* Header */}
         <div className="text-center space-y-2">
-          <h1 className="text-4xl font-bold">{t('appTitle')}</h1>
+          <h1 className="text-4xl font-bold">{t('appTitle', language)}</h1>
           <p className="text-lg text-muted-foreground">
-            Ask questions about your documents
+            {t('home.subtitle', language)}
           </p>
         </div>
 
@@ -64,8 +67,8 @@ export function Home() {
         {/* Main Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab}>
           <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="search">Search</TabsTrigger>
-            <TabsTrigger value="upload">Upload</TabsTrigger>
+            <TabsTrigger value="search">{t('home.searchTab', language)}</TabsTrigger>
+            <TabsTrigger value="upload">{t('home.uploadTab', language)}</TabsTrigger>
           </TabsList>
 
           <TabsContent value="search" className="space-y-6">
@@ -75,27 +78,27 @@ export function Home() {
                 onChange={setCurrentQuery}
                 onSubmit={handleSearch}
                 disabled={isSearching}
+                language={language}
               />
-            </Card>
-
-            {/* Results Section */}
+            </Card>            {/* Results Section */}
             {(answer || error) && (
               <StreamAnswer
                 markdown={answer}
                 isComplete={!isSearching}
                 error={error}
+                pdfUrl={pdfUrl || undefined}
               />
             )}
 
             {/* Quick Start Guide */}
             {!answer && !error && (
               <Card className="p-6 bg-accent/50">
-                <h3 className="text-lg font-semibold mb-3">Quick Start</h3>
+                <h3 className="text-lg font-semibold mb-3">{t('home.quickStart', language)}</h3>
                 <ul className="space-y-2 text-sm text-muted-foreground">
-                  <li>• Upload PDF documents using the Upload tab</li>
-                  <li>• Wait for processing to complete</li>
-                  <li>• Ask questions about your documents</li>
-                  <li>• Toggle Arabic translation if needed</li>
+                  <li>• {t('home.quickStart1', language)}</li>
+                  <li>• {t('home.quickStart2', language)}</li>
+                  <li>• {t('home.quickStart3', language)}</li>
+                  <li>• {t('home.quickStart4', language)}</li>
                 </ul>
               </Card>
             )}
@@ -103,7 +106,7 @@ export function Home() {
 
           <TabsContent value="upload" className="space-y-6">
             <Card className="p-6">
-              <h2 className="text-xl font-semibold mb-4">{t('upload.title')}</h2>
+              <h2 className="text-xl font-semibold mb-4">{t('upload.title', language)}</h2>
               <FileUploader
                 onUploadStart={handleUploadStart}
                 onUploadComplete={handleUploadComplete}
@@ -112,13 +115,13 @@ export function Home() {
 
             {/* Upload Instructions */}
             <Card className="p-6 bg-accent/50">
-              <h3 className="text-lg font-semibold mb-3">Upload Instructions</h3>
+              <h3 className="text-lg font-semibold mb-3">{t('home.uploadInstructions', language)}</h3>
               <ul className="space-y-2 text-sm text-muted-foreground">
-                <li>• Only PDF files are supported</li>
-                <li>• Maximum file size: 50MB</li>
-                <li>• Files are processed automatically after upload</li>
-                <li>• You can upload multiple files at once</li>
-                <li>• Processing time depends on document size and complexity</li>
+                <li>• {t('home.uploadInstr1', language)}</li>
+                <li>• {t('home.uploadInstr2', language)}</li>
+                <li>• {t('home.uploadInstr3', language)}</li>
+                <li>• {t('home.uploadInstr4', language)}</li>
+                <li>• {t('home.uploadInstr5', language)}</li>
               </ul>
             </Card>
           </TabsContent>

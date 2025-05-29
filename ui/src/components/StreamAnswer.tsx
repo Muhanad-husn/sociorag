@@ -1,13 +1,16 @@
 import { useEffect, useRef, useState } from 'preact/hooks';
 import MarkdownIt from 'markdown-it';
-import { detectLanguage, getDirection } from '../lib/i18n';
-import { Copy, Check } from 'lucide-preact';
+import { detectLanguage, getDirection, t } from '../lib/i18n';
+import { Copy, Check, Download } from 'lucide-preact';
 import clsx from 'clsx';
+import { toast } from 'sonner';
+import { useAppStore } from '../hooks/useLocalState';
 
 interface StreamAnswerProps {
   markdown: string;
   isComplete?: boolean;
   error?: string | null;
+  pdfUrl?: string;
 }
 
 const md = new MarkdownIt({
@@ -16,10 +19,12 @@ const md = new MarkdownIt({
   typographer: true,
 });
 
-export function StreamAnswer({ markdown, isComplete = false, error }: StreamAnswerProps) {
+export function StreamAnswer({ markdown, isComplete = false, error, pdfUrl }: StreamAnswerProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [copied, setCopied] = useState(false);
   const [language, setLanguage] = useState<'en' | 'ar' | 'mixed'>('en');
+  const [downloading, setDownloading] = useState(false);
+  const { language: appLanguage } = useAppStore();
 
   useEffect(() => {
     if (markdown) {
@@ -44,6 +49,35 @@ export function StreamAnswer({ markdown, isComplete = false, error }: StreamAnsw
     }
   };
 
+  const handleDownloadPdf = async () => {
+    if (!pdfUrl) return;
+    
+    setDownloading(true);
+    try {
+      const response = await fetch(pdfUrl);
+      const blob = await response.blob();
+      
+      // Create download link
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `answer-${Date.now()}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      
+      // Cleanup
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+      
+      toast.success(t('common.downloadStarted', appLanguage));
+    } catch (error) {
+      console.error('PDF download failed:', error);
+      toast.error(t('common.downloadFailed', appLanguage));
+    } finally {
+      setDownloading(false);
+    }
+  };
+
   if (error) {
     return (
       <div className="card p-4 border-destructive">
@@ -65,8 +99,7 @@ export function StreamAnswer({ markdown, isComplete = false, error }: StreamAnsw
   return (
     <div className="space-y-4">
       {/* Answer container */}
-      <div className="card">
-        <div className="flex items-center justify-between p-3 border-b">
+      <div className="card">        <div className="flex items-center justify-between p-3 border-b">
           <div className="flex items-center space-x-2">
             <span className="text-sm font-medium">Answer</span>
             {language === 'ar' && (
@@ -75,17 +108,34 @@ export function StreamAnswer({ markdown, isComplete = false, error }: StreamAnsw
               </span>
             )}
           </div>
-          <button
-            onClick={handleCopy}
-            className="btn-secondary h-8 w-8 p-0"
-            title="Copy to clipboard"
-          >
-            {copied ? (
-              <Check className="h-4 w-4 text-green-600" />
-            ) : (
-              <Copy className="h-4 w-4" />
+          <div className="flex items-center space-x-2">
+            {pdfUrl && isComplete && (
+              <button
+                onClick={handleDownloadPdf}
+                disabled={downloading}
+                className="btn-secondary h-8 px-3 text-xs"
+                title={t('common.downloadPdf', appLanguage)}
+              >
+                {downloading ? (
+                  <div className="animate-spin rounded-full h-3 w-3 border-b border-gray-600 mr-1" />
+                ) : (
+                  <Download className="h-3 w-3 mr-1" />
+                )}
+                {t('common.downloadPdf', appLanguage)}
+              </button>
             )}
-          </button>
+            <button
+              onClick={handleCopy}
+              className="btn-secondary h-8 w-8 p-0"
+              title="Copy to clipboard"
+            >
+              {copied ? (
+                <Check className="h-4 w-4 text-green-600" />
+              ) : (
+                <Copy className="h-4 w-4" />
+              )}
+            </button>
+          </div>
         </div>
         
         <div
@@ -116,15 +166,21 @@ export function StreamAnswer({ markdown, isComplete = false, error }: StreamAnsw
           )}
         </div>
       </div>
-      
-      {/* Status indicator */}
+        {/* Status indicator */}
       <div className="flex items-center justify-between text-xs text-muted-foreground">
         <span>
           {isComplete ? 'Response complete' : 'Generating response...'}
         </span>
-        <span>
-          {markdown.length} characters
-        </span>
+        <div className="flex items-center space-x-4">
+          <span>
+            {markdown.length} characters
+          </span>
+          {pdfUrl && isComplete && (
+            <span className="text-green-600">
+              {t('common.pdfReady', appLanguage)}
+            </span>
+          )}
+        </div>
       </div>
     </div>
   );

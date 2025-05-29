@@ -60,6 +60,7 @@ export interface AskRequest {
   answer_model?: string;
   max_tokens?: number;
   context_window?: number;
+  generate_pdf?: boolean;
 }
 
 // Interface for ask question response
@@ -67,6 +68,10 @@ export interface AskResponse {
   answer: string;
   query: string;
   language: string;
+  pdf_url: string;
+  context_count: number;
+  token_count: number;
+  duration: number;
   entities?: any[];
   context?: any[];
 }
@@ -88,7 +93,8 @@ export async function askQuestion(query: string, settings: any = {}): Promise<As
     temperature: settings.temperature || 0.7,
     answer_model: settings.answerModel || '',
     max_tokens: settings.maxTokensAnswer || 4000,
-    context_window: settings.contextWindow || 128000
+    context_window: settings.contextWindow || 128000,
+    generate_pdf: settings.generatePdf !== undefined ? settings.generatePdf : true
   };
 
   const response = await axios.post(`${BASE_URL}/api/qa/ask`, requestData);

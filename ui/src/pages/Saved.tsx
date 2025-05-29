@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'preact/hooks';
 import { getSavedFiles, downloadSavedFile } from '../lib/api';
+import { useAppStore } from '../hooks/useLocalState';
 import { t } from '../lib/i18n';
 import { Card } from '../components/ui/Card';
 import { Download, File, FileText, Calendar, HardDrive } from 'lucide-preact';
@@ -17,7 +18,8 @@ export function Saved() {
   const [savedFiles, setSavedFiles] = useState<SavedFile[]>([]);
   const [loading, setLoading] = useState(true);
   const [downloadingFiles, setDownloadingFiles] = useState<Set<string>>(new Set());
-
+  const { language } = useAppStore();
+  
   useEffect(() => {
     loadSavedFiles();
   }, []);
@@ -29,7 +31,7 @@ export function Saved() {
       setSavedFiles(files);
     } catch (error) {
       console.error('Failed to load saved files:', error);
-      toast.error('Failed to load saved files');
+      toast.error(t('saved.loadFailed', language));
     } finally {
       setLoading(false);
     }
@@ -55,10 +57,10 @@ export function Saved() {
       window.URL.revokeObjectURL(url);
       document.body.removeChild(a);
       
-      toast.success(`Downloaded ${file.name}`);
+      toast.success(`${t('saved.downloadSuccess', language)} ${file.name}`);
     } catch (error) {
       console.error('Download failed:', error);
-      toast.error(`Failed to download ${file.name}`);
+      toast.error(`${t('saved.downloadFailed', language)} ${file.name}`);
     } finally {
       setDownloadingFiles(prev => {
         const newSet = new Set(prev);
@@ -95,7 +97,7 @@ export function Saved() {
       <div className="container mx-auto px-4 py-8 max-w-4xl">
         <div className="flex items-center justify-center py-12">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-          <span className="ml-2">{t('common.loading')}</span>
+          <span className="ml-2">{t('common.loading', language)}</span>
         </div>
       </div>
     );
@@ -106,12 +108,12 @@ export function Saved() {
       <div className="space-y-6">
         {/* Header */}
         <div className="flex items-center justify-between">
-          <h1 className="text-3xl font-bold">{t('saved.title')}</h1>
+          <h1 className="text-3xl font-bold">{t('saved.title', language)}</h1>
           <button
             onClick={loadSavedFiles}
             className="btn-secondary"
           >
-            Refresh
+            {t('saved.refresh', language)}
           </button>
         </div>
 
@@ -119,9 +121,9 @@ export function Saved() {
         {savedFiles.length === 0 ? (
           <Card className="p-12 text-center">
             <FileText className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
-            <h3 className="text-lg font-semibold mb-2">{t('saved.empty')}</h3>
+            <h3 className="text-lg font-semibold mb-2">{t('saved.empty', language)}</h3>
             <p className="text-muted-foreground">
-              Upload some PDF documents to see them here.
+              {t('saved.emptyDesc', language)}
             </p>
           </Card>
         ) : (
@@ -144,7 +146,7 @@ export function Saved() {
                     <div className="flex items-center justify-between">
                       <div className="flex items-center space-x-1">
                         <HardDrive className="h-3 w-3" />
-                        <span>{t('saved.size')}</span>
+                        <span>{t('saved.size', language)}</span>
                       </div>
                       <span>{formatFileSize(file.size)}</span>
                     </div>
@@ -152,7 +154,7 @@ export function Saved() {
                     <div className="flex items-center justify-between">
                       <div className="flex items-center space-x-1">
                         <Calendar className="h-3 w-3" />
-                        <span>{t('saved.modified')}</span>
+                        <span>{t('saved.modified', language)}</span>
                       </div>
                       <span>{formatDate(file.modified)}</span>
                     </div>
@@ -170,12 +172,12 @@ export function Saved() {
                     {downloadingFiles.has(file.name) ? (
                       <>
                         <div className="animate-spin rounded-full h-3 w-3 border-b border-white mr-1" />
-                        Downloading...
+                        {t('saved.downloading', language)}...
                       </>
                     ) : (
                       <>
                         <Download className="h-3 w-3 mr-1" />
-                        {t('saved.download')}
+                        {t('saved.download', language)}
                       </>
                     )}
                   </button>
@@ -187,12 +189,12 @@ export function Saved() {
 
         {/* Info Card */}
         <Card className="p-4 bg-accent/50">
-          <h3 className="text-lg font-semibold mb-2">About Saved Documents</h3>
+          <h3 className="text-lg font-semibold mb-2">{t('saved.aboutTitle', language)}</h3>
           <ul className="space-y-1 text-sm text-muted-foreground">
-            <li>• Documents are automatically saved after successful upload and processing</li>
-            <li>• You can download any document at any time</li>
-            <li>• Original formatting and content are preserved</li>
-            <li>• Files are stored securely on the server</li>
+            <li>• {t('saved.about1', language)}</li>
+            <li>• {t('saved.about2', language)}</li>
+            <li>• {t('saved.about3', language)}</li>
+            <li>• {t('saved.about4', language)}</li>
           </ul>
         </Card>
       </div>

@@ -18,6 +18,9 @@ export interface Settings {
   // Advanced parameters
   maxTokensAnswer: number;
   contextWindow: number;
+  
+  // PDF generation
+  generatePdf: boolean;
 }
 
 export interface AppState {
@@ -64,6 +67,9 @@ const defaultSettings: Settings = {
   // Advanced parameters
   maxTokensAnswer: 4000,
   contextWindow: 128000,
+  
+  // PDF generation
+  generatePdf: true, // Default to enabled for backward compatibility
 };
 
 export const useAppStore = create<AppState>()(

@@ -33,6 +33,7 @@ class AskRequest(BaseModel):
     context_window: Optional[int] = None
     top_k: Optional[int] = None  # Number of vector results to retrieve
     top_k_rerank: Optional[int] = None  # Number of results to keep after reranking
+    generate_pdf: Optional[bool] = True  # Whether to generate PDF report
 
 
 class AskResponse(BaseModel):
@@ -127,11 +128,12 @@ async def _generate_complete_answer(query: str, context_items: list, start_time:
                 _logger.info("Translation completed")
             except Exception as e:
                 _logger.error(f"Translation error: {e}")
-                # Continue with English answer if translation fails
-        
-        # Generate PDF
-        pdf_path = save_pdf(complete_answer, query)
-        pdf_url = get_pdf_url(pdf_path)
+                # Continue with English answer if translation fails        # Generate PDF only if requested
+        pdf_url = ""
+        pdf_path = None
+        if request.generate_pdf:
+            pdf_path = save_pdf(complete_answer, query)
+            pdf_url = get_pdf_url(pdf_path)
         
         # Calculate duration
         duration = time.time() - start_time
@@ -201,7 +203,8 @@ async def ask_question_get(
     temperature: float = 0.7,
     answer_model: Optional[str] = None,
     max_tokens: Optional[int] = None,
-    context_window: Optional[int] = None
+    context_window: Optional[int] = None,
+    generate_pdf: bool = True
 ) -> AskResponse:
     """Ask a question via GET method with query parameters.
     
@@ -215,6 +218,7 @@ async def ask_question_get(
         max_tokens=max_tokens,
         context_window=context_window,
         top_k=top_k,
-        top_k_rerank=top_k_r
+        top_k_rerank=top_k_r,
+        generate_pdf=generate_pdf
     )
     return await ask_question(request)

@@ -9,7 +9,7 @@ import { toast } from 'sonner';
 import clsx from 'clsx';
 
 export function Settings() {
-  const { isDark, toggleTheme, settings, updateSettings } = useAppStore();
+  const { isDark, toggleTheme, settings, updateSettings, language, setLanguage } = useAppStore();
   const [isResetting, setIsResetting] = useState(false);
   const [showResetConfirm, setShowResetConfirm] = useState(false);
   const [tempSettings, setTempSettings] = useState(settings);  // Admin state
@@ -41,7 +41,7 @@ export function Settings() {
       setHealthStatus(health);
     } catch (error) {
       console.error('Failed to load admin data:', error);
-      toast.error('Failed to load system information');
+      toast.error(t('settings.loadInfoFailed', language));
     } finally {
       setLoadingAdmin(false);
     }  };
@@ -66,7 +66,7 @@ export function Settings() {
       }
     } catch (error) {
       console.error('Failed to load LLM settings:', error);
-      toast.error('Failed to load LLM settings');
+      toast.error(t('settings.loadSettingsFailed', language));
     } finally {
       setLoadingLLMSettings(false);
     }
@@ -94,22 +94,21 @@ export function Settings() {
       if (Object.values(llmSettingsToUpdate).some(val => val !== undefined)) {
         const response = await updateLLMSettings(llmSettingsToUpdate);
         if (response.success) {
-          toast.success('Settings saved successfully on the server');
+          toast.success(t('settings.settingsSavedServer', language));
           // Reload LLM settings to confirm the update
           await loadLLMSettings();
         } else {
-          toast.error('Failed to save LLM settings on the server');
+          toast.error(t('settings.settingsFailedServer', language));
         }
       } else {
-        toast.success('Settings saved successfully');
+        toast.success(t('settings.settingsSaved', language));
       }
     } catch (error) {
       console.error('Failed to update LLM settings:', error);
-      toast.error('Failed to save LLM settings on the server');
+      toast.error(t('settings.settingsFailedServer', language));
     }
   };
-  
-  const handleResetDefaults = () => {
+    const handleResetDefaults = () => {
     const defaultSettings = {
       topK: 80,
       topKR: 15,
@@ -120,10 +119,11 @@ export function Settings() {
       translateModel: "mistralai/mistral-nemo:free",
       maxTokensAnswer: 4000,
       contextWindow: 128000,
+      generatePdf: true,
     };
     setTempSettings(defaultSettings);
     updateSettings(defaultSettings);
-    toast.success('Settings reset to defaults');
+    toast.success(t('settings.settingsReset', language));
   };
 
   const handleResetCorpus = async () => {
@@ -136,13 +136,13 @@ export function Settings() {
     try {
       const response = await resetCorpus();
       if (response.success) {
-        toast.success(response.message || 'Corpus reset successfully');
+        toast.success(response.message || t('settings.corpusResetSuccess', language));
       } else {
-        toast.error(response.message || 'Failed to reset corpus');
+        toast.error(response.message || t('settings.corpusResetFailed', language));
       }
     } catch (error) {
       console.error('Reset corpus error:', error);
-      toast.error('Failed to reset corpus');
+      toast.error(t('settings.corpusResetFailed', language));
     } finally {
       setIsResetting(false);
       setShowResetConfirm(false);
@@ -151,7 +151,7 @@ export function Settings() {
 
   const handleApiKeyUpdate = async () => {
     if (!newApiKey.trim()) {
-      toast.error('Please enter a valid API key');      return;
+      toast.error(t('settings.apiKeyRequired', language));      return;
     }
     
     setSavingApiKey(true);
@@ -162,17 +162,17 @@ export function Settings() {
       const response = await updateApiKeys(apiKeyData);
       
       if (response.success) {
-        toast.success(response.message || 'API key updated successfully');
+        toast.success(response.message || t('settings.apiKeyUpdated', language));
         setEditingApiKey(false);
         setNewApiKey('');
         // Reload admin data to show updated status
         await loadAdminData();
       } else {
-        toast.error('Failed to update API key');
+        toast.error(t('settings.apiKeyFailed', language));
       }
     } catch (error) {
       console.error('Failed to update API key:', error);
-      toast.error('Failed to update API key');
+      toast.error(t('settings.apiKeyFailed', language));
     } finally {
       setSavingApiKey(false);
     }
@@ -218,7 +218,7 @@ export function Settings() {
     // Validate model selections
     const validationErrors = validateModelSelections();
     if (validationErrors.length > 0) {
-      toast.error(`Please fix the following issues:\n${validationErrors.join('\n')}`);
+      toast.error(`${t('settings.validationError', language)}\n${validationErrors.join('\n')}`);
       return;
     }
 
@@ -244,18 +244,18 @@ export function Settings() {
       if (Object.values(llmSettingsToUpdate).some(val => val !== undefined)) {
         const response = await updateLLMSettings(llmSettingsToUpdate);
         if (response.success) {
-          toast.success('Model selection confirmed successfully! Note: Server restart may be required for changes to take effect.');
+          toast.success(t('settings.modelSelectionConfirmed', language));
           // Reload LLM settings to confirm the update
           await loadLLMSettings();
         } else {
-          toast.error('Failed to save model selection to server');
+          toast.error(t('settings.modelSelectionFailed', language));
         }
       } else {
-        toast.success('Model selection confirmed!');
+        toast.success(t('settings.modelSelectionLocal', language));
       }
     } catch (error) {
       console.error('Failed to confirm model selection:', error);
-      toast.error('Failed to confirm model selection');
+      toast.error(t('settings.modelSelectionError', language));
     }
   };
 
@@ -266,7 +266,7 @@ export function Settings() {
       ...prev,
       ...defaults
     }));
-    toast.success('Model selections reset to system defaults');
+    toast.success(t('settings.modelsReset', language));
   };
 
   return (
@@ -275,7 +275,7 @@ export function Settings() {
         {/* Header */}
         <div className="flex items-center space-x-3">
           <SettingsIcon className="h-8 w-8 text-primary" />
-          <h1 className="text-3xl font-bold">{t('settings.title')}</h1>
+          <h1 className="text-3xl font-bold">{t('settings.title', language)}</h1>
         </div>
         
         {/* Unsaved Changes Warning */}
@@ -293,18 +293,34 @@ export function Settings() {
               </div>
             </div>
           </Card>
-        )}
-
-        {/* Appearance Settings */}
+        )}        {/* Appearance Settings */}
         <Card className="p-6">
-          <h2 className="text-xl font-semibold mb-4">{t('settings.appearance')}</h2>
+          <h2 className="text-xl font-semibold mb-4">{t('settings.appearance', language)}</h2>
           
           <div className="space-y-4">
+            {/* Language Selection */}
             <div className="flex items-center justify-between">
               <div className="space-y-1">
-                <label className="text-sm font-medium">{t('settings.darkMode')}</label>
+                <label className="text-sm font-medium">Language / اللغة</label>
                 <p className="text-xs text-muted-foreground">
-                  Switch between light and dark themes
+                  Choose your preferred language
+                </p>
+              </div>
+              <select
+                value={language}
+                onChange={(e) => setLanguage((e.target as HTMLSelectElement).value as 'en' | 'ar')}
+                className="w-32 px-3 py-1 text-sm border rounded-md bg-background focus:ring-2 focus:ring-primary focus:border-transparent"
+              >
+                <option value="en">English</option>
+                <option value="ar">العربية</option>
+              </select>
+            </div>
+            
+            {/* Dark Mode Toggle */}
+            <div className="flex items-center justify-between">              <div className="space-y-1">
+                <label className="text-sm font-medium">{t('settings.darkMode', language)}</label>
+                <p className="text-xs text-muted-foreground">
+                  {t('settings.darkModeDesc', language)}
                 </p>
               </div>
               <button
@@ -327,17 +343,50 @@ export function Settings() {
                 )}
               </button>
             </div>
+          </div>        </Card>
+
+        {/* PDF Generation Settings */}
+        <Card className="p-6">
+          <h2 className="text-xl font-semibold mb-4">{t('settings.pdfGeneration', language)}</h2>
+          
+          <div className="space-y-6">
+            {/* Enable PDF Generation */}
+            <div className="flex items-center justify-between">
+              <div className="space-y-1">
+                <label className="text-sm font-medium">{t('settings.enablePdfGeneration', language)}</label>
+                <p className="text-xs text-muted-foreground">
+                  {t('settings.pdfGenerationDesc', language)}
+                </p>
+              </div>
+              <button
+                onClick={() => setTempSettings(prev => ({ 
+                  ...prev, 
+                  generatePdf: !prev.generatePdf 
+                }))}
+                className={clsx(
+                  'relative inline-flex h-6 w-11 items-center rounded-full transition-colors',
+                  tempSettings.generatePdf ? 'bg-primary' : 'bg-gray-200'
+                )}
+              >
+                <span
+                  className={clsx(
+                    'inline-block h-4 w-4 transform rounded-full bg-white transition-transform',
+                    tempSettings.generatePdf ? 'translate-x-6' : 'translate-x-1'
+                  )}
+                />
+              </button>
+            </div>
           </div>
         </Card>
 
         {/* Search Settings */}
         <Card className="p-6">
-          <h2 className="text-xl font-semibold mb-4">{t('settings.search')}</h2>
+          <h2 className="text-xl font-semibold mb-4">{t('settings.search', language)}</h2>
           
           <div className="space-y-6">
             {/* Top K */}
             <div className="space-y-2">
-              <label className="text-sm font-medium">{t('settings.topK')}</label>
+              <label className="text-sm font-medium">{t('settings.topK', language)}</label>
               <p className="text-xs text-muted-foreground">
                 Number of top results to retrieve from vector store (5-250)
               </p>
@@ -360,7 +409,7 @@ export function Settings() {
             
             {/* Top K Rerank */}
             <div className="space-y-2">
-              <label className="text-sm font-medium">{t('settings.topKR')}</label>
+              <label className="text-sm font-medium">{t('settings.topKR', language)}</label>
               <p className="text-xs text-muted-foreground">
                 Number of results to rerank and display (3-100)
               </p>
@@ -383,7 +432,7 @@ export function Settings() {
 
             {/* Temperature */}
             <div className="space-y-2">
-              <label className="text-sm font-medium">{t('settings.temperature')}</label>
+              <label className="text-sm font-medium">{t('settings.temperature', language)}</label>
               <p className="text-xs text-muted-foreground">
                 Controls randomness in responses (0.0-2.0)
               </p>
@@ -418,13 +467,13 @@ export function Settings() {
               )}
             >
               <Save className="h-4 w-4 mr-2" />
-              {t('common.save')}
-            </button>
-            <button
+              {t('common.save', language)}
+            </button>            <button
               onClick={handleResetDefaults}
               className="btn-secondary"
             >
-              Reset to Defaults            </button>
+              {t('settings.resetDefaults', language)}
+            </button>
           </div>
         </Card>
         
@@ -768,10 +817,9 @@ export function Settings() {
           <h2 className="text-xl font-semibold mb-4 text-destructive">Danger Zone</h2>
           
           <div className="space-y-4">
-            <div className="space-y-2">
-              <h3 className="font-medium">{t('settings.reset')}</h3>
+            <div className="space-y-2">              <h3 className="font-medium">{t('settings.reset', language)}</h3>
               <p className="text-sm text-muted-foreground">
-                {t('settings.resetConfirm')}
+                {t('settings.resetConfirm', language)}
               </p>
             </div>
 
@@ -790,20 +838,18 @@ export function Settings() {
                   ) : (
                     'Confirm Reset'
                   )}
-                </button>
-                <button
+                </button>                <button
                   onClick={() => setShowResetConfirm(false)}
                   className="btn-secondary"
                 >
-                  {t('common.cancel')}
+                  {t('common.cancel', language)}
                 </button>
               </div>
-            ) : (
-              <button
+            ) : (              <button
                 onClick={() => setShowResetConfirm(true)}
                 className="btn-destructive"
               >
-                {t('settings.reset')}
+                {t('settings.reset', language)}
               </button>
             )}
           </div>

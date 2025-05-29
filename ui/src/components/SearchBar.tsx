@@ -9,10 +9,12 @@ interface SearchBarProps {
   onChange: (value: string) => void;
   onSubmit: () => void;
   disabled?: boolean;
+  language?: 'en' | 'ar';
 }
 
-export function SearchBar({ value, onChange, onSubmit, disabled = false }: SearchBarProps) {
-  const { settings, updateSettings } = useAppStore();
+export function SearchBar({ value, onChange, onSubmit, disabled = false, language }: SearchBarProps) {
+  const { settings, updateSettings, language: appLanguage } = useAppStore();
+  const currentLanguage = language || appLanguage;
   const [isExpanded, setIsExpanded] = useState(false);
 
   const handleSubmit = (e: Event) => {
@@ -38,7 +40,7 @@ export function SearchBar({ value, onChange, onSubmit, disabled = false }: Searc
             value={value}
             onChange={(e) => onChange((e.target as HTMLTextAreaElement).value)}
             onKeyDown={handleKeyDown}
-            placeholder={t('search.placeholder')}
+            placeholder={t('search.placeholder', currentLanguage)}
             disabled={disabled}
             className={clsx(
               'input pl-10 pr-12 resize-none min-h-[44px] max-h-32',
@@ -77,12 +79,12 @@ export function SearchBar({ value, onChange, onSubmit, disabled = false }: Searc
             className="rounded border text-primary focus:ring-primary"
           />
           <span className="text-sm text-muted-foreground">
-            {t('search.translate')}
+            {t('search.translate', currentLanguage)}
           </span>
         </label>
 
         <div className="flex items-center space-x-2 text-sm text-muted-foreground">
-          <span>Press Enter to search</span>
+          <span>{t('search.enterHint', currentLanguage)}</span>
         </div>
       </div>
     </div>

@@ -109,13 +109,13 @@ class EnhancedLogger:
         
         logs_dir = config.BASE_DIR / "logs"
         logs_dir.mkdir(exist_ok=True)
-        
-        # Add structured logging handler for JSON logs
+          # Add structured logging handler for JSON logs with UTF-8 encoding
         if config.LOG_STRUCTURED_FORMAT:
             json_handler = logging.handlers.RotatingFileHandler(
                 logs_dir / "sociorag_structured.log",
                 maxBytes=config.LOG_MAX_FILE_SIZE_MB * 1024 * 1024,
-                backupCount=config.LOG_ROTATION_BACKUP_COUNT
+                backupCount=config.LOG_ROTATION_BACKUP_COUNT,
+                encoding='utf-8'
             )
             json_handler.setLevel(logging.DEBUG)
             json_handler.setFormatter(StructuredFormatter())
