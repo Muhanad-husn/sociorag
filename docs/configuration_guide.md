@@ -69,11 +69,10 @@ The easiest way to configure SocioGraph is through the web interface:
    embedding_model: "sentence-transformers/all-MiniLM-L6-v2"
    entity_llm_model: "google/gemini-flash-1.5"
    answer_llm_model: "meta-llama/llama-3.3-70b-instruct:free"
-   
-   # Similarity Thresholds
+     # Similarity Thresholds
    chunk_sim: 0.85
    entity_sim: 0.90
-   graph_sim: 0.95
+   graph_sim: 0.82
    
    # Search Parameters
    top_k: 100
@@ -115,7 +114,7 @@ The easiest way to configure SocioGraph is through the web interface:
 |-----------|-------------|---------|-------|
 | `CHUNK_SIM` | Chunk similarity threshold | `0.85` | `0.0-1.0` |
 | `ENTITY_SIM` | Entity similarity threshold | `0.90` | `0.0-1.0` |
-| `GRAPH_SIM` | Graph similarity threshold | `0.95` | `0.0-1.0` |
+| `GRAPH_SIM` | Graph similarity threshold | `0.82` | `0.0-1.0` |
 
 ### Search Parameters
 

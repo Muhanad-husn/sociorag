@@ -188,7 +188,7 @@ models:
 thresholds:
   chunk_sim: 0.85
   entity_sim: 0.90
-  graph_sim: 0.95
+  graph_sim: 0.82
   top_k: 100
   top_k_rerank: 15
   max_context_fraction: 0.4

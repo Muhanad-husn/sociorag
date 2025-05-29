@@ -36,12 +36,10 @@ class _Config(BaseSettings):
     TRANSLATE_LLM_MODEL: str = "mistralai/mistral-nemo:free"
     TRANSLATE_LLM_TEMPERATURE: float = 0.5
     TRANSLATE_LLM_MAX_TOKENS: int = 5000
-    TRANSLATE_LLM_STREAM: bool = True
-    
-    # ---------------- thresholds & params -------------- #
+    TRANSLATE_LLM_STREAM: bool = True    # ---------------- thresholds & params -------------- #
     CHUNK_SIM: float = 0.85
     ENTITY_SIM: float = 0.90
-    GRAPH_SIM: float = 0.95
+    GRAPH_SIM: float = 0.50
     TOP_K: int = 100
     TOP_K_RERANK: int = 15
     MAX_CONTEXT_FRACTION: float = 0.4

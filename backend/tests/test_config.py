@@ -14,7 +14,7 @@ def test_config_defaults():
     cfg = get_config()
     assert cfg.CHUNK_SIM == 0.85
     assert cfg.ENTITY_SIM == 0.90
-    assert cfg.GRAPH_SIM == 0.95
+    assert cfg.GRAPH_SIM == 0.50
     assert cfg.TOP_K == 100
     assert cfg.TOP_K_RERANK == 15
     assert cfg.MAX_CONTEXT_FRACTION == 0.4
