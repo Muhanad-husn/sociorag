@@ -189,26 +189,38 @@ def get_or_insert_entity(surface: str, typ: str, source_doc: str) -> int:
                     return row_id
             except Exception as sim_err:
                 logger.error(f"Error calculating similarity: {sim_err}")
-    
-    # If no similar entity found, insert new one
-    cur = con.execute(
-        "INSERT INTO entity(name, type, embedding, source_doc) VALUES(?,?,?,?)",
-        (surface, typ, vec_bytes, source_doc)
-    )
-    
-    entity_id = cur.lastrowid
-    if entity_id is None:
-        # This should not happen with an AUTOINCREMENT primary key
-        logger.error(f"Failed to get ID for newly inserted entity: {surface}")
-        # Get the ID via a separate query to be safe
-        cur = con.execute("SELECT id FROM entity WHERE name = ? AND type = ?", (surface, typ))
-        row = cur.fetchone()
-        if row:
-            return row[0]
-        # Last resort fallback
+      # If no similar entity found, insert new one
+    try:
+        cur = con.execute(
+            "INSERT OR IGNORE INTO entity(name, type, embedding, source_doc) VALUES(?,?,?,?)",
+            (surface, typ, vec_bytes, source_doc)
+        )
+        
+        entity_id = cur.lastrowid
+        
+        # If INSERT OR IGNORE didn't insert (entity already exists), get existing ID
+        if entity_id is None or entity_id == 0:
+            cur = con.execute("SELECT id FROM entity WHERE name = ? AND type = ?", (surface, typ))
+            row = cur.fetchone()
+            if row:
+                return row[0]
+            else:
+                logger.error(f"Failed to get or insert entity: {surface}")
+                return -1
+        
+        return entity_id
+        
+    except Exception as e:
+        logger.error(f"Error inserting entity '{surface}': {str(e)}")
+        # Try to get existing entity
+        try:
+            cur = con.execute("SELECT id FROM entity WHERE name = ? AND type = ?", (surface, typ))
+            row = cur.fetchone()
+            if row:
+                return row[0]
+        except Exception as get_err:
+            logger.error(f"Error getting existing entity '{surface}': {str(get_err)}")
         return -1
-    
-    return entity_id
 
 
 def insert_graph_rows(rows: List[Dict[str, str]], source_doc: str) -> None:

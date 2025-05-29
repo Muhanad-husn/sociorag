@@ -137,8 +137,7 @@ def create_app() -> FastAPI:
     from pathlib import Path
     
     saved_dir = Path("saved")
-    if not saved_dir.exists():
-        # Try project root
+    if not saved_dir.exists():        # Try project root
         project_root = Path(__file__).parent.parent.parent
         saved_dir = project_root / "saved"
         if not saved_dir.exists():
@@ -147,7 +146,8 @@ def create_app() -> FastAPI:
     
     app.mount("/static/saved", StaticFiles(directory=str(saved_dir)), name="saved")
 
-    # Include routers    app.include_router(ingest_router)
+    # Include routers
+    app.include_router(ingest_router)
     app.include_router(qa_router)
     app.include_router(history_router)
     app.include_router(documents_router)
