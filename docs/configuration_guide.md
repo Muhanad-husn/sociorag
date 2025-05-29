@@ -72,7 +72,7 @@ The easiest way to configure SocioGraph is through the web interface:
      # Similarity Thresholds
    chunk_sim: 0.85
    entity_sim: 0.90
-   graph_sim: 0.82
+   graph_sim: 0.50
    
    # Search Parameters
    top_k: 100
