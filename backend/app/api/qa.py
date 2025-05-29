@@ -70,7 +70,8 @@ async def ask_question(request: AskRequest) -> Any:
             retrieval_params['top_k_rerank'] = request.top_k_rerank
             
         context_result = retrieve_context(query, **retrieval_params)
-        context_items = context_result.get("context", [])
+        context_data = context_result.get("context", {})
+        context_items = context_data.get("merged_texts", [])
         
         if not context_items:
             _logger.warning("No context retrieved for query")
