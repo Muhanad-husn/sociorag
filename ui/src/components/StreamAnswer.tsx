@@ -5,6 +5,7 @@ import { Copy, Check, Download } from 'lucide-preact';
 import clsx from 'clsx';
 import { toast } from 'sonner';
 import { useAppStore } from '../hooks/useLocalState';
+import { downloadAndSavePDF } from '../lib/api';
 
 interface StreamAnswerProps {
   markdown: string;
@@ -48,31 +49,24 @@ export function StreamAnswer({ markdown, isComplete = false, error, pdfUrl, isLo
     } catch (err) {
       console.error('Failed to copy text:', err);
     }
-  };
-
-  const handleDownloadPdf = async () => {
+  };  const handleDownloadPdf = async () => {
     if (!pdfUrl) return;
     
     setDownloading(true);
     try {
-      const response = await fetch(pdfUrl);
-      const blob = await response.blob();
+      // Extract filename from the pdfUrl (e.g., "/static/saved/answer_20250531_123456.pdf")
+      const filename = pdfUrl.split('/').pop();
+      if (!filename) {
+        throw new Error('Could not extract filename from PDF URL');
+      }
       
-      // Create download link
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `answer-${Date.now()}.pdf`;
-      document.body.appendChild(a);
-      a.click();
+      const success = await downloadAndSavePDF(filename, `answer-${Date.now()}.pdf`);
       
-      // Cleanup
-      window.URL.revokeObjectURL(url);
-      document.body.removeChild(a);
-      
-      toast.success(t('common.downloadStarted', appLanguage));
-    } catch (error) {
-      console.error('PDF download failed:', error);
+      if (success) {
+        toast.success(t('common.downloadStarted', appLanguage));
+      }
+    } catch (error: any) {
+      console.error('PDF save failed:', error);
       toast.error(t('common.downloadFailed', appLanguage));
     } finally {
       setDownloading(false);

@@ -63,9 +63,8 @@ export const translations = {
   },  saved: {
     title: { en: 'Saved Documents', ar: 'الوثائق المحفوظة' },
     empty: { en: 'No saved documents', ar: 'لا توجد وثائق محفوظة' },
-    emptyDesc: { en: 'Upload some PDF documents to see them here.', ar: 'ارفع بعض وثائق PDF لرؤيتها هنا.' },
-    download: { en: 'Download', ar: 'تحميل' },
-    downloading: { en: 'Downloading', ar: 'جاري التحميل' },
+    emptyDesc: { en: 'Upload some PDF documents to see them here.', ar: 'ارفع بعض وثائق PDF لرؤيتها هنا.' },    download: { en: 'Save As', ar: 'حفظ باسم' },
+    downloading: { en: 'Saving', ar: 'جاري الحفظ' },
     size: { en: 'Size', ar: 'الحجم' },
     modified: { en: 'Modified', ar: 'آخر تعديل' },
     refresh: { en: 'Refresh', ar: 'تحديث' },
@@ -74,9 +73,8 @@ export const translations = {
     about2: { en: 'You can download any document at any time', ar: 'يمكنك تحميل أي وثيقة في أي وقت' },
     about3: { en: 'Original formatting and content are preserved', ar: 'التنسيق والمحتوى الأصلي محفوظان' },
     about4: { en: 'Files are stored securely on the server', ar: 'الملفات مخزنة بأمان على الخادم' },
-    loadFailed: { en: 'Failed to load saved files', ar: 'فشل في تحميل الملفات المحفوظة' },
-    downloadSuccess: { en: 'Downloaded', ar: 'تم التحميل' },
-    downloadFailed: { en: 'Failed to download', ar: 'فشل في التحميل' }
+    loadFailed: { en: 'Failed to load saved files', ar: 'فشل في تحميل الملفات المحفوظة' },    downloadSuccess: { en: 'File saved successfully', ar: 'تم حفظ الملف بنجاح' },
+    downloadFailed: { en: 'Failed to save file', ar: 'فشل في حفظ الملف' }
   },settings: {
     title: { en: 'Settings', ar: 'الإعدادات' },
     appearance: { en: 'Appearance', ar: 'المظهر' },
@@ -116,11 +114,12 @@ export const translations = {
     cancel: { en: 'Cancel', ar: 'إلغاء' },
     confirm: { en: 'Confirm', ar: 'تأكيد' },
     close: { en: 'Close', ar: 'إغلاق' },
-    save: { en: 'Save', ar: 'حفظ' },
-    downloadPdf: { en: 'Download PDF', ar: 'تحميل PDF' },
+    save: { en: 'Save', ar: 'حفظ' },    downloadPdf: { en: 'Save PDF', ar: 'حفظ PDF' },
     pdfReady: { en: 'PDF report is ready', ar: 'تقرير PDF جاهز' },
-    downloadStarted: { en: 'Download started', ar: 'بدء التحميل' },
-    downloadFailed: { en: 'Download failed', ar: 'فشل التحميل' }
+    downloadStarted: { en: 'File saved successfully', ar: 'تم حفظ الملف بنجاح' },
+    downloadFailed: { en: 'Save failed', ar: 'فشل الحفظ' },
+    saveAs: { en: 'Save As', ar: 'حفظ باسم' },
+    saveCancelled: { en: 'Save cancelled', ar: 'تم إلغاء الحفظ' }
   }
 };
 

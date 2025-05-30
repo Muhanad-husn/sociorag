@@ -124,7 +124,7 @@ export async function getStats(): Promise<StatsResponse> {
 // Get saved files
 export async function getSavedFiles(): Promise<SavedFile[]> {
   try {
-    await axios.get(`${BASE_URL}/saved/`);
+    await axios.get(`${BASE_URL}/static/saved/`);
     // The response might be HTML directory listing, so we'll need to parse it
     // For now, return empty array and implement later
     return [];
@@ -134,10 +134,14 @@ export async function getSavedFiles(): Promise<SavedFile[]> {
   }
 }
 
-// Download saved file
+// Download saved file - fetch from working endpoint and return blob for local saving
 export async function downloadSavedFile(filename: string): Promise<Blob> {
-  const response = await axios.get(`${BASE_URL}/saved/${filename}`, {
+  const response = await axios.get(`${BASE_URL}/static/saved/${filename}`, {
     responseType: 'blob',
+    // Ensure we get the raw binary data without any transformations
+    headers: {
+      'Accept': 'application/pdf,application/octet-stream,*/*'
+    }
   });
   return response.data;
 }
@@ -234,4 +238,30 @@ export async function updateLLMSettings(settings: LLMSettingsUpdate): Promise<{ 
 export async function getLLMSettings(): Promise<{ success: boolean; data: any }> {
   const response = await axios.get(`${BASE_URL}/api/admin/llm-settings`);
   return response.data;
+}
+
+// Complete PDF download workflow - fetch from working endpoint and save to user location
+export async function downloadAndSavePDF(filename: string, userFilename?: string): Promise<boolean> {
+  try {
+    // Step 1: Fetch the PDF blob from the working backend endpoint
+    const blob = await downloadSavedFile(filename);
+    
+    // Step 2: Use file-utils to save with user dialog
+    const { saveFileWithDialog } = await import('./file-utils');
+    
+    const success = await saveFileWithDialog({
+      filename: userFilename || filename,
+      blob,
+      fileType: {
+        description: 'PDF files',
+        mimeType: 'application/pdf',
+        extension: '.pdf'
+      }
+    });
+    
+    return success;
+  } catch (error) {
+    console.error('Failed to download and save PDF:', error);
+    throw error;
+  }
 }

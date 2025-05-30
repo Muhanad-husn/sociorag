@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'preact/hooks';
-import { getSavedFiles, downloadSavedFile } from '../lib/api';
+import { getSavedFiles, downloadAndSavePDF } from '../lib/api';
 import { useAppStore } from '../hooks/useLocalState';
 import { t } from '../lib/i18n';
 import { Card } from '../components/ui/Card';
@@ -35,31 +35,19 @@ export function Saved() {
     } finally {
       setLoading(false);
     }
-  };
-
-  const handleDownload = async (file: SavedFile) => {
+  };  const handleDownload = async (file: SavedFile) => {
     if (downloadingFiles.has(file.name)) return;
 
     setDownloadingFiles(prev => new Set(prev).add(file.name));
 
     try {
-      const blob = await downloadSavedFile(file.name);
+      const success = await downloadAndSavePDF(file.name);
       
-      // Create download link
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = file.name;
-      document.body.appendChild(a);
-      a.click();
-      
-      // Cleanup
-      window.URL.revokeObjectURL(url);
-      document.body.removeChild(a);
-      
-      toast.success(`${t('saved.downloadSuccess', language)} ${file.name}`);
-    } catch (error) {
-      console.error('Download failed:', error);
+      if (success) {
+        toast.success(`${t('saved.downloadSuccess', language)} ${file.name}`);
+      }
+    } catch (error: any) {
+      console.error('Save failed:', error);
       toast.error(`${t('saved.downloadFailed', language)} ${file.name}`);
     } finally {
       setDownloadingFiles(prev => {
