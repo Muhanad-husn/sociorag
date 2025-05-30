@@ -159,8 +159,8 @@ def _get_resource_path(resource_name: str) -> Path:
     return resource_dir / resource_name
 
 
-def _build_html_document(answer_md: str, query: str) -> str:
-    """Build a complete HTML document from markdown content."""
+def _build_html_document(answer_md: str, query: str, language: str = "en") -> str:
+    """Build a complete HTML document from markdown content with proper language and RTL support."""
     # Convert markdown to HTML
     html_body = _md.render(answer_md)
     
@@ -176,9 +176,63 @@ def _build_html_document(answer_md: str, query: str) -> str:
         except Exception as e:
             _logger.warning(f"Could not load CSS theme: {e}")
     
+    # Determine text direction and RTL styles
+    is_rtl = language == "ar"
+    direction = "rtl" if is_rtl else "ltr"
+    text_align = "right" if is_rtl else "left"
+    
+    # Additional RTL-specific CSS
+    rtl_css = ""
+    if is_rtl:
+        rtl_css = """
+        /* Arabic RTL-specific styles */
+        body {
+            font-family: 'Noto Sans Arabic', 'Arial Unicode MS', Arial, sans-serif !important;
+            text-align: right;
+        }
+        
+        .page-header {
+            text-align: center;
+        }
+        
+        .query-info, .timestamp {
+            text-align: right;
+        }
+        
+        /* Ensure proper text flow for mixed content */
+        p, div, span {
+            direction: rtl;
+            text-align: right;
+        }
+        
+        /* Handle code blocks and pre-formatted text */
+        pre, code {
+            direction: ltr;
+            text-align: left;
+        }
+        
+        /* Lists should align properly */
+        ul, ol {
+            text-align: right;
+            padding-right: 20px;
+            padding-left: 0;
+        }
+        
+        /* Headers maintain center alignment but support RTL text */
+        h1, h2, h3, h4, h5, h6 {
+            direction: rtl;
+            text-align: right;
+        }
+        
+        /* Footer center aligned */
+        .page-footer {
+            text-align: center;
+        }
+        """
+    
     # Build complete HTML document
     html_doc = f"""<!DOCTYPE html>
-<html lang="en">
+<html lang="{language}" dir="{direction}">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -187,6 +241,8 @@ def _build_html_document(answer_md: str, query: str) -> str:
     <meta name="created" content="{timestamp}">
     <style>
         {css_content if css_content else _get_default_css()}
+        
+        {rtl_css}
         
         /* Print-specific styles */
         @media print {{
@@ -249,7 +305,7 @@ def _build_html_document(answer_md: str, query: str) -> str:
     </div>
 </body>
 </html>"""
-    
+
     return html_doc
 
 
@@ -369,15 +425,15 @@ def _process_embedded_resources(html_content: str) -> str:
     return html_content
 
 
-async def save_pdf_async(answer_md: str, query: str, filename: Optional[str] = None) -> Path:
+async def save_pdf_async(answer_md: str, query: str, filename: Optional[str] = None, language: str = "en") -> Path:
     """Async version of PDF generation using Playwright."""
-    _logger.info(f"Starting async PDF generation for query: {query[:100]}...")
+    _logger.info(f"Starting async PDF generation for query: {query[:100]}... (language: {language})")
     
     await _initialize_playwright()
     
     if not _playwright_available:
         _logger.warning("Playwright not available - falling back to HTML")
-        return _save_as_html(answer_md, query, filename)
+        return _save_as_html(answer_md, query, filename, language)
     
     try:
         # Ensure output directory exists
@@ -394,8 +450,8 @@ async def save_pdf_async(answer_md: str, query: str, filename: Optional[str] = N
             
         output_path = saved_dir / filename
         
-        # Build HTML document
-        html_content = _build_html_document(answer_md, query)
+        # Build HTML document with language support
+        html_content = _build_html_document(answer_md, query, language)
         
         # Process any embedded resources
         html_content = _process_embedded_resources(html_content)
@@ -408,10 +464,10 @@ async def save_pdf_async(answer_md: str, query: str, filename: Optional[str] = N
         try:
             # Set content and wait for it to load
             await page.set_content(html_content, wait_until="networkidle")
-            
-            # Emulate print media for proper styling
+              # Emulate print media for proper styling
             await page.emulate_media(media="print")
-              # Generate PDF with optimized settings
+            
+            # Generate PDF with optimized settings
             _logger.info(f"Rendering PDF to {output_path}")
             await page.pdf(
                 path=str(output_path),
@@ -436,33 +492,33 @@ async def save_pdf_async(answer_md: str, query: str, filename: Optional[str] = N
     except Exception as e:
         _logger.error(f"Error generating PDF: {e}")
         _logger.info("Falling back to HTML format...")
-        return _save_as_html(answer_md, query, filename)
+        return _save_as_html(answer_md, query, filename, language)
 
 
-def save_pdf(answer_md: str, query: str, filename: Optional[str] = None) -> Path:
+def save_pdf(answer_md: str, query: str, filename: Optional[str] = None, language: str = "en") -> Path:
     """Synchronous wrapper for PDF generation."""
-    _logger.info(f"Starting PDF generation for query: {query[:100]}...")
+    _logger.info(f"Starting PDF generation for query: {query[:100]}... (language: {language})")
     
     # Check if we're in an async context
     try:
         loop = asyncio.get_running_loop()
         # We're in an async context, schedule the async version
         return asyncio.run_coroutine_threadsafe(
-            save_pdf_async(answer_md, query, filename), 
+            save_pdf_async(answer_md, query, filename, language), 
             loop
         ).result(timeout=30)
     except RuntimeError:
         # No async loop, use sync implementation
-        return _save_pdf_sync(answer_md, query, filename)
+        return _save_pdf_sync(answer_md, query, filename, language)
 
 
-def _save_pdf_sync(answer_md: str, query: str, filename: Optional[str] = None) -> Path:
+def _save_pdf_sync(answer_md: str, query: str, filename: Optional[str] = None, language: str = "en") -> Path:
     """Synchronous PDF generation using Playwright."""
     _initialize_sync_playwright()
     
     if not _sync_browser:
         _logger.warning("Sync Playwright not available - falling back to HTML")
-        return _save_as_html(answer_md, query, filename)
+        return _save_as_html(answer_md, query, filename, language)
     
     try:
         # Ensure output directory exists
@@ -479,8 +535,8 @@ def _save_pdf_sync(answer_md: str, query: str, filename: Optional[str] = None) -
             
         output_path = saved_dir / filename
         
-        # Build HTML document
-        html_content = _build_html_document(answer_md, query)
+        # Build HTML document with language support
+        html_content = _build_html_document(answer_md, query, language)
         
         # Process any embedded resources
         html_content = _process_embedded_resources(html_content)
@@ -492,10 +548,10 @@ def _save_pdf_sync(answer_md: str, query: str, filename: Optional[str] = None) -
         try:
             # Set content and wait for it to load
             page.set_content(html_content, wait_until="networkidle")
-            
-            # Emulate print media for proper styling
+              # Emulate print media for proper styling
             page.emulate_media(media="print")
-              # Generate PDF
+            
+            # Generate PDF
             _logger.info(f"Rendering PDF to {output_path}")
             page.pdf(
                 path=str(output_path),
@@ -520,10 +576,10 @@ def _save_pdf_sync(answer_md: str, query: str, filename: Optional[str] = None) -
     except Exception as e:
         _logger.error(f"Error generating PDF: {e}")
         _logger.info("Falling back to HTML format...")
-        return _save_as_html(answer_md, query, filename)
+        return _save_as_html(answer_md, query, filename, language)
 
 
-def _save_as_html(answer_md: str, query: str, filename: Optional[str] = None) -> Path:
+def _save_as_html(answer_md: str, query: str, filename: Optional[str] = None, language: str = "en") -> Path:
     """Fallback function to save as HTML when PDF generation is not available."""
     saved_dir = _ensure_saved_dir()
     
@@ -539,9 +595,8 @@ def _save_as_html(answer_md: str, query: str, filename: Optional[str] = None) ->
         filename = f"{filename}.html"
         
     output_path = saved_dir / filename
-    
-    # Build HTML document
-    html_content = _build_html_document(answer_md, query)
+      # Build HTML document with language support
+    html_content = _build_html_document(answer_md, query, language)
     
     # Write HTML file
     with open(output_path, 'w', encoding='utf-8') as f:

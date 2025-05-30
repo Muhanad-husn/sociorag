@@ -132,7 +132,7 @@ async def _generate_complete_answer(query: str, context_items: list, start_time:
         pdf_url = ""
         pdf_path = None
         if request.generate_pdf:
-            pdf_path = await save_pdf_async(complete_answer, query)
+            pdf_path = await save_pdf_async(complete_answer, query, language=language)
             pdf_url = get_pdf_url(pdf_path)
         
         # Calculate duration
