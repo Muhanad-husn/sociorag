@@ -9,18 +9,21 @@ export interface UploadResponse {
 }
 
 export interface HistoryItem {
-  id: string;
+  id: number;
   query: string;
-  answer: string;
   timestamp: string;
-  language: string;
+  token_count: number;
+  context_count: number;
+  metadata: any;
 }
 
 export interface HistoryResponse {
-  items: HistoryItem[];
+  records: HistoryItem[];
   total: number;
   page: number;
-  limit: number;
+  per_page: number;
+  has_next: boolean;
+  has_prev: boolean;
 }
 
 export interface StatsResponse {
@@ -108,9 +111,9 @@ export async function getProcessingProgress(): Promise<ProgressResponse> {
 }
 
 // Get history
-export async function getHistory(page = 1, limit = 15): Promise<HistoryResponse> {
+export async function getHistory(page = 1, per_page = 15): Promise<HistoryResponse> {
   const response = await axios.get(`${BASE_URL}/api/history/`, {
-    params: { page, limit }
+    params: { page, per_page }
   });
   return response.data;
 }

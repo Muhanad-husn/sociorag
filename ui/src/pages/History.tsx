@@ -9,11 +9,12 @@ import { Play, Trash2, Clock, MessageSquare } from 'lucide-preact';
 import { toast } from 'sonner';
 
 interface HistoryItem {
-  id: string;
+  id: number;
   query: string;
-  answer: string;
   timestamp: string;
-  language: string;
+  token_count: number;
+  context_count: number;
+  metadata: any;
 }
 
 export function History() {
@@ -27,12 +28,11 @@ export function History() {
   useEffect(() => {
     loadHistory();
   }, []);
-
   const loadHistory = async () => {
     try {
       setLoading(true);
       const response = await getHistory(1, 15);
-      setHistoryItems(response.items);
+      setHistoryItems(response.records);
     } catch (error) {
       console.error('Failed to load history:', error);
       toast.error(t('history.loadFailed', language));
@@ -138,17 +138,14 @@ export function History() {
                   {/* Query */}
                   <div className="flex items-start justify-between">
                     <div className="flex-1">
-                      <p className="font-medium text-lg mb-1">{item.query}</p>
-                      <div className="flex items-center space-x-4 text-sm text-muted-foreground">
+                      <p className="font-medium text-lg mb-1">{item.query}</p>                      <div className="flex items-center space-x-4 text-sm text-muted-foreground">
                         <div className="flex items-center space-x-1">
                           <Clock className="h-4 w-4" />
                           <span>{formatTimestamp(item.timestamp)}</span>
                         </div>
-                        {item.language && (
-                          <span className="px-2 py-1 bg-accent rounded text-xs">
-                            {item.language === 'ar' ? 'العربية' : 'English'}
-                          </span>
-                        )}
+                        <span className="px-2 py-1 bg-accent rounded text-xs">
+                          {item.token_count} tokens
+                        </span>
                       </div>
                     </div>
                     
@@ -170,23 +167,9 @@ export function History() {
                         className="btn-destructive h-8 w-8 p-0"
                         title={t('history.delete', language)}
                       >
-                        <Trash2 className="h-3 w-3" />
-                      </button>
+                        <Trash2 className="h-3 w-3" />                      </button>
                     </div>
                   </div>
-                  
-                  {/* Answer Preview */}
-                  {item.answer && (
-                    <div className="p-3 bg-accent/50 rounded text-sm">
-                      <p className="text-muted-foreground mb-1">{t('history.previousAnswer', language)}:</p>
-                      <p className="line-clamp-3">
-                        {item.answer.length > 200 
-                          ? `${item.answer.substring(0, 200)}...` 
-                          : item.answer
-                        }
-                      </p>
-                    </div>
-                  )}
                 </div>
               </Card>
             ))}

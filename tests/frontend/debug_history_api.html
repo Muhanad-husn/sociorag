@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debug History Frontend</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .result { margin: 20px 0; padding: 15px; border: 1px solid #ccc; border-radius: 5px; }
+        .success { background-color: #d4edda; border-color: #c3e6cb; }
+        .error { background-color: #f8d7da; border-color: #f5c6cb; }
+        pre { white-space: pre-wrap; word-wrap: break-word; }
+        button { padding: 10px 20px; margin: 5px; background: #007bff; color: white; border: none; border-radius: 3px; cursor: pointer; }
+        button:hover { background: #0056b3; }
+    </style>
+</head>
+<body>
+    <h1>SocioRAG History Debug</h1>
+    
+    <div>
+        <button onclick="testDirectAPI()">Test Direct API Call</button>
+        <button onclick="testWithAxios()">Test with Axios (like frontend)</button>
+        <button onclick="testCORS()">Test CORS</button>
+    </div>
+    
+    <div id="results"></div>
+    
+    <script src="https://unpkg.com/axios@1.6.2/dist/axios.min.js"></script>
+    <script>
+        const resultsDiv = document.getElementById('results');
+        
+        function addResult(title, content, isSuccess = true) {
+            const div = document.createElement('div');
+            div.className = `result ${isSuccess ? 'success' : 'error'}`;
+            div.innerHTML = `<h3>${title}</h3><pre>${content}</pre>`;
+            resultsDiv.appendChild(div);
+        }
+        
+        async function testDirectAPI() {
+            try {
+                const response = await fetch('http://127.0.0.1:8000/api/history/?per_page=3');
+                const data = await response.json();
+                addResult('Direct API Call - SUCCESS', JSON.stringify(data, null, 2));
+            } catch (error) {
+                addResult('Direct API Call - ERROR', error.message, false);
+            }
+        }
+        
+        async function testWithAxios() {
+            try {
+                const response = await axios.get('http://127.0.0.1:8000/api/history/', {
+                    params: { page: 1, per_page: 3 }
+                });
+                addResult('Axios Call (Frontend Style) - SUCCESS', JSON.stringify(response.data, null, 2));
+            } catch (error) {
+                addResult('Axios Call (Frontend Style) - ERROR', error.message + '\n\nFull error: ' + JSON.stringify(error.response?.data || 'No response data', null, 2), false);
+            }
+        }
+        
+        async function testCORS() {
+            try {
+                const response = await fetch('http://127.0.0.1:8000/api/history/?per_page=1', {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    mode: 'cors'
+                });
+                const data = await response.json();
+                addResult('CORS Test - SUCCESS', `Response Headers: ${JSON.stringify([...response.headers.entries()], null, 2)}\n\nData: ${JSON.stringify(data, null, 2)}`);
+            } catch (error) {
+                addResult('CORS Test - ERROR', error.message, false);
+            }
+        }
+    </script>
+</body>
+</html>

@@ -1,6 +1,14 @@
-# PDF Generation Tests Configuration
+# SocioRAG Testing Framework
 
-This directory contains tests for the PDF generation user choice functionality.
+This directory contains comprehensive tests for various SocioRAG functionalities.
+
+## Test Categories
+
+### PDF Generation Tests
+Tests for the PDF generation user choice functionality.
+
+### Frontend Tests
+Browser-based tests for frontend functionality (see `frontend/` directory).
 
 ## Test Files
 

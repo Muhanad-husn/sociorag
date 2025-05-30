@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Complete History Frontend Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .test-section { margin: 20px 0; padding: 15px; border: 1px solid #ddd; border-radius: 5px; }
+        .success { background-color: #d4edda; border-color: #c3e6cb; }
+        .error { background-color: #f8d7da; border-color: #f5c6cb; }
+        .info { background-color: #d1ecf1; border-color: #bee5eb; }
+        pre { white-space: pre-wrap; word-wrap: break-word; max-height: 300px; overflow-y: auto; }
+        button { padding: 10px 20px; margin: 5px; background: #007bff; color: white; border: none; border-radius: 3px; cursor: pointer; }
+        button:hover { background: #0056b3; }
+        button:disabled { background: #6c757d; cursor: not-allowed; }
+        .test-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; }
+        .loading { display: inline-block; width: 20px; height: 20px; border: 3px solid #f3f3f3; border-top: 3px solid #3498db; border-radius: 50%; animation: spin 1s linear infinite; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    </style>
+</head>
+<body>
+    <h1>SocioRAG History - Complete Frontend Test</h1>
+    
+    <div class="test-section info">
+        <h3>Test Overview</h3>
+        <p>This page tests all aspects of the history functionality to identify any issues:</p>
+        <ul>
+            <li><strong>API Connectivity:</strong> Direct API calls using fetch and axios</li>
+            <li><strong>Data Structure:</strong> Verify the response matches expected format</li>
+            <li><strong>Frontend Simulation:</strong> Replicate exact frontend API calls</li>
+            <li><strong>CORS Issues:</strong> Check for cross-origin problems</li>
+            <li><strong>Error Handling:</strong> Test error scenarios</li>
+        </ul>
+    </div>
+    
+    <div class="test-grid">
+        <div class="test-section">
+            <h3>1. API Connectivity Test</h3>
+            <button onclick="testAPI()" id="api-btn">Test API Connection</button>
+            <div id="api-result"></div>
+        </div>
+        
+        <div class="test-section">
+            <h3>2. Axios Frontend Simulation</h3>
+            <button onclick="testFrontendAPI()" id="frontend-btn">Test Frontend API Call</button>
+            <div id="frontend-result"></div>
+        </div>
+        
+        <div class="test-section">
+            <h3>3. Data Structure Validation</h3>
+            <button onclick="validateDataStructure()" id="structure-btn">Validate Structure</button>
+            <div id="structure-result"></div>
+        </div>
+        
+        <div class="test-section">
+            <h3>4. Error Scenarios</h3>
+            <button onclick="testErrorScenarios()" id="error-btn">Test Error Handling</button>
+            <div id="error-result"></div>
+        </div>
+        
+        <div class="test-section">
+            <h3>5. Network Performance</h3>
+            <button onclick="testPerformance()" id="perf-btn">Test Response Time</button>
+            <div id="perf-result"></div>
+        </div>
+        
+        <div class="test-section">
+            <h3>6. History Page Simulation</h3>
+            <button onclick="simulateHistoryPage()" id="simulate-btn">Simulate History Page</button>
+            <div id="simulate-result"></div>
+        </div>
+    </div>
+    
+    <div class="test-section">
+        <h3>Test Results Summary</h3>
+        <div id="summary"></div>
+    </div>
+    
+    <script src="https://unpkg.com/axios@1.6.2/dist/axios.min.js"></script>
+    <script>
+        const API_BASE = 'http://127.0.0.1:8000';
+        const testResults = {};
+        
+        function setLoading(elementId, buttonId) {
+            document.getElementById(elementId).innerHTML = '<div class="loading"></div> Running test...';
+            document.getElementById(buttonId).disabled = true;
+        }
+        
+        function setResult(elementId, buttonId, title, content, isSuccess = true) {
+            const element = document.getElementById(elementId);
+            element.className = `test-section ${isSuccess ? 'success' : 'error'}`;
+            element.innerHTML = `<h4>${title}</h4><pre>${content}</pre>`;
+            document.getElementById(buttonId).disabled = false;
+            testResults[elementId] = { success: isSuccess, title, content };
+            updateSummary();
+        }
+        
+        function updateSummary() {
+            const summary = document.getElementById('summary');
+            const results = Object.values(testResults);
+            const successCount = results.filter(r => r.success).length;
+            const totalCount = results.length;
+            
+            let summaryHTML = `<h4>Tests Completed: ${totalCount}/6</h4>`;
+            summaryHTML += `<h4>Success Rate: ${successCount}/${totalCount} (${totalCount > 0 ? Math.round(successCount/totalCount*100) : 0}%)</h4>`;
+            
+            if (totalCount > 0) {
+                summaryHTML += '<h5>Results:</h5><ul>';
+                Object.entries(testResults).forEach(([key, result]) => {
+                    summaryHTML += `<li><strong>${result.title}:</strong> ${result.success ? '✅ PASS' : '❌ FAIL'}</li>`;
+                });
+                summaryHTML += '</ul>';
+            }
+            
+            summary.innerHTML = summaryHTML;
+        }
+        
+        async function testAPI() {
+            setLoading('api-result', 'api-btn');
+            try {
+                const response = await fetch(`${API_BASE}/api/history/?per_page=3`);
+                const data = await response.json();
+                
+                if (response.ok && data.records) {
+                    setResult('api-result', 'api-btn', 'API Test - SUCCESS', 
+                        `Status: ${response.status}\nRecords found: ${data.records.length}\nTotal: ${data.total}\nSample data:\n${JSON.stringify(data.records[0] || {}, null, 2)}`);
+                } else {
+                    setResult('api-result', 'api-btn', 'API Test - FAILED', 
+                        `Status: ${response.status}\nResponse: ${JSON.stringify(data, null, 2)}`, false);
+                }
+            } catch (error) {
+                setResult('api-result', 'api-btn', 'API Test - ERROR', error.message, false);
+            }
+        }
+        
+        async function testFrontendAPI() {
+            setLoading('frontend-result', 'frontend-btn');
+            try {
+                // Exactly replicate frontend API call
+                const response = await axios.get(`${API_BASE}/api/history/`, {
+                    params: { page: 1, per_page: 15 }
+                });
+                
+                if (response.data && response.data.records) {
+                    setResult('frontend-result', 'frontend-btn', 'Frontend API - SUCCESS', 
+                        `Records: ${response.data.records.length}\nTotal: ${response.data.total}\nPagination: Page ${response.data.page}, Has Next: ${response.data.has_next}\nFirst record:\n${JSON.stringify(response.data.records[0] || {}, null, 2)}`);
+                } else {
+                    setResult('frontend-result', 'frontend-btn', 'Frontend API - FAILED', 
+                        `Response structure invalid:\n${JSON.stringify(response.data, null, 2)}`, false);
+                }
+            } catch (error) {
+                setResult('frontend-result', 'frontend-btn', 'Frontend API - ERROR', 
+                    `Error: ${error.message}\nResponse: ${JSON.stringify(error.response?.data || 'No response data', null, 2)}`, false);
+            }
+        }
+        
+        async function validateDataStructure() {
+            setLoading('structure-result', 'structure-btn');
+            try {
+                const response = await axios.get(`${API_BASE}/api/history/`, {
+                    params: { page: 1, per_page: 5 }
+                });
+                
+                const data = response.data;
+                const validations = [];
+                
+                // Check required fields in response
+                validations.push({ field: 'records', present: Array.isArray(data.records), value: data.records?.length || 0 });
+                validations.push({ field: 'total', present: typeof data.total === 'number', value: data.total });
+                validations.push({ field: 'page', present: typeof data.page === 'number', value: data.page });
+                validations.push({ field: 'per_page', present: typeof data.per_page === 'number', value: data.per_page });
+                validations.push({ field: 'has_next', present: typeof data.has_next === 'boolean', value: data.has_next });
+                validations.push({ field: 'has_prev', present: typeof data.has_prev === 'boolean', value: data.has_prev });
+                
+                // Check record structure
+                if (data.records && data.records.length > 0) {
+                    const record = data.records[0];
+                    validations.push({ field: 'record.id', present: typeof record.id === 'number', value: record.id });
+                    validations.push({ field: 'record.query', present: typeof record.query === 'string', value: record.query?.length });
+                    validations.push({ field: 'record.timestamp', present: typeof record.timestamp === 'string', value: record.timestamp });
+                    validations.push({ field: 'record.token_count', present: typeof record.token_count === 'number', value: record.token_count });
+                    validations.push({ field: 'record.context_count', present: typeof record.context_count === 'number', value: record.context_count });
+                    validations.push({ field: 'record.metadata', present: typeof record.metadata === 'object', value: 'object' });
+                }
+                
+                const allValid = validations.every(v => v.present);
+                const resultText = validations.map(v => `${v.field}: ${v.present ? '✅' : '❌'} (${v.value})`).join('\n');
+                
+                setResult('structure-result', 'structure-btn', 
+                    `Data Structure - ${allValid ? 'VALID' : 'INVALID'}`, 
+                    `Validation Results:\n${resultText}\n\nSample Record:\n${JSON.stringify(data.records[0] || {}, null, 2)}`, 
+                    allValid);
+            } catch (error) {
+                setResult('structure-result', 'structure-btn', 'Data Structure - ERROR', error.message, false);
+            }
+        }
+        
+        async function testErrorScenarios() {
+            setLoading('error-result', 'error-btn');
+            const errorTests = [];
+            
+            try {
+                // Test invalid endpoint
+                try {
+                    await axios.get(`${API_BASE}/api/history/invalid`);
+                    errorTests.push('❌ Invalid endpoint should return 404');
+                } catch (error) {
+                    errorTests.push(`✅ Invalid endpoint properly returns ${error.response?.status || 'error'}`);
+                }
+                
+                // Test invalid parameters
+                try {
+                    const response = await axios.get(`${API_BASE}/api/history/`, {
+                        params: { page: -1, per_page: 1000 }
+                    });
+                    errorTests.push('❌ Invalid params should be rejected');
+                } catch (error) {
+                    errorTests.push(`✅ Invalid params properly rejected: ${error.response?.status || 'error'}`);
+                }
+                
+                // Test server response
+                try {
+                    const response = await axios.get(`${API_BASE}/api/history/`, { timeout: 5000 });
+                    errorTests.push(`✅ Server responds within timeout (${response.status})`);
+                } catch (error) {
+                    errorTests.push(`❌ Server timeout or error: ${error.message}`);
+                }
+                
+                setResult('error-result', 'error-btn', 'Error Handling - COMPLETED', errorTests.join('\n'));
+            } catch (error) {
+                setResult('error-result', 'error-btn', 'Error Handling - FAILED', error.message, false);
+            }
+        }
+        
+        async function testPerformance() {
+            setLoading('perf-result', 'perf-btn');
+            try {
+                const tests = [];
+                
+                for (let i = 0; i < 3; i++) {
+                    const start = performance.now();
+                    const response = await axios.get(`${API_BASE}/api/history/`, {
+                        params: { page: 1, per_page: 10 }
+                    });
+                    const end = performance.now();
+                    tests.push(end - start);
+                }
+                
+                const avgTime = tests.reduce((a, b) => a + b, 0) / tests.length;
+                const maxTime = Math.max(...tests);
+                const minTime = Math.min(...tests);
+                
+                const result = `Average Response Time: ${avgTime.toFixed(2)}ms\nMin: ${minTime.toFixed(2)}ms\nMax: ${maxTime.toFixed(2)}ms\nAll tests: ${tests.map(t => t.toFixed(2) + 'ms').join(', ')}`;
+                
+                setResult('perf-result', 'perf-btn', 'Performance - MEASURED', result, avgTime < 2000);
+            } catch (error) {
+                setResult('perf-result', 'perf-btn', 'Performance - ERROR', error.message, false);
+            }
+        }
+        
+        async function simulateHistoryPage() {
+            setLoading('simulate-result', 'simulate-btn');
+            try {
+                // Simulate the exact sequence the History page does
+                const response = await axios.get(`${API_BASE}/api/history/`, {
+                    params: { page: 1, per_page: 15 }
+                });
+                
+                const records = response.data.records || [];
+                
+                // Simulate React component state update
+                const simulatedComponent = {
+                    historyItems: records,
+                    loading: false,
+                    total: response.data.total,
+                    hasNext: response.data.has_next
+                };
+                
+                // Check if data can be rendered (simulate the map function)
+                let renderSimulation = '';
+                try {
+                    records.forEach((item, index) => {
+                        const formattedTime = new Date(item.timestamp).toLocaleString();
+                        renderSimulation += `Item ${index + 1}: "${item.query.substring(0, 50)}..." (${item.token_count} tokens) at ${formattedTime}\n`;
+                    });
+                } catch (renderError) {
+                    throw new Error(`Render simulation failed: ${renderError.message}`);
+                }
+                
+                const result = `✅ History page simulation successful!\n\nComponent State:\n${JSON.stringify(simulatedComponent, null, 2)}\n\nRendered Items Preview:\n${renderSimulation.substring(0, 500)}...`;
+                
+                setResult('simulate-result', 'simulate-btn', 'History Page Simulation - SUCCESS', result);
+            } catch (error) {
+                setResult('simulate-result', 'simulate-btn', 'History Page Simulation - FAILED', error.message, false);
+            }
+        }
+        
+        // Auto-run basic tests on page load
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                testAPI();
+                setTimeout(() => testFrontendAPI(), 1000);
+                setTimeout(() => validateDataStructure(), 2000);
+            }, 500);
+        });
+    </script>
+</body>
+</html>
