@@ -27,7 +27,7 @@ The project is now production-ready with all major development phases completed.
 3. **Answer Generation** (`backend/app/answer/`)
    - Complete response generation with LLM integration
    - Citation management and source linking
-   - PDF export with WeasyPrint/HTML fallback
+   - PDF export with Playwright for enhanced performance
    - Query history tracking with analytics
 
 4. **Core Infrastructure** (`backend/app/core/`)
@@ -50,13 +50,13 @@ The project is now production-ready with all major development phases completed.
 - **Vector Database**: SQLite-vec for similarity search
 - **Graph Database**: SQLite for entity relationships
 - **Entity Extraction**: spaCy + Custom LLM pipeline
-- **PDF Generation**: WeasyPrint with HTML fallback
+- **PDF Generation**: Playwright with browser automation
 - **Architecture**: Request/Response with JSON APIs
 
 ### Dependencies
 - **Core**: Python 3.12.9, FastAPI, LangChain, Pydantic
 - **ML/NLP**: spaCy, sentence-transformers, sqlite-vec
-- **PDF**: WeasyPrint, Jinja2 templates
+- **PDF**: Playwright, Jinja2 templates
 - **Utilities**: python-multipart, aiofiles
 
 ### Development Tools
@@ -89,7 +89,7 @@ The project is now production-ready with all major development phases completed.
 - Comprehensive error handling
 
 ### 4. PDF Export System
-- Professional PDF generation with WeasyPrint
+- Professional PDF generation with Playwright
 - Custom CSS styling and layout
 - HTML fallback for dependency issues
 - Static file serving through FastAPI

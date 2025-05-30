@@ -127,10 +127,11 @@ For comprehensive UI validation:
 
    # Install dependencies
    python -m pip install --upgrade pip
-   pip install -r requirements.txt
-
-   # Download spaCy model (required for both pip and conda installations)
+   pip install -r requirements.txt   # Download spaCy model (required for both pip and conda installations)
    python -m spacy download en_core_web_sm
+   
+   # Install Playwright browsers for PDF generation
+   playwright install
    ```
 
    Note: The `requirements.txt` file contains only the direct dependencies. Using conda with `environment.yml` is recommended as it provides a more complete and tested environment.
@@ -432,7 +433,7 @@ The project includes extensive documentation to help users and developers:
 - ✅ **Enhanced Entity Extraction** - LLM-powered entity and relationship extraction
 - ✅ **Vector Storage & Retrieval** - SQLite-vec based semantic search
 - ✅ **Q&A System** - Complete answer generation with citations and context
-- ✅ **PDF Export** - Professional report generation with WeasyPrint
+- ✅ **PDF Export** - Professional report generation with Playwright
 - ✅ **Query History** - Analytics and tracking with JSONL logging
 - ✅ **FastAPI Integration** - Complete REST API with comprehensive endpoints
 - ✅ **HTTP Request/Response Architecture** - Reliable standard HTTP communication

@@ -293,6 +293,8 @@ Content-Disposition: attachment; filename="sociograph_report_20240526_103000.pdf
 <PDF binary data>
 ```
 
+**Note**: PDF generation is powered by Playwright for enhanced performance and reliability. The system supports both English and Arabic RTL languages with automatic layout optimization.
+
 #### GET /api/export/history/{format}
 Export query history in various formats.
 
@@ -576,7 +578,7 @@ curl -X POST "http://localhost:8000/api/documents/upload" \
 1. **Connection errors**: Check if the server is running
 2. **Timeout errors**: Increase client timeout values
 3. **Memory errors**: Reduce batch sizes for large operations
-4. **PDF generation fails**: Ensure WeasyPrint dependencies are installed
+4. **PDF generation fails**: Ensure Playwright browsers are installed (`playwright install`)
 
 ### Debug Mode
 Enable debug logging by setting `LOG_LEVEL=DEBUG` in configuration:

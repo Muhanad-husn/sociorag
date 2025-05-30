@@ -58,8 +58,8 @@ conda activate sociorag
 # 5. Download required spaCy model
 python -m spacy download en_core_web_sm
 
-# 6. Install additional dependencies for PDF generation
-conda install -c conda-forge weasyprint
+# 6. Install Playwright browsers for PDF generation
+playwright install
 ```
 
 ### Method 2: pip Installation
@@ -92,8 +92,8 @@ pip install -r requirements.txt
 python -m spacy download en_core_web_sm
 
 # 7. Install PDF generation dependencies (optional)
-# Note: WeasyPrint may require system dependencies on some platforms
-pip install weasyprint
+# Note: Playwright requires browser installation
+playwright install
 ```
 
 ### Method 3: Development Installation
