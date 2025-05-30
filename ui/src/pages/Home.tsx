@@ -22,6 +22,10 @@ export function Home() {
     if (!currentQuery.trim()) return;
     
     try {
+      // Clear previous results when starting a new search
+      setAnswer('');
+      setPdfUrl(null);
+      
       const response = await executeSearch(() => askQuestion(currentQuery, settings));
       if (response) {
         setAnswer(response.answer);
@@ -40,12 +44,16 @@ export function Home() {
 
   const handleUploadComplete = (filename: string) => {
     console.log('Upload completed:', filename);
+    // Switch to the search tab automatically after file upload
+    setActiveTab('search');
     // Processing will continue in background, ProgressBar will handle it
   };
 
   const handleProcessingComplete = () => {
     setIsProcessing(false);
-  };
+    // UI components will automatically be re-enabled when isProcessing is set to false
+  };  // Determine if the UI should be in a loading state
+  const isLoading = isSearching || isProcessing;
 
   return (
     <div className="container mx-auto px-4 py-8 max-w-4xl">
@@ -62,36 +70,50 @@ export function Home() {
         <ProgressBar
           isVisible={isProcessing}
           onComplete={handleProcessingComplete}
-        />
-
-        {/* Main Tabs */}
-        <Tabs value={activeTab} onValueChange={setActiveTab}>
+        />        {/* Main Tabs */}        <Tabs 
+          value={activeTab} 
+          onValueChange={(value) => {
+            // Only allow tab changes if not loading or processing
+            if (!isLoading) {
+              setActiveTab(value);
+            }
+          }}
+        >
           <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="search">{t('home.searchTab', language)}</TabsTrigger>
-            <TabsTrigger value="upload">{t('home.uploadTab', language)}</TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="search" className="space-y-6">
-            {/* Search Section */}            <Card className="p-6">
+            <TabsTrigger 
+              value="search" 
+              className={isLoading ? "pointer-events-none opacity-60" : ""}
+            >
+              {t('home.searchTab', language)}
+            </TabsTrigger>
+            <TabsTrigger 
+              value="upload" 
+              className={isLoading ? "pointer-events-none opacity-60" : ""}
+            >
+              {t('home.uploadTab', language)}
+            </TabsTrigger>
+          </TabsList>          <TabsContent value="search" className="space-y-6">
+            {/* Search Section */}            <Card className={`p-6 ${isLoading ? 'opacity-80 pointer-events-none' : ''}`}>
               <SearchBar
                 value={currentQuery}
                 onChange={setCurrentQuery}
                 onSubmit={handleSearch}
-                disabled={isSearching}
+                disabled={isLoading}
                 language={language}
               />
-            </Card>            {/* Results Section */}
-            {(answer || error) && (
+            </Card>{/* Results Section */}
+            {(answer || error || isSearching) && (
               <StreamAnswer
                 markdown={answer}
                 isComplete={!isSearching}
                 error={error}
                 pdfUrl={pdfUrl || undefined}
+                isLoading={isSearching}
               />
             )}
 
             {/* Quick Start Guide */}
-            {!answer && !error && (
+            {!answer && !error && !isSearching && (
               <Card className="p-6 bg-accent/50">
                 <h3 className="text-lg font-semibold mb-3">{t('home.quickStart', language)}</h3>
                 <ul className="space-y-2 text-sm text-muted-foreground">
@@ -105,11 +127,12 @@ export function Home() {
           </TabsContent>
 
           <TabsContent value="upload" className="space-y-6">
-            <Card className="p-6">
+            <Card className={`p-6 ${isLoading ? 'opacity-80 pointer-events-none' : ''}`}>
               <h2 className="text-xl font-semibold mb-4">{t('upload.title', language)}</h2>
               <FileUploader
                 onUploadStart={handleUploadStart}
                 onUploadComplete={handleUploadComplete}
+                disabled={isLoading}
               />
             </Card>
 

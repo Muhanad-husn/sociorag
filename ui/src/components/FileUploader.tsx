@@ -10,9 +10,10 @@ interface FileUploaderProps {
   onUploadComplete?: (filename: string) => void;
   onUploadStart?: () => void;
   language?: 'en' | 'ar';
+  disabled?: boolean;
 }
 
-export function FileUploader({ onUploadComplete, onUploadStart, language }: FileUploaderProps) {
+export function FileUploader({ onUploadComplete, onUploadStart, language, disabled = false }: FileUploaderProps) {
   const [isDragging, setIsDragging] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const [uploadedFiles, setUploadedFiles] = useState<string[]>([]);
@@ -20,9 +21,14 @@ export function FileUploader({ onUploadComplete, onUploadStart, language }: File
   const { language: appLanguage } = useAppStore();
   const currentLanguage = language || appLanguage;
 
+  // Component is disabled if explicitly set or if currently uploading
+  const isDisabled = disabled || isUploading;
+
   const handleDragOver = (e: DragEvent) => {
     e.preventDefault();
-    setIsDragging(true);
+    if (!isDisabled) {
+      setIsDragging(true);
+    }
   };
 
   const handleDragLeave = (e: DragEvent) => {
@@ -33,6 +39,8 @@ export function FileUploader({ onUploadComplete, onUploadStart, language }: File
   const handleDrop = (e: DragEvent) => {
     e.preventDefault();
     setIsDragging(false);
+    
+    if (isDisabled) return;
     
     const files = Array.from(e.dataTransfer?.files || []);
     const pdfFiles = files.filter(file => file.type === 'application/pdf');
@@ -46,6 +54,8 @@ export function FileUploader({ onUploadComplete, onUploadStart, language }: File
   };
 
   const handleFileSelect = (e: Event) => {
+    if (isDisabled) return;
+    
     const files = Array.from((e.target as HTMLInputElement).files || []);
     files.forEach(handleFileUpload);
   };
@@ -87,7 +97,9 @@ export function FileUploader({ onUploadComplete, onUploadStart, language }: File
   };
 
   const handleClick = () => {
-    fileInputRef.current?.click();
+    if (!isDisabled) {
+      fileInputRef.current?.click();
+    }
   };
 
   return (
@@ -95,14 +107,14 @@ export function FileUploader({ onUploadComplete, onUploadStart, language }: File
       {/* Upload area */}
       <div
         className={clsx(
-          'border-2 border-dashed rounded-lg p-8 text-center cursor-pointer transition-colors',
+          'border-2 border-dashed rounded-lg p-8 text-center transition-colors',
           isDragging ? 'border-primary bg-primary/5' : 'border hover:border-primary/50',
-          isUploading && 'opacity-50 cursor-not-allowed'
+          isDisabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'
         )}
         onDragOver={handleDragOver}
         onDragLeave={handleDragLeave}
         onDrop={handleDrop}
-        onClick={!isUploading ? handleClick : undefined}
+        onClick={handleClick}
       >
         <input
           ref={fileInputRef}

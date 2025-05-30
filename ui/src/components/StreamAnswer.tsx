@@ -11,6 +11,7 @@ interface StreamAnswerProps {
   isComplete?: boolean;
   error?: string | null;
   pdfUrl?: string;
+  isLoading?: boolean;
 }
 
 const md = new MarkdownIt({
@@ -19,7 +20,7 @@ const md = new MarkdownIt({
   typographer: true,
 });
 
-export function StreamAnswer({ markdown, isComplete = false, error, pdfUrl }: StreamAnswerProps) {
+export function StreamAnswer({ markdown, isComplete = false, error, pdfUrl, isLoading = false }: StreamAnswerProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [copied, setCopied] = useState(false);
   const [language, setLanguage] = useState<'en' | 'ar' | 'mixed'>('en');
@@ -89,8 +90,27 @@ export function StreamAnswer({ markdown, isComplete = false, error, pdfUrl }: St
     );
   }
 
-  if (!markdown) {
+  if (!markdown && !isLoading) {
     return null;
+  }
+
+  // Show loading skeleton when in loading state with no content yet
+  if (isLoading && !markdown) {
+    return (
+      <div className="card">
+        <div className="flex items-center justify-between p-3 border-b">
+          <div className="flex items-center space-x-2">
+            <span className="text-sm font-medium">Answer</span>
+          </div>
+        </div>
+        <div className="p-4 animate-pulse space-y-2">
+          <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-3/4"></div>
+          <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-full"></div>
+          <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-5/6"></div>
+          <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-4/5"></div>
+        </div>
+      </div>
+    );
   }
 
   const direction = getDirection(language);
@@ -112,8 +132,11 @@ export function StreamAnswer({ markdown, isComplete = false, error, pdfUrl }: St
             {pdfUrl && isComplete && (
               <button
                 onClick={handleDownloadPdf}
-                disabled={downloading}
-                className="btn-secondary h-8 px-3 text-xs"
+                disabled={downloading || isLoading}
+                className={clsx(
+                  "btn-secondary h-8 px-3 text-xs",
+                  (downloading || isLoading) && "opacity-50 cursor-not-allowed"
+                )}
                 title={t('common.downloadPdf', appLanguage)}
               >
                 {downloading ? (
@@ -126,7 +149,11 @@ export function StreamAnswer({ markdown, isComplete = false, error, pdfUrl }: St
             )}
             <button
               onClick={handleCopy}
-              className="btn-secondary h-8 w-8 p-0"
+              disabled={isLoading}
+              className={clsx(
+                "btn-secondary h-8 w-8 p-0",
+                isLoading && "opacity-50 cursor-not-allowed"
+              )}
               title="Copy to clipboard"
             >
               {copied ? (
