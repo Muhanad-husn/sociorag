@@ -1,15 +1,20 @@
 """PDF generation from markdown answers.
 
-This module converts markdown answers to styled PDF documents using WeasyPrint.
+This module converts markdown answers to styled PDF documents using Playwright.
+Migrated from WeasyPrint for better performance and reduced resource usage.
 """
 
 import os
 import time
 from datetime import datetime
 from pathlib import Path
-from typing import Optional
+from typing import Optional, Dict, Any
+import asyncio
+from concurrent.futures import ThreadPoolExecutor
 
 from markdown_it import MarkdownIt
+from playwright.sync_api import sync_playwright, Browser, Page
+from playwright.async_api import async_playwright, Browser as AsyncBrowser, Page as AsyncPage
 
 from backend.app.core.config import get_config
 from backend.app.core.singletons import LoggerSingleton
@@ -17,109 +22,14 @@ from backend.app.core.singletons import LoggerSingleton
 _cfg = get_config()
 _logger = LoggerSingleton().get()
 
-# Import standard libraries
-import sys
-import logging
-import warnings
+# Global variables for browser management
+_browser: Optional[AsyncBrowser] = None
+_sync_browser: Optional[Browser] = None
+_playwright_initialized = False
+_playwright_available = False
 
-# Global variables for lazy initialization
-_weasyprint_initialized = False
-_weasyprint_available = False
-_font_config_available = False
-_weasyprint_html = None
-_weasyprint_css = None
-_font_configuration = None
-_weasyprint_version = None
-
-def _initialize_weasyprint():
-    """Lazy initialization of WeasyPrint components."""
-    global _weasyprint_initialized, _weasyprint_available, _font_config_available
-    global _weasyprint_html, _weasyprint_css, _font_configuration, _weasyprint_version
-    
-    if _weasyprint_initialized:
-        return
-    
-    _logger.info("Initializing WeasyPrint components...")
-    start_time = time.time()
-    
-    # Suppress the Fontconfig warnings on Windows
-    if sys.platform.startswith('win'):
-        # Create fonts directory if it doesn't exist
-        fonts_dir = _cfg.BASE_DIR / 'resources' / 'fonts'
-        fonts_dir.mkdir(parents=True, exist_ok=True)
-        
-        # Set environment variables for fontconfig
-        os.environ['FONTCONFIG_PATH'] = str(fonts_dir)
-        os.environ['FONTCONFIG_FILE'] = str(fonts_dir / 'fonts.conf')
-        
-        # Set log level for weasyprint to ERROR to suppress warnings
-        logging.getLogger('weasyprint').setLevel(logging.ERROR)
-
-    # Import WeasyPrint and its components
-    try:
-        from weasyprint import HTML, CSS, __version__ as weasyprint_version
-        _weasyprint_html = HTML
-        _weasyprint_css = CSS
-        _weasyprint_version = weasyprint_version
-        _weasyprint_available = True
-        
-        # Log the WeasyPrint version being used
-        _logger.info(f"Using WeasyPrint version: {weasyprint_version}")
-        
-        # Check if we're using the expected version (from requirements.txt)
-        expected_version = "65.1"
-        if weasyprint_version != expected_version:
-            _logger.warning(f"WeasyPrint version mismatch: using {weasyprint_version}, expected {expected_version}")
-
-        # Import FontConfiguration from the correct location in WeasyPrint 65.1
-        from weasyprint.text.fonts import FontConfiguration
-        _font_configuration = FontConfiguration
-        _font_config_available = True
-        _logger.info("WeasyPrint and FontConfiguration successfully imported")
-    except Exception as e:
-        _logger.error(f"Failed to import WeasyPrint or FontConfiguration: {e}")
-
-    # Log success status
-    if _weasyprint_available and _font_config_available:
-        _logger.info("PDF generation is fully available")
-    elif _weasyprint_available:
-        _logger.warning("PDF generation available but without FontConfiguration support")
-    
-    duration = time.time() - start_time
-    _logger.info(f"WeasyPrint initialization completed in {duration:.2f}s")
-    _weasyprint_initialized = True
-
-# Compatibility functions for lazy loading
-def WEASYPRINT_AVAILABLE():
-    """Check if WeasyPrint is available (lazy initialization)."""
-    _initialize_weasyprint()
-    return _weasyprint_available
-
-def FONT_CONFIG_AVAILABLE():
-    """Check if FontConfiguration is available (lazy initialization)."""
-    _initialize_weasyprint()
-    return _font_config_available
-
-def HTML(*args, **kwargs):
-    """WeasyPrint HTML wrapper with lazy initialization."""
-    _initialize_weasyprint()
-    if _weasyprint_html is None:
-        raise RuntimeError("WeasyPrint HTML not available")
-    return _weasyprint_html(*args, **kwargs)
-
-def CSS(*args, **kwargs):
-    """WeasyPrint CSS wrapper with lazy initialization."""
-    _initialize_weasyprint()
-    if _weasyprint_css is None:
-        raise RuntimeError("WeasyPrint CSS not available")
-    return _weasyprint_css(*args, **kwargs)
-
-def FontConfiguration(*args, **kwargs):
-    """FontConfiguration wrapper with lazy initialization."""
-    _initialize_weasyprint()
-    if _font_configuration is None:
-        raise RuntimeError("FontConfiguration not available")
-    return _font_configuration(*args, **kwargs)
+# Thread pool for sync operations
+_thread_pool = ThreadPoolExecutor(max_workers=2)
 
 # Initialize markdown parser with common features
 _md = MarkdownIt("commonmark", {
@@ -127,6 +37,106 @@ _md = MarkdownIt("commonmark", {
     "linkify": True,      # Auto-convert URLs to links
     "typographer": True   # Smart quotes, dashes, etc.
 })
+
+
+async def _initialize_playwright():
+    """Initialize Playwright and browser instances."""
+    global _playwright_initialized, _playwright_available, _browser
+    
+    if _playwright_initialized:
+        return
+    
+    _logger.info("Initializing Playwright for PDF generation...")
+    start_time = time.time()
+    try:        # Check if Playwright is available
+        import playwright
+        _playwright_available = True
+        # Get version from package metadata instead of __version__
+        try:
+            import pkg_resources
+            playwright_version = pkg_resources.get_distribution("playwright").version
+            _logger.info(f"Playwright version: {playwright_version}")
+        except (ImportError, pkg_resources.DistributionNotFound):
+            _logger.info("Playwright installed (version detection unavailable)")
+        
+        # Initialize async browser for better performance
+        playwright_instance = await async_playwright().start()
+        _browser = await playwright_instance.chromium.launch(
+            headless=True,
+            args=[
+                "--no-sandbox",  # For containerized environments
+                "--disable-gpu",
+                "--font-cache-shared",
+                "--disable-setuid-sandbox",
+                "--disable-dev-shm-usage",  # Overcome limited resource problems
+                "--disable-extensions",
+                "--disable-background-timer-throttling",
+                "--disable-backgrounding-occluded-windows",
+                "--disable-renderer-backgrounding"
+            ]
+        )
+        
+        _logger.info("Playwright browser initialized successfully")
+        
+    except ImportError as e:
+        _logger.error(f"Playwright not installed: {e}")
+        _playwright_available = False
+    except Exception as e:
+        _logger.error(f"Failed to initialize Playwright: {e}")
+        _playwright_available = False
+    
+    duration = time.time() - start_time
+    _logger.info(f"Playwright initialization completed in {duration:.2f}s")
+    _playwright_initialized = True
+
+
+def _initialize_sync_playwright():
+    """Initialize synchronous Playwright browser for sync operations."""
+    global _sync_browser
+    
+    if _sync_browser and _sync_browser.is_connected():
+        return
+    
+    try:
+        playwright_instance = sync_playwright().start()
+        _sync_browser = playwright_instance.chromium.launch(
+            headless=True,
+            args=[
+                "--no-sandbox",
+                "--disable-gpu",
+                "--font-cache-shared",
+                "--disable-setuid-sandbox",
+                "--disable-dev-shm-usage",
+                "--disable-extensions"
+            ]
+        )
+        _logger.info("Sync Playwright browser initialized")
+    except Exception as e:
+        _logger.error(f"Failed to initialize sync Playwright: {e}")
+
+
+async def get_browser() -> AsyncBrowser:
+    """Get the global async browser instance."""
+    await _initialize_playwright()
+    if not _browser or not _browser.is_connected():
+        await _initialize_playwright()
+    return _browser
+
+
+def is_playwright_available() -> bool:
+    """Check if Playwright is available for PDF generation."""
+    global _playwright_available
+    
+    if not _playwright_available:
+        # Try to import Playwright to check availability
+        try:
+            import playwright
+            from playwright.sync_api import sync_playwright
+            _playwright_available = True
+        except ImportError:
+            _playwright_available = False
+    
+    return _playwright_available
 
 
 def _ensure_saved_dir() -> Path:
@@ -157,7 +167,16 @@ def _build_html_document(answer_md: str, query: str) -> str:
     # Create timestamp for the document
     timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     
-    # Build complete HTML document with metadata
+    # Load custom CSS if available
+    css_content = ""
+    css_path = _cfg.BASE_DIR / "resources" / "pdf_theme.css"
+    if css_path.exists():
+        try:
+            css_content = css_path.read_text(encoding="utf-8")
+        except Exception as e:
+            _logger.warning(f"Could not load CSS theme: {e}")
+    
+    # Build complete HTML document
     html_doc = f"""<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -167,40 +186,51 @@ def _build_html_document(answer_md: str, query: str) -> str:
     <meta name="generator" content="SocioGraph">
     <meta name="created" content="{timestamp}">
     <style>
-        body {{
-            font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-            line-height: 1.5;
+        {css_content if css_content else _get_default_css()}
+        
+        /* Print-specific styles */
+        @media print {{
+            body {{
+                margin: 0;
+                padding: 2cm;
+                font-size: 12pt;
+                line-height: 1.5;
+            }}
+            
+            .page-header {{
+                margin-bottom: 30px;
+                text-align: center;
+            }}
+            
+            .page-footer {{
+                margin-top: 50px;
+                text-align: center;
+                font-size: 10pt;
+                color: #666;
+                border-top: 1px solid #ddd;
+                padding-top: 20px;
+            }}
+            
+            /* Better page breaks */
+            h1, h2, h3 {{
+                page-break-after: avoid;
+            }}
+            
+            p {{
+                orphans: 3;
+                widows: 3;
+            }}
+        }}
+        
+        /* Page settings for PDF */
+        @page {{
+            size: A4;
             margin: 2cm;
-        }}
-        img {{
-            max-width: 100%;
-            height: auto;
-        }}
-        pre, code {{
-            background: #f5f5f5;
-            padding: 0.2em 0.4em;
-            border-radius: 3px;
-            font-family: 'Courier New', Courier, monospace;
-        }}
-        pre code {{
-            padding: 0;
-        }}
-        table {{
-            border-collapse: collapse;
-            width: 100%;
-            margin: 1em 0;
-        }}
-        th, td {{
-            border: 1px solid #ddd;
-            padding: 8px;
-        }}
-        th {{
-            background-color: #f2f2f2;
         }}
     </style>
 </head>
 <body>
-    <header>
+    <div class="page-header">
         <h1>SocioGraph Answer</h1>
         <div class="query-info">
             <strong>Query:</strong> {query}
@@ -208,21 +238,102 @@ def _build_html_document(answer_md: str, query: str) -> str:
         <div class="timestamp">
             <strong>Generated:</strong> {timestamp}
         </div>
-        <hr>
-    </header>
+    </div>
     
     <main>
         {html_body}
     </main>
     
-    <footer>
-        <hr>
+    <div class="page-footer">
         <p><em>Generated by SocioGraph - AI-powered document analysis and knowledge graph</em></p>
-    </footer>
+    </div>
 </body>
 </html>"""
     
     return html_doc
+
+
+def _get_default_css() -> str:
+    """Get default CSS styling for PDF."""
+    return """
+        body {
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        h1, h2, h3 {
+            color: #0066cc;
+            margin-top: 1.5em;
+        }
+        
+        h1 {
+            text-align: center;
+            border-bottom: 2px solid #0066cc;
+            padding-bottom: 10px;
+        }
+        
+        a {
+            color: #0066cc;
+            text-decoration: none;
+        }
+        
+        a:hover {
+            text-decoration: underline;
+        }
+        
+        code {
+            background-color: #f5f5f5;
+            padding: 2px 4px;
+            border-radius: 3px;
+            font-family: 'Courier New', monospace;
+        }
+        
+        pre {
+            background-color: #f5f5f5;
+            padding: 10px;
+            border-radius: 5px;
+            overflow-x: auto;
+            font-family: 'Courier New', monospace;
+        }
+        
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 1em 0;
+        }
+        
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        
+        th {
+            background-color: #f2f2f2;
+            font-weight: bold;
+        }
+        
+        blockquote {
+            border-left: 4px solid #0066cc;
+            margin-left: 0;
+            padding-left: 20px;
+            color: #666;
+        }
+        
+        .entity {
+            color: #0066cc;
+            font-weight: bold;
+        }
+        
+        .relation {
+            color: #009900;
+            font-style: italic;
+        }
+    """
 
 
 def _process_embedded_resources(html_content: str) -> str:
@@ -238,7 +349,7 @@ def _process_embedded_resources(html_content: str) -> str:
     # This function could be expanded to handle data URIs, local images, etc.
     
     # Basic support for making image paths absolute if they're relative
-    # This helps WeasyPrint locate images properly
+    # This helps Playwright locate images properly
     base_url = str(_cfg.BASE_DIR)
     
     # Simple handling for relative image paths
@@ -258,21 +369,14 @@ def _process_embedded_resources(html_content: str) -> str:
     return html_content
 
 
-def save_pdf(answer_md: str, query: str, filename: Optional[str] = None) -> Path:
-    """Save a markdown answer as a styled PDF.
+async def save_pdf_async(answer_md: str, query: str, filename: Optional[str] = None) -> Path:
+    """Async version of PDF generation using Playwright."""
+    _logger.info(f"Starting async PDF generation for query: {query[:100]}...")
     
-    Args:
-        answer_md: The markdown content to convert
-        query: The original query (used for metadata)
-        filename: Optional custom filename (without extension)
-        
-    Returns:
-        Path to the saved PDF file    """
-    _logger.info(f"Starting PDF generation for query: {query[:100]}...")
+    await _initialize_playwright()
     
-    if not WEASYPRINT_AVAILABLE():
-        # Fallback: save as HTML file instead of PDF
-        _logger.warning("WeasyPrint not available - saving as HTML instead of PDF")
+    if not _playwright_available:
+        _logger.warning("Playwright not available - falling back to HTML")
         return _save_as_html(answer_md, query, filename)
     
     try:
@@ -295,80 +399,31 @@ def save_pdf(answer_md: str, query: str, filename: Optional[str] = None) -> Path
         
         # Process any embedded resources
         html_content = _process_embedded_resources(html_content)
-          # Check if CSS theme file exists
-        css_path = _cfg.PDF_THEME
-        stylesheets = []
         
-        if not css_path.exists():
-            _logger.warning(f"PDF theme CSS not found at {css_path}, using default styling")
-        else:
-            try:
-                stylesheets.append(CSS(str(css_path)))
-                _logger.debug(f"Added custom CSS theme from {css_path}")
-            except Exception as css_error:
-                _logger.warning(f"Error loading custom CSS theme: {css_error}, using default styling")
+        # Get browser and create new context
+        browser = await get_browser()
+        context = await browser.new_context()
+        page = await context.new_page()
+        
+        try:
+            # Set content and wait for it to load
+            await page.set_content(html_content, wait_until="networkidle")
             
-        # Add custom page size and margin control
-        page_css = CSS(string='''
-            @page {
-                size: letter;
-                margin: 2cm;
-                @top-center {
-                    content: "SocioGraph";
-                    font-size: 9pt;
-                    color: #666;
-                }
-                @bottom-center {
-                    content: "Page " counter(page) " of " counter(pages);
-                    font-size: 9pt;
-                }
-            }
-        ''')
-        stylesheets = [page_css] + stylesheets
-        
-        # Generate PDF
-        _logger.info(f"Rendering PDF to {output_path}")
-        
-        # Create HTML document with proper base URL for resource resolution
-        html_doc = HTML(
-            string=html_content, 
-            base_url=str(_cfg.BASE_DIR)
-        )        # Write PDF with font configuration if available
-        if FONT_CONFIG_AVAILABLE():
-            try:
-                # Create a font configuration with better error handling
-                font_config = FontConfiguration()
-                
-                # Check for fonts directory and create if it doesn't exist
-                fonts_dir = _cfg.BASE_DIR / "resources" / "fonts"
-                fonts_dir.mkdir(parents=True, exist_ok=True)
-                
-                # Log font configuration info for debugging
-                _logger.debug(f"Using font configuration with fonts directory: {fonts_dir}")
-                  # Generate PDF with font configuration
-                html_doc.write_pdf(
-                    str(output_path), 
-                    stylesheets=stylesheets,
-                    font_config=font_config,
-                    optimize_size=('fonts', 'images'),  # Optimize PDF size
-                    presentational_hints=True  # Use HTML presentational hints
-                )
-            except Exception as font_error:
-                _logger.warning(f"Error with font configuration: {font_error}, falling back to default")
-                # Fall back to default if font configuration fails
-                html_doc.write_pdf(
-                    str(output_path), 
-                    stylesheets=stylesheets,
-                    optimize_size=('fonts', 'images'),  # Still optimize even in fallback
-                    presentational_hints=True
-                )
-        else:
-            html_doc.write_pdf(
-                str(output_path), 
-                stylesheets=stylesheets,
-                optimize_size=('fonts', 'images'),
-                presentational_hints=True
+            # Emulate print media for proper styling
+            await page.emulate_media(media="print")
+              # Generate PDF with optimized settings
+            _logger.info(f"Rendering PDF to {output_path}")
+            await page.pdf(
+                path=str(output_path),
+                format="A4",
+                margin={"top": "15mm", "bottom": "15mm", "left": "15mm", "right": "15mm"},
+                print_background=True
+                # Note: generate_tagged_pdf and generate_document_outline are not supported in Playwright
             )
+            
+        finally:
+            # Always close the context to free memory
+            await context.close()
         
         # Verify file was created
         if output_path.exists():
@@ -380,14 +435,90 @@ def save_pdf(answer_md: str, query: str, filename: Optional[str] = None) -> Path
             
     except Exception as e:
         _logger.error(f"Error generating PDF: {e}")
+        _logger.info("Falling back to HTML format...")
+        return _save_as_html(answer_md, query, filename)
+
+
+def save_pdf(answer_md: str, query: str, filename: Optional[str] = None) -> Path:
+    """Synchronous wrapper for PDF generation."""
+    _logger.info(f"Starting PDF generation for query: {query[:100]}...")
+    
+    # Check if we're in an async context
+    try:
+        loop = asyncio.get_running_loop()
+        # We're in an async context, schedule the async version
+        return asyncio.run_coroutine_threadsafe(
+            save_pdf_async(answer_md, query, filename), 
+            loop
+        ).result(timeout=30)
+    except RuntimeError:
+        # No async loop, use sync implementation
+        return _save_pdf_sync(answer_md, query, filename)
+
+
+def _save_pdf_sync(answer_md: str, query: str, filename: Optional[str] = None) -> Path:
+    """Synchronous PDF generation using Playwright."""
+    _initialize_sync_playwright()
+    
+    if not _sync_browser:
+        _logger.warning("Sync Playwright not available - falling back to HTML")
+        return _save_as_html(answer_md, query, filename)
+    
+    try:
+        # Ensure output directory exists
+        saved_dir = _ensure_saved_dir()
         
-        # Log more specific error information for WeasyPrint-related issues
-        if "weasyprint" in str(e).lower():
-            _logger.error("This appears to be a WeasyPrint-specific error. Check font dependencies or CSS compatibility.")
-        elif "css" in str(e).lower():
-            _logger.error("This appears to be a CSS-related error. Check your CSS styling.")
+        # Generate filename if not provided
+        if filename is None:
+            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+            filename = f"answer_{timestamp}"
         
-        # Fall back to HTML
+        # Ensure .pdf extension
+        if not filename.endswith('.pdf'):
+            filename = f"{filename}.pdf"
+            
+        output_path = saved_dir / filename
+        
+        # Build HTML document
+        html_content = _build_html_document(answer_md, query)
+        
+        # Process any embedded resources
+        html_content = _process_embedded_resources(html_content)
+        
+        # Create new context and page
+        context = _sync_browser.new_context()
+        page = context.new_page()
+        
+        try:
+            # Set content and wait for it to load
+            page.set_content(html_content, wait_until="networkidle")
+            
+            # Emulate print media for proper styling
+            page.emulate_media(media="print")
+              # Generate PDF
+            _logger.info(f"Rendering PDF to {output_path}")
+            page.pdf(
+                path=str(output_path),
+                format="A4",
+                margin={"top": "15mm", "bottom": "15mm", "left": "15mm", "right": "15mm"},
+                print_background=True
+                # Note: generate_tagged_pdf and generate_document_outline are not supported in Playwright
+            )
+            
+        finally:
+            # Always close the context to free memory
+            context.close()
+        
+        # Verify file was created
+        if output_path.exists():
+            file_size = output_path.stat().st_size
+            _logger.info(f"PDF successfully created: {output_path} ({file_size} bytes)")
+            return output_path
+        else:
+            raise RuntimeError("PDF file was not created")
+            
+    except Exception as e:
+        _logger.error(f"Error generating PDF: {e}")
         _logger.info("Falling back to HTML format...")
         return _save_as_html(answer_md, query, filename)
 
@@ -420,40 +551,21 @@ def _save_as_html(answer_md: str, query: str, filename: Optional[str] = None) ->
     return output_path
 
 
-def check_weasyprint_environment() -> dict:
-    """Check the environment for WeasyPrint configuration.
-    
-    Returns:
-        Dictionary with environment information for diagnostics
-    """
+def check_playwright_environment() -> Dict[str, Any]:
+    """Check the environment for Playwright configuration."""
     env_info = {
-        "weasyprint_available": WEASYPRINT_AVAILABLE(),
-        "fontconfig_available": FONT_CONFIG_AVAILABLE(),
-        "platform": sys.platform,
+        "playwright_available": _playwright_available,
+        "playwright_initialized": _playwright_initialized,
+        "browser_connected": _browser.is_connected() if _browser else False,
+        "sync_browser_connected": _sync_browser.is_connected() if _sync_browser else False,
     }
     
-    if WEASYPRINT_AVAILABLE():
-        env_info["weasyprint_version"] = _weasyprint_version
-        
-        # Check for key directories
-        fonts_dir = _cfg.BASE_DIR / 'resources' / 'fonts'
-        env_info["fonts_dir_exists"] = fonts_dir.exists()
-        
-        if fonts_dir.exists():
-            env_info["fonts_conf_exists"] = (fonts_dir / 'fonts.conf').exists()
-        
-        # Check environment variables
-        env_info["fontconfig_path"] = os.environ.get('FONTCONFIG_PATH', 'Not set')
-        env_info["fontconfig_file"] = os.environ.get('FONTCONFIG_FILE', 'Not set')
-        
-        # Check if we can create a FontConfiguration instance
-        if FONT_CONFIG_AVAILABLE():
-            try:
-                FontConfiguration()
-                env_info["fontconfig_init_success"] = True
-            except Exception as e:
-                env_info["fontconfig_init_success"] = False
-                env_info["fontconfig_init_error"] = str(e)
+    if _playwright_available:
+        try:
+            import pkg_resources
+            env_info["playwright_version"] = pkg_resources.get_distribution("playwright").version
+        except (ImportError, pkg_resources.DistributionNotFound):
+            env_info["playwright_version"] = "Not available"
     
     return env_info
 
@@ -474,3 +586,29 @@ def get_pdf_url(pdf_path: Path) -> str:
     except ValueError:
         # If path is not relative to saved dir, use just the filename
         return f"/static/saved/{pdf_path.name}"
+
+
+async def cleanup_resources():
+    """Clean up Playwright resources."""
+    global _browser, _sync_browser
+    
+    if _browser:
+        await _browser.close()
+        _browser = None
+    
+    if _sync_browser:
+        _sync_browser.close()
+        _sync_browser = None
+    
+    _logger.info("Playwright resources cleaned up")
+
+
+# Legacy compatibility functions for existing code
+def WEASYPRINT_AVAILABLE() -> bool:
+    """Legacy compatibility function - now checks Playwright availability."""
+    return is_playwright_available()
+
+
+def check_weasyprint_environment() -> Dict[str, Any]:
+    """Legacy compatibility function - now returns Playwright environment info."""
+    return check_playwright_environment()

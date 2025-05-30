@@ -15,7 +15,7 @@ from pydantic import BaseModel
 from backend.app.core.singletons import LoggerSingleton
 from backend.app.retriever import retrieve_context
 from backend.app.answer.generator import generate_answer, generate_answer_complete
-from backend.app.answer.pdf import save_pdf, get_pdf_url
+from backend.app.answer.pdf import save_pdf_async, get_pdf_url
 from backend.app.answer.history import append_record, get_recent_history, get_history_stats
 
 _logger = LoggerSingleton().get()
@@ -132,7 +132,7 @@ async def _generate_complete_answer(query: str, context_items: list, start_time:
         pdf_url = ""
         pdf_path = None
         if request.generate_pdf:
-            pdf_path = save_pdf(complete_answer, query)
+            pdf_path = await save_pdf_async(complete_answer, query)
             pdf_url = get_pdf_url(pdf_path)
         
         # Calculate duration
@@ -155,10 +155,12 @@ async def _generate_complete_answer(query: str, context_items: list, start_time:
             duration=duration,
             language=language
         )
-        
     except Exception as e:
+        import traceback
+        error_details = traceback.format_exc()
         _logger.error(f"Error generating complete answer: {e}")
-        raise HTTPException(status_code=500, detail=f"Error generating answer: {str(e)}")
+        _logger.error(f"Full traceback: {error_details}")
+        raise HTTPException(status_code=500, detail=f"Error generating answer: {str(e)} | Type: {type(e)} | Details: {error_details[:200]}")
 
 
 @router.get("/history")
