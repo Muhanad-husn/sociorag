@@ -4,6 +4,7 @@ This module converts markdown answers to styled PDF documents using WeasyPrint.
 """
 
 import os
+import time
 from datetime import datetime
 from pathlib import Path
 from typing import Optional
@@ -20,52 +21,105 @@ _logger = LoggerSingleton().get()
 import sys
 import logging
 import warnings
-# os is already imported at the top of the file
 
-# WeasyPrint import with proper FontConfiguration handling
-WEASYPRINT_AVAILABLE = False
-FONT_CONFIG_AVAILABLE = False
+# Global variables for lazy initialization
+_weasyprint_initialized = False
+_weasyprint_available = False
+_font_config_available = False
+_weasyprint_html = None
+_weasyprint_css = None
+_font_configuration = None
+_weasyprint_version = None
 
-# Suppress the Fontconfig warnings on Windows
-# These warnings are common on Windows and don't affect functionality
-if sys.platform.startswith('win'):
-    # Create fonts directory if it doesn't exist
-    fonts_dir = _cfg.BASE_DIR / 'resources' / 'fonts'
-    fonts_dir.mkdir(parents=True, exist_ok=True)
+def _initialize_weasyprint():
+    """Lazy initialization of WeasyPrint components."""
+    global _weasyprint_initialized, _weasyprint_available, _font_config_available
+    global _weasyprint_html, _weasyprint_css, _font_configuration, _weasyprint_version
     
-    # Set environment variables for fontconfig
-    os.environ['FONTCONFIG_PATH'] = str(fonts_dir)
-    os.environ['FONTCONFIG_FILE'] = str(fonts_dir / 'fonts.conf')
+    if _weasyprint_initialized:
+        return
     
-    # Set log level for weasyprint to ERROR to suppress warnings
-    logging.getLogger('weasyprint').setLevel(logging.ERROR)
+    _logger.info("Initializing WeasyPrint components...")
+    start_time = time.time()
+    
+    # Suppress the Fontconfig warnings on Windows
+    if sys.platform.startswith('win'):
+        # Create fonts directory if it doesn't exist
+        fonts_dir = _cfg.BASE_DIR / 'resources' / 'fonts'
+        fonts_dir.mkdir(parents=True, exist_ok=True)
+        
+        # Set environment variables for fontconfig
+        os.environ['FONTCONFIG_PATH'] = str(fonts_dir)
+        os.environ['FONTCONFIG_FILE'] = str(fonts_dir / 'fonts.conf')
+        
+        # Set log level for weasyprint to ERROR to suppress warnings
+        logging.getLogger('weasyprint').setLevel(logging.ERROR)
 
-# Import WeasyPrint and its components
-try:
-    from weasyprint import HTML, CSS, __version__ as weasyprint_version
-    WEASYPRINT_AVAILABLE = True
-    
-    # Log the WeasyPrint version being used
-    _logger.info(f"Using WeasyPrint version: {weasyprint_version}")
-    
-    # Check if we're using the expected version (from requirements.txt)
-    expected_version = "65.1"
-    if weasyprint_version != expected_version:
-        _logger.warning(f"WeasyPrint version mismatch: using {weasyprint_version}, expected {expected_version}")
+    # Import WeasyPrint and its components
+    try:
+        from weasyprint import HTML, CSS, __version__ as weasyprint_version
+        _weasyprint_html = HTML
+        _weasyprint_css = CSS
+        _weasyprint_version = weasyprint_version
+        _weasyprint_available = True
+        
+        # Log the WeasyPrint version being used
+        _logger.info(f"Using WeasyPrint version: {weasyprint_version}")
+        
+        # Check if we're using the expected version (from requirements.txt)
+        expected_version = "65.1"
+        if weasyprint_version != expected_version:
+            _logger.warning(f"WeasyPrint version mismatch: using {weasyprint_version}, expected {expected_version}")
 
-    # Import FontConfiguration from the correct location in WeasyPrint 65.1
-    from weasyprint.text.fonts import FontConfiguration
-    FONT_CONFIG_AVAILABLE = True
-    _logger.info("WeasyPrint and FontConfiguration successfully imported")
-except Exception as e:
-    _logger.error(f"Failed to import WeasyPrint or FontConfiguration: {e}")
+        # Import FontConfiguration from the correct location in WeasyPrint 65.1
+        from weasyprint.text.fonts import FontConfiguration
+        _font_configuration = FontConfiguration
+        _font_config_available = True
+        _logger.info("WeasyPrint and FontConfiguration successfully imported")
+    except Exception as e:
+        _logger.error(f"Failed to import WeasyPrint or FontConfiguration: {e}")
 
-# Log success status
-if WEASYPRINT_AVAILABLE and FONT_CONFIG_AVAILABLE:
-    _logger.info("PDF generation is fully available")
-elif WEASYPRINT_AVAILABLE:
-    _logger.warning("PDF generation available but without FontConfiguration support")
+    # Log success status
+    if _weasyprint_available and _font_config_available:
+        _logger.info("PDF generation is fully available")
+    elif _weasyprint_available:
+        _logger.warning("PDF generation available but without FontConfiguration support")
     
+    duration = time.time() - start_time
+    _logger.info(f"WeasyPrint initialization completed in {duration:.2f}s")
+    _weasyprint_initialized = True
+
+# Compatibility functions for lazy loading
+def WEASYPRINT_AVAILABLE():
+    """Check if WeasyPrint is available (lazy initialization)."""
+    _initialize_weasyprint()
+    return _weasyprint_available
+
+def FONT_CONFIG_AVAILABLE():
+    """Check if FontConfiguration is available (lazy initialization)."""
+    _initialize_weasyprint()
+    return _font_config_available
+
+def HTML(*args, **kwargs):
+    """WeasyPrint HTML wrapper with lazy initialization."""
+    _initialize_weasyprint()
+    if _weasyprint_html is None:
+        raise RuntimeError("WeasyPrint HTML not available")
+    return _weasyprint_html(*args, **kwargs)
+
+def CSS(*args, **kwargs):
+    """WeasyPrint CSS wrapper with lazy initialization."""
+    _initialize_weasyprint()
+    if _weasyprint_css is None:
+        raise RuntimeError("WeasyPrint CSS not available")
+    return _weasyprint_css(*args, **kwargs)
+
+def FontConfiguration(*args, **kwargs):
+    """FontConfiguration wrapper with lazy initialization."""
+    _initialize_weasyprint()
+    if _font_configuration is None:
+        raise RuntimeError("FontConfiguration not available")
+    return _font_configuration(*args, **kwargs)
 
 # Initialize markdown parser with common features
 _md = MarkdownIt("commonmark", {
@@ -213,11 +267,10 @@ def save_pdf(answer_md: str, query: str, filename: Optional[str] = None) -> Path
         filename: Optional custom filename (without extension)
         
     Returns:
-        Path to the saved PDF file
-    """
+        Path to the saved PDF file    """
     _logger.info(f"Starting PDF generation for query: {query[:100]}...")
     
-    if not WEASYPRINT_AVAILABLE:
+    if not WEASYPRINT_AVAILABLE():
         # Fallback: save as HTML file instead of PDF
         _logger.warning("WeasyPrint not available - saving as HTML instead of PDF")
         return _save_as_html(answer_md, query, filename)
@@ -280,9 +333,8 @@ def save_pdf(answer_md: str, query: str, filename: Optional[str] = None) -> Path
         html_doc = HTML(
             string=html_content, 
             base_url=str(_cfg.BASE_DIR)
-        )
-          # Write PDF with font configuration if available
-        if FONT_CONFIG_AVAILABLE:
+        )        # Write PDF with font configuration if available
+        if FONT_CONFIG_AVAILABLE():
             try:
                 # Create a font configuration with better error handling
                 font_config = FontConfiguration()
@@ -375,13 +427,13 @@ def check_weasyprint_environment() -> dict:
         Dictionary with environment information for diagnostics
     """
     env_info = {
-        "weasyprint_available": WEASYPRINT_AVAILABLE,
-        "fontconfig_available": FONT_CONFIG_AVAILABLE,
+        "weasyprint_available": WEASYPRINT_AVAILABLE(),
+        "fontconfig_available": FONT_CONFIG_AVAILABLE(),
         "platform": sys.platform,
     }
     
-    if WEASYPRINT_AVAILABLE:
-        env_info["weasyprint_version"] = weasyprint_version
+    if WEASYPRINT_AVAILABLE():
+        env_info["weasyprint_version"] = _weasyprint_version
         
         # Check for key directories
         fonts_dir = _cfg.BASE_DIR / 'resources' / 'fonts'
@@ -395,7 +447,7 @@ def check_weasyprint_environment() -> dict:
         env_info["fontconfig_file"] = os.environ.get('FONTCONFIG_FILE', 'Not set')
         
         # Check if we can create a FontConfiguration instance
-        if FONT_CONFIG_AVAILABLE:
+        if FONT_CONFIG_AVAILABLE():
             try:
                 FontConfiguration()
                 env_info["fontconfig_init_success"] = True
