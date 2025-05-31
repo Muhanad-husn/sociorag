@@ -11,29 +11,31 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from '../components/ui/Tabs'
 import { Card } from '../components/ui/Card';
 
 export function Home() {
-  const { currentQuery, setCurrentQuery, settings, isProcessing, setIsProcessing, language } = useAppStore();
-  const [activeTab, setActiveTab] = useState('search');
+  const { currentQuery, setCurrentQuery, settings, isProcessing, setIsProcessing, language } = useAppStore();  const [activeTab, setActiveTab] = useState('search');
   const [answer, setAnswer] = useState('');
+  const [answerHtml, setAnswerHtml] = useState('');
   const [pdfUrl, setPdfUrl] = useState<string | null>(null);
   
   const { execute: executeSearch, loading: isSearching, error } = useAsyncRequest<AskResponse>();
-
   const handleSearch = async () => {
     if (!currentQuery.trim()) return;
     
     try {
       // Clear previous results when starting a new search
       setAnswer('');
+      setAnswerHtml('');
       setPdfUrl(null);
       
       const response = await executeSearch(() => askQuestion(currentQuery, settings));
       if (response) {
         setAnswer(response.answer);
+        setAnswerHtml(response.answer_html || '');
         setPdfUrl(response.pdf_url || null);
       }
     } catch (err) {
       console.error('Search error:', err);
       setAnswer('');
+      setAnswerHtml('');
       setPdfUrl(null);
     }
   };
@@ -101,9 +103,10 @@ export function Home() {
                 disabled={isLoading}
                 language={language}
               />
-            </Card>{/* Results Section */}
+            </Card>            {/* Results Section */}
             {(answer || error || isSearching) && (
               <StreamAnswer
+                html={answerHtml}
                 markdown={answer}
                 isComplete={!isSearching}
                 error={error}

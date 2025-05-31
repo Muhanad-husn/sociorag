@@ -71,6 +71,7 @@ export interface AskRequest {
 // Interface for ask question response
 export interface AskResponse {
   answer: string;
+  answer_html: string;  // Pre-rendered HTML for frontend consumption
   query: string;
   language: string;
   pdf_url: string;

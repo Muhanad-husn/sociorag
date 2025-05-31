@@ -1,5 +1,4 @@
 import { useEffect, useRef, useState } from 'preact/hooks';
-import MarkdownIt from 'markdown-it';
 import { detectLanguage, getDirection, t } from '../lib/i18n';
 import { Copy, Check, Download } from 'lucide-preact';
 import clsx from 'clsx';
@@ -8,42 +7,41 @@ import { useAppStore } from '../hooks/useLocalState';
 import { downloadAndSavePDF } from '../lib/api';
 
 interface StreamAnswerProps {
-  markdown: string;
+  html?: string;  // Pre-rendered HTML content
+  markdown?: string;  // Fallback markdown for backward compatibility
   isComplete?: boolean;
   error?: string | null;
   pdfUrl?: string;
   isLoading?: boolean;
 }
 
-const md = new MarkdownIt({
-  breaks: true,
-  linkify: true,
-  typographer: true,
-});
-
-export function StreamAnswer({ markdown, isComplete = false, error, pdfUrl, isLoading = false }: StreamAnswerProps) {
+export function StreamAnswer({ html, markdown, isComplete = false, error, pdfUrl, isLoading = false }: StreamAnswerProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [copied, setCopied] = useState(false);
   const [language, setLanguage] = useState<'en' | 'ar' | 'mixed'>('en');
   const [downloading, setDownloading] = useState(false);
   const { language: appLanguage } = useAppStore();
 
+  // Use HTML if available, otherwise fall back to markdown (for backward compatibility)
+  const content = html || markdown || '';
+
   useEffect(() => {
-    if (markdown) {
-      const detectedLang = detectLanguage(markdown);
+    if (content) {
+      const detectedLang = detectLanguage(content);
       setLanguage(detectedLang);
     }
-  }, [markdown]);
-
+  }, [content]);
   useEffect(() => {
     if (containerRef.current) {
       containerRef.current.scrollTop = containerRef.current.scrollHeight;
     }
-  }, [markdown]);
+  }, [content]);
 
   const handleCopy = async () => {
     try {
-      await navigator.clipboard.writeText(markdown);
+      // Copy the original content (markdown if available, otherwise extract text from HTML)
+      const textToCopy = markdown || content;
+      await navigator.clipboard.writeText(textToCopy);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     } catch (err) {
@@ -104,11 +102,11 @@ export function StreamAnswer({ markdown, isComplete = false, error, pdfUrl, isLo
           <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-4/5"></div>
         </div>
       </div>
-    );
-  }
+    );  }
 
   const direction = getDirection(language);
-  const renderedMarkdown = md.render(markdown);
+  // Use pre-rendered HTML if available, otherwise display as plain text
+  const renderedContent = html || content;
 
   return (
     <div className="space-y-4">
@@ -172,13 +170,12 @@ export function StreamAnswer({ markdown, isComplete = false, error, pdfUrl, isLo
             fontFamily: language === 'ar' ? 'var(--font-arabic)' : 'var(--font-inter)'
           }}
         >
-          {/* Streaming typing effect */}
-          <div
+          {/* Streaming typing effect */}          <div
             className={clsx(
               'whitespace-pre-wrap',
               !isComplete && 'typing-animation'
             )}
-            dangerouslySetInnerHTML={{ __html: renderedMarkdown }}
+            dangerouslySetInnerHTML={{ __html: renderedContent }}
           />
           
           {/* Cursor for typing effect */}
@@ -191,10 +188,9 @@ export function StreamAnswer({ markdown, isComplete = false, error, pdfUrl, isLo
       <div className="flex items-center justify-between text-xs text-muted-foreground">
         <span>
           {isComplete ? 'Response complete' : 'Generating response...'}
-        </span>
-        <div className="flex items-center space-x-4">
+        </span>        <div className="flex items-center space-x-4">
           <span>
-            {markdown.length} characters
+            {content.length} characters
           </span>
           {pdfUrl && isComplete && (
             <span className="text-green-600">

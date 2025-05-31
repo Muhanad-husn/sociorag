@@ -13,6 +13,7 @@ from markdown_it import MarkdownIt
 
 from backend.app.core.config import get_config
 from backend.app.core.singletons import LoggerSingleton
+from backend.app.answer.markdown_renderer import render_markdown_to_html
 
 _cfg = get_config()
 _logger = LoggerSingleton().get()
@@ -121,13 +122,6 @@ def FontConfiguration(*args, **kwargs):
         raise RuntimeError("FontConfiguration not available")
     return _font_configuration(*args, **kwargs)
 
-# Initialize markdown parser with common features
-_md = MarkdownIt("commonmark", {
-    "html": True,         # Allow HTML tags
-    "linkify": True,      # Auto-convert URLs to links
-    "typographer": True   # Smart quotes, dashes, etc.
-})
-
 
 def _ensure_saved_dir() -> Path:
     """Ensure the saved directory exists."""
@@ -151,8 +145,8 @@ def _get_resource_path(resource_name: str) -> Path:
 
 def _build_html_document(answer_md: str, query: str) -> str:
     """Build a complete HTML document from markdown content."""
-    # Convert markdown to HTML
-    html_body = _md.render(answer_md)
+    # Convert markdown to HTML using centralized renderer
+    html_body = render_markdown_to_html(answer_md)
     
     # Create timestamp for the document
     timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
