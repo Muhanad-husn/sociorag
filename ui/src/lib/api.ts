@@ -33,10 +33,12 @@ export interface StatsResponse {
 }
 
 export interface SavedFile {
-  name: string;
+  filename: string;
   size: number;
-  modified: string;
-  url: string;
+  created_at: string;
+  modified_at: string;
+  file_type: string;
+  download_url: string;
 }
 
 // Upload PDF file
@@ -125,16 +127,34 @@ export async function getStats(): Promise<StatsResponse> {
 }
 
 // Get saved files
-export async function getSavedFiles(): Promise<SavedFile[]> {
+export async function getSavedFiles(sortBy?: string, sortOrder?: string): Promise<SavedFile[]> {
   try {
-    await axios.get(`${BASE_URL}/static/saved/`);
-    // The response might be HTML directory listing, so we'll need to parse it
-    // For now, return empty array and implement later
-    return [];
+    const params = new URLSearchParams();
+    if (sortBy) params.append('sort_by', sortBy);
+    if (sortOrder) params.append('sort_order', sortOrder);
+    
+    const response = await axios.get(`${BASE_URL}/api/saved/files?${params.toString()}`);
+    return response.data.files;
   } catch (error) {
     console.error('Failed to get saved files:', error);
     return [];
   }
+}
+
+// Open PDF file in system default viewer
+export function openPdfInSystem(filename: string): void {
+  const url = `${BASE_URL}/api/saved/view/${filename}`;
+  
+  // Create a temporary link element with target="_blank" to force opening in new tab
+  const link = document.createElement('a');
+  link.href = url;
+  link.target = '_blank';
+  link.rel = 'noopener noreferrer';
+  
+  // Add the link to the document, click it, then remove it
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
 }
 
 // Download saved file - fetch from working endpoint and return blob for local saving

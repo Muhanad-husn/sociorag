@@ -15,11 +15,11 @@ import time
 from typing import Dict, Any, List
 from concurrent.futures import ThreadPoolExecutor
 
-from backend.app.core.config import get_config
-from backend.app.ingest import reset_corpus
-from backend.app.ingest.pipeline import process_all
-from backend.app.core.singletons import LoggerSingleton
-from backend.app.core.process_state import get_process_manager, ProcessStatus
+from ..core.config import get_config
+from ..ingest import reset_corpus
+from ..ingest.pipeline import process_all
+from ..core.singletons import LoggerSingleton
+from ..core.process_state import get_process_manager, ProcessStatus
 
 # Initialize logger and process manager
 _logger = LoggerSingleton().get()

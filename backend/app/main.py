@@ -70,6 +70,7 @@ def create_app() -> FastAPI:
     from .api.admin import router as admin_router
     from .api.websocket_new import router as websocket_router
     from .api.logs import router as logs_router
+    from .api.saved_files import router as saved_files_router
     
     # Create FastAPI application
     app = FastAPI(
@@ -110,10 +111,13 @@ def create_app() -> FastAPI:
             {
                 "name": "admin",
                 "description": "Administrative endpoints for system management"
-            },
-            {
+            },            {
                 "name": "logs",
                 "description": "Log analysis and monitoring endpoints"
+            },
+            {
+                "name": "saved",
+                "description": "Saved files management and listing endpoints"
             }
         ]
     )
@@ -144,9 +148,7 @@ def create_app() -> FastAPI:
             # Create it if it doesn't exist
             saved_dir.mkdir(parents=True, exist_ok=True)
     
-    app.mount("/static/saved", StaticFiles(directory=str(saved_dir)), name="saved")
-
-    # Include routers
+    app.mount("/static/saved", StaticFiles(directory=str(saved_dir)), name="saved")    # Include routers
     app.include_router(ingest_router)
     app.include_router(qa_router)
     app.include_router(history_router)
@@ -156,6 +158,7 @@ def create_app() -> FastAPI:
     app.include_router(admin_router)
     app.include_router(websocket_router)
     app.include_router(logs_router)
+    app.include_router(saved_files_router)
     
     logger.info("All API routers registered successfully")
 
