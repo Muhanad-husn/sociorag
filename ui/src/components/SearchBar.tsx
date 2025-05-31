@@ -41,17 +41,16 @@ export function SearchBar({ value, onChange, onSubmit, disabled = false, languag
             onChange={(e) => onChange((e.target as HTMLTextAreaElement).value)}
             onKeyDown={handleKeyDown}
             placeholder={t('search.placeholder', currentLanguage)}
-            disabled={disabled}
-            className={clsx(
+            disabled={disabled}            className={clsx(
               'input pl-10 pr-12 resize-none min-h-[44px] max-h-32',
               'transition-all duration-200',
               disabled && 'opacity-50 cursor-not-allowed'
             )}
-            rows={1}
+            rows={5}
             onFocus={() => setIsExpanded(true)}
             onBlur={() => setIsExpanded(false)}
             style={{
-              height: isExpanded ? 'auto' : '44px',
+              height: isExpanded ? 'auto' : 'auto',
               minHeight: '44px'
             }}
           />
