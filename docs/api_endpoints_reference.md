@@ -238,6 +238,48 @@ GET /api/history/?page=1&per_page=10&search=climate
 }
 ```
 
+### `/api/history/record/{record_id}` - DELETE
+
+Delete a specific history record by its ID.
+
+**Request:**
+```http
+DELETE /api/history/record/5
+```
+
+**Response:**
+```json
+{
+  "status": "success",
+  "message": "History record 5 deleted successfully",
+  "record_id": 5
+}
+```
+
+**Error Response:**
+```json
+{
+  "detail": "History record not found"
+}
+```
+
+### `/api/history/clear` - DELETE
+
+Clear all history records.
+
+**Request:**
+```http
+DELETE /api/history/clear
+```
+
+**Response:**
+```json
+{
+  "status": "success",
+  "message": "All history records cleared (42 records removed)"
+}
+```
+
 ### WebSocket: `/api/ws/qa`
 
 Real-time Q&A with token streaming via WebSocket.

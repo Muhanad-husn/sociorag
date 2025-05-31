@@ -99,6 +99,53 @@ Retrieve query history with optional pagination.
 }
 ```
 
+#### DELETE /api/history/record/{record_id}
+Delete a specific history record by its ID.
+
+**Path Parameters:**
+- `record_id` (required): The ID of the history record to delete
+
+**Response:**
+```json
+{
+  "status": "success",
+  "message": "History record 5 deleted successfully",
+  "record_id": 5
+}
+```
+
+**Error Responses:**
+```json
+{
+  "detail": "History record not found"
+}
+```
+
+**Example Usage:**
+```javascript
+const response = await fetch('/api/history/record/5', {
+  method: 'DELETE'
+});
+
+if (response.ok) {
+  const result = await response.json();
+  console.log(result.message); // "History record 5 deleted successfully"
+} else {
+  console.error('Failed to delete record');
+}
+```
+
+#### DELETE /api/history/clear
+Clear all history records.
+
+**Response:**
+```json
+{
+  "status": "success",
+  "message": "All history records cleared (42 records removed)"
+}
+```
+
 #### GET /api/qa/stats
 Get query statistics and analytics.
 

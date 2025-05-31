@@ -434,14 +434,14 @@ The project includes extensive documentation to help users and developers:
 - ✅ **Vector Storage & Retrieval** - SQLite-vec based semantic search
 - ✅ **Q&A System** - Complete answer generation with citations and context
 - ✅ **PDF Export** - Professional report generation with Playwright
-- ✅ **Query History** - Analytics and tracking with JSONL logging
+- ✅ **Query History Management** - Complete history tracking with individual record deletion and copy-to-clipboard functionality
 - ✅ **FastAPI Integration** - Complete REST API with comprehensive endpoints
 - ✅ **HTTP Request/Response Architecture** - Reliable standard HTTP communication
 - ✅ **WebSocket Support** - Bidirectional communication with heartbeat mechanisms
 - ✅ **Ingestion API** - Document upload, processing, and monitoring endpoints
-- ✅ **History Management** - Full history tracking and retrieval with filtering
+- ✅ **History Management** - Full history tracking and retrieval with filtering, deletion, and query copying
 - ✅ **API Documentation** - Interactive Swagger UI with endpoint reference
-- ✅ **Frontend Web Application** - Modern Preact-based UI with responsive design
+- ✅ **Frontend Web Application** - Modern Preact-based UI with responsive design and bilingual support
 - ✅ **Administrative Interface** - System monitoring, configuration management, and API key management
 - ✅ **Real-time Configuration Updates** - Update OpenRouter API keys through web interface without server restart
 - ✅ **Enhanced Logging System** - Comprehensive logging with correlation IDs, performance monitoring, real-time analysis, and REST API for log management
@@ -491,3 +491,45 @@ See the [Phase 8 Deep Dive Plan](./instructions/phase8_deep_dive_plan.md) for de
 ## License
 
 TBD
+
+## User Interface Features
+
+### Query History Management
+
+The History page provides comprehensive query management capabilities:
+
+- **📋 Query History Display**: View all previous queries with timestamps and token counts
+- **🗑️ Individual Record Deletion**: Delete specific history entries with confirmation dialog
+- **📋 Copy to Clipboard**: Copy any previous query to clipboard for easy reuse
+- **🔄 Real-time Updates**: Immediate UI feedback with loading states and error handling
+- **🌐 Bilingual Support**: Full English and Arabic language support
+- **⚡ Optimistic Updates**: Instant UI updates for better user experience
+
+#### History Management Features
+
+- **Confirmation Dialogs**: Safe deletion with query preview in confirmation prompt
+- **Loading Indicators**: Visual feedback during delete operations with spinner animations
+- **Error Handling**: Comprehensive error handling with rollback on failure
+- **Clipboard Integration**: One-click copy-to-clipboard functionality for query reuse
+- **Responsive Design**: Mobile-optimized interface with touch-friendly controls
+
+### Search Interface
+
+- **🔍 Advanced Search**: Natural language query processing with semantic search
+- **📝 Query Suggestions**: Smart query completion and suggestions
+- **🌍 Translation Support**: Automatic Arabic translation toggle
+- **📊 Real-time Results**: Streaming answers with context and citations
+
+### Document Management
+
+- **📤 File Upload**: Drag-and-drop PDF upload with progress tracking
+- **📁 Saved Documents**: Browse and download processed documents
+- **🔄 Processing Status**: Real-time processing progress with detailed status updates
+- **💾 Auto-save**: Automatic document preservation after processing
+
+### Settings & Configuration
+
+- **🎨 Theme Toggle**: Light/dark mode with system preference detection
+- **🔧 Search Parameters**: Configurable top-k, temperature, and model settings
+- **🔑 API Management**: Secure API key configuration through web interface
+- **📈 Performance Monitoring**: Built-in system health and performance metrics

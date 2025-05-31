@@ -340,13 +340,13 @@ Main application page with search and upload functionality.
 ### History Page
 **Location**: `src/pages/History.tsx`
 
-Query history management with rerun functionality.
+Query history management with copy-to-clipboard functionality.
 
 **Key Components**:
 - History item list
 - Search result preview
-- Rerun functionality
-- Delete actions
+- Copy-to-clipboard functionality
+- Delete actions with confirmation dialogs
 - Pagination
 
 ```typescript
@@ -370,9 +370,9 @@ interface HistoryItem {
     </div>
     
     <div className="flex space-x-2">
-      <button onClick={() => rerunQuery(item)}>
-        <Play className="w-4 h-4" />
-        Rerun
+      <button onClick={() => copyQueryToClipboard(item.query)}>
+        <Copy className="w-4 h-4" />
+        Copy Query
       </button>
       <button onClick={() => deleteItem(item.id)}>
         <Trash2 className="w-4 h-4" />

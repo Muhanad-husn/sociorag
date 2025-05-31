@@ -469,7 +469,8 @@ describe('SearchBar', () => {
 - [ ] Language switching works
 - [ ] Search streaming operates correctly
 - [ ] File upload shows progress
-- [ ] History displays and reruns work
+- [ ] History displays with copy-to-clipboard functionality
+- [ ] History record deletion with confirmation dialogs
 - [ ] Settings save and apply
 - [ ] Dark mode renders properly
 - [ ] Arabic RTL layout works

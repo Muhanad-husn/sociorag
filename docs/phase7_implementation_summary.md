@@ -19,7 +19,7 @@ Phase 7 successfully implements a modern, fast, and offline-capable front-end fo
 
 ### ✅ Four Main Pages
 1. **Home Page**: Search interface with upload functionality
-2. **History Page**: Query history with rerun capabilities
+2. **History Page**: Query history with copy-to-clipboard and delete capabilities
 3. **Saved Page**: Document management with download features
 4. **Settings Page**: Configuration and preferences
 
@@ -254,9 +254,9 @@ interface AppState {
 
 ### History Management
 - Persistent query history
-- Rerun previous searches
+- Copy queries to clipboard
 - Result previews
-- Delete functionality
+- Delete functionality with confirmation dialogs
 
 ### Settings Panel
 - Search parameter configuration
