@@ -272,3 +272,12 @@ export async function downloadAndSavePDF(filename: string, userFilename?: string
     throw error;
   }
 }
+
+// Delete history record
+export async function deleteHistoryRecord(recordId: number): Promise<{ success: boolean; message: string }> {
+  const response = await axios.delete(`${BASE_URL}/api/history/record/${recordId}`);
+  return {
+    success: response.data.status === 'success',
+    message: response.data.message
+  };
+}

@@ -52,15 +52,19 @@ export const translations = {
     title: { en: 'Query History', ar: 'تاريخ الاستعلامات' },
     empty: { en: 'No queries yet', ar: 'لا توجد استعلامات بعد' },
     emptyDesc: { en: 'Your search history will appear here once you start asking questions.', ar: 'سيظهر تاريخ البحث الخاص بك هنا بمجرد أن تبدأ في طرح الأسئلة.' },
-    rerun: { en: 'Rerun', ar: 'إعادة تشغيل' },
+    copyQuery: { en: 'Copy Query', ar: 'نسخ الاستعلام' },
     delete: { en: 'Delete', ar: 'حذف' },
     refresh: { en: 'Refresh', ar: 'تحديث' },
     rerunResults: { en: 'Rerun Results', ar: 'نتائج إعادة التشغيل' },
     originalQuery: { en: 'Original Query', ar: 'الاستعلام الأصلي' },
-    previousAnswer: { en: 'Previous Answer', ar: 'الإجابة السابقة' },
-    deleteComingSoon: { en: 'Delete functionality coming soon', ar: 'وظيفة الحذف قادمة قريباً' },
-    loadFailed: { en: 'Failed to load history', ar: 'فشل في تحميل التاريخ' }
-  },  saved: {
+    previousAnswer: { en: 'Previous Answer', ar: 'الإجابة السابقة' },    deleteComingSoon: { en: 'Delete functionality coming soon', ar: 'وظيفة الحذف قادمة قريباً' },
+    loadFailed: { en: 'Failed to load history', ar: 'فشل في تحميل التاريخ' },
+    queryCopied: { en: 'Query copied to clipboard', ar: 'تم نسخ الاستعلام إلى الحافظة' },
+    copyFailed: { en: 'Failed to copy query', ar: 'فشل في نسخ الاستعلام' },
+    deleteConfirm: { en: 'Are you sure you want to delete this query?', ar: 'هل أنت متأكد من حذف هذا الاستعلام؟' },
+    deleteSuccess: { en: 'Query deleted successfully', ar: 'تم حذف الاستعلام بنجاح' },
+    deleteFailed: { en: 'Failed to delete query', ar: 'فشل في حذف الاستعلام' }
+  },saved: {
     title: { en: 'Saved Documents', ar: 'الوثائق المحفوظة' },
     empty: { en: 'No saved documents', ar: 'لا توجد وثائق محفوظة' },
     emptyDesc: { en: 'Upload some PDF documents to see them here.', ar: 'ارفع بعض وثائق PDF لرؤيتها هنا.' },    download: { en: 'Save As', ar: 'حفظ باسم' },

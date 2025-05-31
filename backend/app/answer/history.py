@@ -188,3 +188,35 @@ def cleanup_old_history(max_records: Optional[int] = None) -> int:
     except Exception as e:
         _logger.error(f"Error cleaning up history: {e}")
         return 0
+
+
+def delete_record_by_index(record_index: int) -> bool:
+    """Delete a specific history record by its index (0-based).
+    
+    Args:
+        record_index: Index of the record to delete (0-based)
+        
+    Returns:
+        True if record was deleted, False if not found
+    """
+    try:
+        records = get_recent_history()
+        
+        if record_index < 0 or record_index >= len(records):
+            return False
+            
+        # Remove the record at the specified index
+        records.pop(record_index)
+        
+        # Rewrite the history file
+        history_file = _get_history_file()
+        with open(history_file, "w", encoding="utf-8") as f:
+            for record in records:
+                f.write(json.dumps(record, ensure_ascii=False) + "\n")
+                
+        _logger.info(f"Deleted history record at index {record_index}")
+        return True
+        
+    except Exception as e:
+        _logger.error(f"Error deleting history record at index {record_index}: {e}")
+        return False

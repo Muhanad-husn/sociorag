@@ -1,11 +1,10 @@
 import { useState, useEffect } from 'preact/hooks';
-import { getHistory, askQuestion, type AskResponse } from '../lib/api';
-import { useAsyncRequest } from '../hooks/useAsyncRequest';
+import { getHistory, deleteHistoryRecord } from '../lib/api';
 import { useAppStore } from '../hooks/useLocalState';
-import { StreamAnswer } from '../components/StreamAnswer';
+import { useAsyncRequest } from '../hooks/useAsyncRequest';
 import { t } from '../lib/i18n';
 import { Card } from '../components/ui/Card';
-import { Play, Trash2, Clock, MessageSquare } from 'lucide-preact';
+import { Copy, Trash2, Clock, MessageSquare } from 'lucide-preact';
 import { toast } from 'sonner';
 
 interface HistoryItem {
@@ -20,10 +19,9 @@ interface HistoryItem {
 export function History() {
   const [historyItems, setHistoryItems] = useState<HistoryItem[]>([]);
   const [loading, setLoading] = useState(true);
-  const [selectedItem, setSelectedItem] = useState<HistoryItem | null>(null);
-  const [rerunAnswer, setRerunAnswer] = useState('');
-  const { settings, language } = useAppStore();
-  const { execute: executeRerun, loading: isRerunning, error } = useAsyncRequest<AskResponse>();
+  const [deletingId, setDeletingId] = useState<number | null>(null);
+  const { language } = useAppStore();
+  const { execute: executeDelete } = useAsyncRequest<{ success: boolean; message: string }>();
 
   useEffect(() => {
     loadHistory();
@@ -40,19 +38,41 @@ export function History() {
       setLoading(false);
     }
   };
-
-  const handleRerun = async (item: HistoryItem) => {
-    setSelectedItem(item);
-    setRerunAnswer('');
+  const handleCopyQuery = async (query: string) => {
+    try {
+      await navigator.clipboard.writeText(query);
+      toast.success(t('history.queryCopied', language));
+    } catch (err) {
+      console.error('Copy error:', err);
+      toast.error(t('history.copyFailed', language));
+    }
+  };
+  const handleDeleteRecord = async (item: HistoryItem) => {
+    // Show confirmation dialog
+    const confirmed = window.confirm(
+      `${t('history.deleteConfirm', language)}\n\n"${item.query.substring(0, 100)}${item.query.length > 100 ? '...' : ''}"`
+    );
+    
+    if (!confirmed) {
+      return;
+    }
+    
+    setDeletingId(item.id);
     
     try {
-      const response = await executeRerun(() => askQuestion(item.query, settings));
-      if (response) {
-        setRerunAnswer(response.answer);
+      const response = await executeDelete(() => deleteHistoryRecord(item.id));
+      if (response?.success) {
+        toast.success(t('history.deleteSuccess', language));
+        // Remove the item from the local state
+        setHistoryItems(items => items.filter(i => i.id !== item.id));
+      } else {
+        toast.error(response?.message || t('history.deleteFailed', language));
       }
     } catch (err) {
-      console.error('Rerun error:', err);
-      setRerunAnswer('');
+      console.error('Delete error:', err);
+      toast.error(t('history.deleteFailed', language));
+    } finally {
+      setDeletingId(null);
     }
   };
 
@@ -88,40 +108,7 @@ export function History() {
           >
             {t('history.refresh', language)}
           </button>
-        </div>
-
-        {/* Rerun Results */}
-        {selectedItem && (rerunAnswer || error) && (
-          <Card className="p-6">
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <h3 className="text-lg font-semibold">{t('history.rerunResults', language)}</h3>
-                <button
-                  onClick={() => {
-                    setSelectedItem(null);
-                    setRerunAnswer('');
-                  }}
-                  className="btn-secondary"
-                >
-                  {t('common.close', language)}
-                </button>
-              </div>
-              
-              <div className="p-3 bg-accent rounded border-l-4 border-primary">
-                <p className="text-sm font-medium">{t('history.originalQuery', language)}:</p>
-                <p className="text-sm">{selectedItem.query}</p>
-              </div>
-              
-              <StreamAnswer
-                markdown={rerunAnswer}
-                isComplete={!isRerunning}
-                error={error}
-              />
-            </div>
-          </Card>
-        )}
-
-        {/* History List */}
+        </div>        {/* History List */}
         {historyItems.length === 0 ? (
           <Card className="p-12 text-center">
             <MessageSquare className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
@@ -150,24 +137,26 @@ export function History() {
                     </div>
                     
                     {/* Actions */}
-                    <div className="flex items-center space-x-2">
-                      <button
-                        onClick={() => handleRerun(item)}
+                    <div className="flex items-center space-x-2">                      <button
+                        onClick={() => handleCopyQuery(item.query)}
                         className="btn-primary h-8 px-3 text-xs"
-                        title={t('history.rerun', language)}
+                        title={t('history.copyQuery', language)}
                       >
-                        <Play className="h-3 w-3 mr-1" />
-                        {t('history.rerun', language)}
+                        <Copy className="h-3 w-3 mr-1" />
+                        {t('history.copyQuery', language)}
                       </button>
                       <button
-                        onClick={() => {
-                          // TODO: Implement delete functionality
-                          toast.info(t('history.deleteComingSoon', language));
-                        }}
+                        onClick={() => handleDeleteRecord(item)}
                         className="btn-destructive h-8 w-8 p-0"
                         title={t('history.delete', language)}
+                        disabled={deletingId === item.id}
                       >
-                        <Trash2 className="h-3 w-3" />                      </button>
+                        {deletingId === item.id ? (
+                          <div className="animate-spin h-4 w-4 border-2 border-t-transparent rounded-full"></div>
+                        ) : (
+                          <Trash2 className="h-3 w-3" />
+                        )}
+                      </button>
                     </div>
                   </div>
                 </div>

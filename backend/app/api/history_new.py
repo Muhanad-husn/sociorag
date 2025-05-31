@@ -11,7 +11,7 @@ from fastapi import APIRouter, Query, HTTPException, Path
 from pydantic import BaseModel
 from datetime import datetime
 
-from backend.app.answer.history import get_recent_history, get_history_stats, cleanup_old_history
+from backend.app.answer.history import get_recent_history, get_history_stats, cleanup_old_history, delete_record_by_index
 from backend.app.core.singletons import LoggerSingleton
 
 _logger = LoggerSingleton().get()
@@ -176,21 +176,25 @@ async def get_history_record_endpoint(record_id: int = Path(..., description="Th
 async def delete_history_record_endpoint(record_id: int = Path(..., description="The ID of the history record to delete")):
     """Delete a specific history record by ID."""
     try:
-        # Get all history records
+        # Get all history records to check if record_id is valid
         all_records = get_recent_history()
         
         # Check if record_id is valid (1-based indexing)
         if record_id < 1 or record_id > len(all_records):
             raise HTTPException(status_code=404, detail="History record not found")
         
-        # Note: JSONL format doesn't support individual record deletion easily
-        # This would require rewriting the entire file
-        # For now, return a message indicating this limitation
-        return {
-            "status": "not_implemented",
-            "message": f"Individual record deletion not implemented for JSONL format. Use clear all history instead.",
-            "record_id": record_id
-        }
+        # Convert to 0-based index and delete
+        record_index = record_id - 1
+        success = delete_record_by_index(record_index)
+        
+        if success:
+            return {
+                "status": "success",
+                "message": f"History record {record_id} deleted successfully",
+                "record_id": record_id
+            }
+        else:
+            raise HTTPException(status_code=500, detail="Failed to delete history record")
         
     except HTTPException:
         raise
