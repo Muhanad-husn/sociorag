@@ -1,10 +1,10 @@
 import { useState, useEffect } from 'preact/hooks';
-import { getSavedFiles, openPdfInSystem } from '../lib/api';
+import { getSavedFiles } from '../lib/api';
 import type { SavedFile } from '../lib/api';
 import { useAppStore } from '../hooks/useLocalState';
 import { t } from '../lib/i18n';
 import { Card } from '../components/ui/Card';
-import { File, ChevronUp, ChevronDown, ExternalLink } from 'lucide-preact';
+import { File, ChevronUp, ChevronDown } from 'lucide-preact';
 import { toast } from 'sonner';
 
 type SortField = 'filename' | 'size' | 'created_at' | 'modified_at';
@@ -33,7 +33,6 @@ export function Saved() {
       setLoading(false);
     }
   };
-
   const handleSort = (field: SortField) => {
     if (sortField === field) {
       setSortOrder(sortOrder === 'desc' ? 'asc' : 'desc');
@@ -41,10 +40,6 @@ export function Saved() {
       setSortField(field);
       setSortOrder('desc');
     }
-  };
-
-  const handleOpenFile = (file: SavedFile) => {
-    openPdfInSystem(file.filename);
   };
 
   const formatFileSize = (bytes: number): string => {
@@ -146,8 +141,7 @@ export function Saved() {
                         <span>Created</span>
                         {getSortIcon('created_at')}
                       </div>
-                    </th>
-                    <th 
+                    </th>                    <th 
                       className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider cursor-pointer hover:bg-muted/70 transition-colors"
                       onClick={() => handleSort('modified_at')}
                     >
@@ -156,17 +150,12 @@ export function Saved() {
                         {getSortIcon('modified_at')}
                       </div>
                     </th>
-                    <th className="px-6 py-3 text-center text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                      Action
-                    </th>
                   </tr>
                 </thead>
-                <tbody className="bg-background divide-y divide-border">
-                  {savedFiles.map((file, index) => (
+                <tbody className="bg-background divide-y divide-border">                  {savedFiles.map((file, index) => (
                     <tr 
                       key={index} 
-                      className="hover:bg-muted/30 cursor-pointer transition-colors"
-                      onClick={() => handleOpenFile(file)}
+                      className="hover:bg-muted/30 transition-colors"
                     >
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="flex items-center">
@@ -193,18 +182,6 @@ export function Saved() {
                           {formatDate(file.modified_at)}
                         </div>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-center">
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleOpenFile(file);
-                          }}
-                          className="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md text-primary bg-primary/10 hover:bg-primary/20 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary transition-colors"
-                        >
-                          <ExternalLink className="h-3 w-3 mr-1" />
-                          Open
-                        </button>
-                      </td>
                     </tr>
                   ))}
                 </tbody>
@@ -215,10 +192,10 @@ export function Saved() {
         <Card className="p-4 bg-accent/50">
           <h3 className="text-lg font-semibold mb-2">About Saved Files</h3>
           <ul className="space-y-1 text-sm text-muted-foreground">
-            <li>• Click on any file row to open it in your system's default PDF viewer</li>
+            <li>• View all your saved PDF files in one organized list</li>
             <li>• Click column headers to sort files by filename, size, or date</li>
             <li>• Files are automatically saved when you generate PDF responses</li>
-            <li>• Only PDF files are shown in this list</li>
+            <li>• File sizes and creation dates are displayed for easy reference</li>
           </ul>
         </Card>
       </div>

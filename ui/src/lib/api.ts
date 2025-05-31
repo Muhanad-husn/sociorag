@@ -141,22 +141,6 @@ export async function getSavedFiles(sortBy?: string, sortOrder?: string): Promis
   }
 }
 
-// Open PDF file in system default viewer
-export function openPdfInSystem(filename: string): void {
-  const url = `${BASE_URL}/api/saved/view/${filename}`;
-  
-  // Create a temporary link element with target="_blank" to force opening in new tab
-  const link = document.createElement('a');
-  link.href = url;
-  link.target = '_blank';
-  link.rel = 'noopener noreferrer';
-  
-  // Add the link to the document, click it, then remove it
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
-}
-
 // Download saved file - fetch from working endpoint and return blob for local saving
 export async function downloadSavedFile(filename: string): Promise<Blob> {
   const response = await axios.get(`${BASE_URL}/static/saved/${filename}`, {

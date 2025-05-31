@@ -159,16 +159,17 @@ async def view_saved_file(filename: str):
         
         # Read the file content
         file_content = file_path.read_bytes()
-        
-        # Return with headers that encourage viewing instead of downloading
+          # Return with headers that encourage viewing instead of downloading
         from fastapi.responses import Response
         return Response(
             content=file_content,
             media_type="application/pdf",
             headers={
-                "Content-Disposition": f"inline; filename={filename}",
+                "Content-Disposition": f"inline; filename=\"{filename}\"",
                 "Content-Type": "application/pdf",
-                "Cache-Control": "public, max-age=3600"
+                "Cache-Control": "public, max-age=3600",
+                "X-Content-Type-Options": "nosniff",
+                "Accept-Ranges": "bytes"
             }
         )
         
