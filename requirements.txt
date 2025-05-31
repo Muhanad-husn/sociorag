@@ -51,6 +51,9 @@ pyyaml==6.0.2
 
 # Markdown and documentation
 markdown-it-py==3.0.0
+bleach==6.1.0
+pygments==2.17.2
+linkify-it-py==2.0.3
 
 # PDF generation
 playwright==1.52.0

@@ -18,7 +18,7 @@ from backend.app.answer.generator import generate_answer, generate_answer_comple
 from backend.app.answer.pdf import save_pdf_async, get_pdf_url
 from backend.app.answer.history import append_record, get_recent_history, get_history_stats
 from backend.app.answer.prompt import extract_title_and_content, sanitize_filename
-from backend.app.answer.markdown_renderer import render_markdown_to_html
+from backend.app.answer.markdown_renderer import render_markdown_to_html_safe_cached
 
 _logger = LoggerSingleton().get()
 
@@ -152,9 +152,8 @@ async def _generate_complete_answer(query: str, context_items: list, start_time:
             context_count=len(context_items),
             duration=duration
         )
-        
-        # Convert markdown to HTML for frontend consumption
-        answer_html = render_markdown_to_html(complete_answer)
+          # Convert markdown to HTML for frontend consumption with sanitization and caching
+        answer_html = render_markdown_to_html_safe_cached(complete_answer)
         
         return AskResponse(
             answer=complete_answer,
