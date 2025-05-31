@@ -17,6 +17,7 @@ from backend.app.retriever import retrieve_context
 from backend.app.answer.generator import generate_answer, generate_answer_complete
 from backend.app.answer.pdf import save_pdf_async, get_pdf_url
 from backend.app.answer.history import append_record, get_recent_history, get_history_stats
+from backend.app.answer.prompt import extract_title_and_content, sanitize_filename
 
 _logger = LoggerSingleton().get()
 
@@ -132,7 +133,11 @@ async def _generate_complete_answer(query: str, context_items: list, start_time:
         pdf_url = ""
         pdf_path = None
         if request.generate_pdf:
-            pdf_path = await save_pdf_async(complete_answer, query, language=language)
+            # Extract title from the answer for filename
+            title, _ = extract_title_and_content(complete_answer)
+            filename = sanitize_filename(title)
+            
+            pdf_path = await save_pdf_async(complete_answer, query, filename=filename, language=language)
             pdf_url = get_pdf_url(pdf_path)
         
         # Calculate duration

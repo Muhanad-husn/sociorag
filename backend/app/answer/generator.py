@@ -13,8 +13,9 @@ from backend.app.core.config import get_config
 from backend.app.answer.prompt import (
     build_system_prompt, 
     build_user_prompt, 
-    attach_citations,
-    build_context_summary
+    process_quotes,
+    build_context_summary,
+    extract_title_and_content
 )
 
 _cfg = get_config()
@@ -78,9 +79,8 @@ async def generate_answer(
             answer_md += delta
             token_count += 1
             yield delta
-            
-        # Post-process the complete answer
-        final_answer = attach_citations(answer_md, context_items)
+              # Post-process the complete answer
+        final_answer = process_quotes(answer_md, context_items)
         
         # Log completion stats
         duration = time.time() - start_time
