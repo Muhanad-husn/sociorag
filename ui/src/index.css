@@ -89,7 +89,6 @@
   .card {
     @apply rounded-lg border bg-card text-card-foreground shadow-sm;
   }
-
   .typing-animation {
     animation: typing 1s steps(40, end);
   }
@@ -101,5 +100,79 @@
     to { 
       width: 100%;
     }
+  }
+
+  /* RTL-specific prose styling for Arabic content */
+  [dir="rtl"] .prose h1,
+  [dir="rtl"] .prose h2,
+  [dir="rtl"] .prose h3,
+  [dir="rtl"] .prose h4,
+  [dir="rtl"] .prose h5,
+  [dir="rtl"] .prose h6 {
+    text-align: right;
+    font-family: var(--font-arabic);
+  }
+
+  [dir="rtl"] .prose p,
+  [dir="rtl"] .prose li,
+  [dir="rtl"] .prose blockquote {
+    text-align: right;
+    font-family: var(--font-arabic);
+  }
+
+  [dir="rtl"] .prose ul,
+  [dir="rtl"] .prose ol {
+    text-align: right;
+    margin-right: 1.25rem;
+    margin-left: 0;
+  }
+
+  [dir="rtl"] .prose blockquote {
+    border-right: 0.25rem solid #e5e7eb;
+    border-left: none;
+    padding-right: 1rem;
+    padding-left: 0;
+  }
+
+  [dir="rtl"] .prose strong,
+  [dir="rtl"] .prose em {
+    font-family: var(--font-arabic);
+  }
+
+  /* Mixed content handling - detect Arabic text and apply appropriate styling */
+  .prose-rtl h1,
+  .prose-rtl h2,
+  .prose-rtl h3,
+  .prose-rtl h4,
+  .prose-rtl h5,
+  .prose-rtl h6 {
+    text-align: right;
+    font-family: var(--font-arabic);
+  }
+
+  .prose-rtl p,
+  .prose-rtl li,
+  .prose-rtl blockquote {
+    text-align: right;
+    font-family: var(--font-arabic);
+  }
+
+  .prose-rtl ul,
+  .prose-rtl ol {
+    text-align: right;
+    margin-right: 1.25rem;
+    margin-left: 0;
+  }
+
+  .prose-rtl blockquote {
+    border-right: 0.25rem solid #e5e7eb;
+    border-left: none;
+    padding-right: 1rem;
+    padding-left: 0;
+  }
+
+  .prose-rtl strong,
+  .prose-rtl em {
+    font-family: var(--font-arabic);
   }
 }

@@ -156,14 +156,14 @@ export function StreamAnswer({ html, markdown, isComplete = false, error, pdfUrl
             </button>
           </div>
         </div>
-        
-        <div
+          <div
           ref={containerRef}
           className={clsx(
             'p-4 max-h-96 overflow-y-auto',
             'prose prose-sm max-w-none',
             'dark:prose-invert',
-            direction === 'rtl' && 'text-right'
+            direction === 'rtl' && 'text-right prose-rtl',
+            language === 'ar' && 'prose-rtl'
           )}
           dir={direction}
           style={{
