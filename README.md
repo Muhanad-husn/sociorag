@@ -2,12 +2,28 @@
 
 ![SocioRAG Logo](resources/logo.png)
 
+## 📈 Project Status
+
+[![Status](https://img.shields.io/badge/status-production--ready-brightgreen)](docs/project_status.md)
+[![Version](https://img.shields.io/badge/version-v1.0.3-blue)](docs/project_status.md)
+
 ## ✅ Production Ready
 
 - **0% Error Rate**: All tests passing, robust error handling
 - **Sub-millisecond Response**: Optimized for speed and concurrency
 - **Comprehensive Documentation**: All guides consolidated and up-to-date (June 2025)
 - **Full Feature Set**: Entity extraction, vector search, multilingual support, PDF export, and analytics
+
+## 🔑 Environment Variables
+
+| Key                | Description                        | Example      |
+|--------------------|------------------------------------|--------------|
+| OPENROUTER_API_KEY | LLM access key                     | `sk-or-***`  |
+| CHUNK_SIM          | Similarity threshold for chunking   | `0.80`       |
+| LOG_LEVEL          | Logging level                      | `DEBUG`      |
+| ...                | ...                                | ...          |
+
+See `.env.example` for the full list.
 
 ## 📋 Overview
 
@@ -24,6 +40,23 @@ SocioRAG is a production-ready system for analyzing social dynamics in texts thr
 | Multilingual Support   | English & Arabic, translation API            | ✅ Ready |
 | UI                     | Modern, responsive, bilingual                | ✅ Ready |
 | Logging & Monitoring   | Structured logs, REST API, health checks     | ✅ Ready |
+
+## 🧪 Running Tests
+
+```powershell
+pytest tests/ -v          # run all tests
+pytest -m integration -v  # integration tests only
+```
+
+Full guide: [tests/README.md](tests/README.md)
+
+## 📊 Performance & Monitoring
+
+See the performance dashboard setup in [instructions/readme/README.md](instructions/readme/README.md#performance-testing--monitoring).
+
+## 🧹 Workspace Housekeeping
+
+Recommended cleanup steps: [docs/production_deployment_guide.md](docs/production_deployment_guide.md#🧹-additional-cleanup-opportunities).
 
 ## 🏗️ How It Works
 
@@ -198,6 +231,8 @@ Full API documentation is available at [http://127.0.0.1:8000/docs](http://127.0
 
 ## 🏗️ Architecture
 
+Detailed diagrams & component docs → [docs/architecture_documentation.md](docs/architecture_documentation.md)
+
 ### Core Components
 
 1. **Data Ingestion Pipeline** (`backend/app/ingest/`)
@@ -226,19 +261,20 @@ Full API documentation is available at [http://127.0.0.1:8000/docs](http://127.0
 - **Entity Extraction**: spaCy + Custom LLM pipeline
 - **PDF Generation**: Playwright with browser automation
 
-## 📄 License
-
-This project is licensed under the terms of the [LICENSE](LICENSE) file in this repository.
-
 ## 🤝 Support & Contributing
 
-- **Issues**: Report bugs and request features via GitHub Issues
-- **Contributing**: See [Developer Guide](docs/guides/developer_guide.md)
+- Issue tracker → GitHub
+- Contribution workflow → [Developer Guide](docs/guides/developer_guide.md#contributing-guidelines)
+- CI/CD roadmap → [Project Status](docs/project_status.md#🔄-future-version-control-strategy)
 - **Contact**: [Project Status Dashboard](docs/project_status.md) for updates and support links
+
+## 📄 License
+
+Apache-2.0 – see [LICENSE](LICENSE) for full terms.
 
 ## 🖼️ Demo & Screenshots
 
-*Add screenshots or a demo GIF here to showcase the UI and features.*
+*TODO: Add screenshots or a demo GIF here to showcase the UI and features.*
 
 ## 🙏 Acknowledgements
 
