@@ -59,7 +59,44 @@ if (-not $backendReady) {
     Read-Host "Press Enter to continue anyway or Ctrl+C to stop"
 }
 
-# 3. Start Frontend
+# 3. Check Frontend Dependencies
+Write-Host "🔍 Checking frontend dependencies..." -ForegroundColor Cyan
+$frontendPath = "$ProjectRoot\ui"
+$nodeModulesPath = "$frontendPath\node_modules"
+$vitePath = "$nodeModulesPath\vite\dist\node\cli.js"
+
+if (-not (Test-Path $vitePath)) {
+    Write-Host "⚠️  Frontend dependencies missing or corrupted" -ForegroundColor Yellow
+    Write-Host "🔧 Reinstalling frontend dependencies..." -ForegroundColor Cyan
+    
+    Set-Location $frontendPath
+    
+    # Remove corrupted node_modules and package-lock
+    if (Test-Path $nodeModulesPath) {
+        Write-Host "   Removing corrupted node_modules..." -ForegroundColor Gray
+        Remove-Item -Path $nodeModulesPath -Recurse -Force
+    }
+    if (Test-Path "package-lock.json") {
+        Remove-Item -Path "package-lock.json" -Force
+    }
+    
+    # Reinstall dependencies
+    Write-Host "   Installing dependencies..." -ForegroundColor Gray
+    $installResult = & npm install 2>&1
+    
+    if ($LASTEXITCODE -eq 0) {
+        Write-Host "✅ Frontend dependencies installed successfully" -ForegroundColor Green
+    } else {
+        Write-Host "❌ Failed to install frontend dependencies" -ForegroundColor Red
+        Write-Host "Error: $installResult" -ForegroundColor Red
+        Set-Location $ProjectRoot
+        Read-Host "Press Enter to continue anyway or Ctrl+C to stop"
+    }
+    
+    Set-Location $ProjectRoot
+}
+
+# 4. Start Frontend
 Write-Host "🎨 Starting Frontend..." -ForegroundColor Cyan
 Set-Location "$ProjectRoot\ui"
 Start-Process pwsh -ArgumentList "-NoExit", "-Command", "cd '$PWD'; npm run dev" -WindowStyle Minimized
@@ -69,11 +106,11 @@ Set-Location $ProjectRoot
 Write-Host "⏳ Waiting for frontend to start (10 seconds)..." -ForegroundColor Yellow
 Start-Sleep 10
 
-# 4. Open Browser
+# 5. Open Browser
 Write-Host "🌐 Opening browser..." -ForegroundColor Cyan
 Start-Process "http://localhost:5173"
 
-# 5. Start Monitoring
+# 6. Start Monitoring
 Write-Host "📊 Starting Performance Monitor..." -ForegroundColor Cyan
 Write-Host ""
 Write-Host "=== SocioRAG is Running ===" -ForegroundColor Green
