@@ -2,6 +2,8 @@
 
 This directory contains comprehensive tests for various SocioRAG functionalities.
 
+> **📚 For detailed testing guides, see [Frontend Testing Guide](../docs/guides/frontend_testing_guide.md)**
+
 ## Test Categories
 
 ### PDF Generation Tests
