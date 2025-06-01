@@ -12,6 +12,10 @@ param(
     [int]$TimeoutSeconds = 60
 )
 
+# Ensure we're working from the project root
+$ProjectRoot = (Get-Item $PSScriptRoot).Parent.Parent.FullName
+Set-Location $ProjectRoot
+
 # Configuration
 $CONFIG = @{
     BackendPort = 8000
