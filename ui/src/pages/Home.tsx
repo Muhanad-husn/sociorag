@@ -59,9 +59,15 @@ export function Home() {
 
   return (
     <div className="container mx-auto px-4 py-8 max-w-4xl">
-      <div className="space-y-8">
-        {/* Header */}
+      <div className="space-y-8">        {/* Header */}
         <div className="text-center space-y-2">
+          <div className="flex justify-center mb-2">
+            <img 
+              src="/socioRAG-logo.png" 
+              alt="SocioRAG Logo" 
+              className="h-16 w-16" 
+            />
+          </div>
           <h1 className="text-4xl font-bold">{t('appTitle', language)}</h1>
           <p className="text-lg text-muted-foreground">
             {t('home.subtitle', language)}

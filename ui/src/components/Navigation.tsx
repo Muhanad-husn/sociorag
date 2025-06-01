@@ -43,11 +43,15 @@ export function Navigation({ currentPath }: NavigationProps) {
       {/* Desktop Navigation */}
       <nav className="hidden md:flex fixed top-0 left-0 right-0 z-50 bg-white/80 dark:bg-gray-900/80 backdrop-blur-md border-b border-gray-200 dark:border-gray-700">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
-          <div className={`flex justify-between items-center h-16 ${isRTL ? 'flex-row-reverse' : ''}`}>
-            {/* Logo */}
+          <div className={`flex justify-between items-center h-16 ${isRTL ? 'flex-row-reverse' : ''}`}>            {/* Logo */}
             <div className="flex items-center">
+              <img 
+                src="/socioRAG-logo.png" 
+                alt="SocioRAG Logo" 
+                className="h-8 w-8 mr-2" 
+              />
               <h1 className="text-xl font-bold text-gray-900 dark:text-white">
-                SocioGraph
+                SocioRAG
               </h1>
             </div>
 
@@ -92,11 +96,17 @@ export function Navigation({ currentPath }: NavigationProps) {
       {/* Mobile Navigation */}
       <nav className="md:hidden fixed top-0 left-0 right-0 z-50 bg-white/80 dark:bg-gray-900/80 backdrop-blur-md border-b border-gray-200 dark:border-gray-700">
         <div className="px-4 sm:px-6">
-          <div className={`flex justify-between items-center h-16 ${isRTL ? 'flex-row-reverse' : ''}`}>
-            {/* Logo */}
-            <h1 className="text-lg font-bold text-gray-900 dark:text-white">
-              SocioGraph
-            </h1>
+          <div className={`flex justify-between items-center h-16 ${isRTL ? 'flex-row-reverse' : ''}`}>            {/* Logo */}
+            <div className="flex items-center">
+              <img 
+                src="/socioRAG-logo.png" 
+                alt="SocioRAG Logo" 
+                className="h-7 w-7 mr-2" 
+              />
+              <h1 className="text-lg font-bold text-gray-900 dark:text-white">
+                SocioRAG
+              </h1>
+            </div>
 
             {/* Mobile Menu Button */}
             <button

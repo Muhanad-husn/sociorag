@@ -1,11 +1,11 @@
 # SocioRAG
 
-![SocioRAG Logo](resources/logo.png)
+![SocioRAG Logo](resources/socioRAG-logo-small.png)
 
 ## 📈 Project Status
 
-[![Status](https://img.shields.io/badge/status-production--ready-brightgreen)](docs/project_status.md)
-[![Version](https://img.shields.io/badge/version-v1.0.3-blue)](docs/project_status.md)
+[![Status](resources/status-badge.png)](docs/project_status.md)
+[![Version](resources/version-badge.png)](docs/project_status.md)
 
 ## ✅ Production Ready
 
@@ -282,3 +282,4 @@ Apache-2.0 – see [LICENSE](LICENSE) for full terms.
 - FastAPI for the web framework
 - SQLite-vec for vector storage
 - spaCy for NLP processing
+
