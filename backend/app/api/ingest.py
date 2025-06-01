@@ -115,14 +115,14 @@ async def upload(file: UploadFile, tasks: BackgroundTasks):
             raise HTTPException(status_code=400, detail="Filename is required")
         dest = (cfg.INPUT_DIR / file.filename).with_suffix(".pdf")
         dest.write_bytes(await file.read())
-        
-        # Schedule processing
+          # Schedule processing
         tasks.add_task(run_processing_with_state_management)
         
+        _logger.info(f"File uploaded successfully: {dest.name}")
         return {
-            "status": "uploaded",
-            "file": dest.name,
-            "message": "Processing started in the background"
+            "success": True,
+            "filename": dest.name,
+            "message": "File uploaded successfully. Processing started in the background."
         }
     except Exception as e:
         _logger.error(f"Upload failed: {str(e)}")

@@ -79,22 +79,23 @@ def reset_corpus():
         for table in tables:
             table_name = table[0]
             cursor.execute(f"DELETE FROM {table_name}")
-        
-        # Commit the changes
+          # Commit the changes
         db_conn.commit()
         cursor.close()
         
-        return {"status": "corpus cleared"}
+        logger.info("Corpus reset completed successfully")
+        return {"success": True, "message": "Corpus reset successfully"}
         
     except Exception as e:
         # If database operations fail, try the file deletion approach
         # but only as a fallback
         try:
             Path(cfg.GRAPH_DB).unlink(missing_ok=True)
-            return {"status": "corpus cleared (database recreated)"}
+            logger.info("Corpus reset completed (database recreated)")
+            return {"success": True, "message": "Corpus reset successfully (database recreated)"}
         except Exception as file_e:
+            logger.error(f"Failed to clear database: {e}, and failed to delete file: {file_e}")
             raise Exception(f"Failed to clear database: {e}, and failed to delete file: {file_e}")
     
-    return {"status": "corpus cleared"}
-    
-    return {"status": "corpus cleared"}
+    logger.info("Corpus reset completed successfully")
+    return {"success": True, "message": "Corpus reset successfully"}
