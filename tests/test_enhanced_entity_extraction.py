@@ -29,8 +29,8 @@ from backend.app.ingest.enhanced_entity_extraction import (
 
 logger = get_logger()
 
-# Sample chunks with clear entities and relationships
-SAMPLE_CHUNKS = [
+# Sample chunks for testing (enhanced set)
+ENHANCED_SAMPLE_CHUNKS = [
     """
     The United Nations (UN) has identified climate change as the defining issue of our time. 
     The Intergovernmental Panel on Climate Change (IPCC) was established by the UN to provide 
@@ -51,6 +51,27 @@ SAMPLE_CHUNKS = [
     Satya Nadella is the current CEO of Microsoft, having succeeded Steve Ballmer in 2014.
     Microsoft acquired GitHub in 2018 for $7.5 billion.
     Microsoft Azure is a cloud computing service competing with Amazon Web Services (AWS).
+    """,
+    
+    """
+    The Great Wall of China is one of the most famous landmarks in the world.
+    It was built to protect Chinese states from invasions.
+    The wall stretches over 13,000 miles and took centuries to complete.
+    It is a UNESCO World Heritage site and attracts millions of visitors annually.
+    """,
+    
+    """
+    The theory of relativity was developed by Albert Einstein.
+    It revolutionized the understanding of space, time, and gravity.
+    The theory is divided into two parts: special relativity and general relativity.
+    It has been confirmed by many experiments and is a cornerstone of modern physics.
+    """,
+    
+    """
+    The Amazon Rainforest is the largest tropical rainforest in the world.
+    It is home to an incredible diversity of species, many of which are not found anywhere else.
+    The rainforest plays a crucial role in regulating the Earth's climate.
+    Deforestation and climate change pose significant threats to this vital ecosystem.
     """
 ]
 
@@ -58,7 +79,7 @@ SAMPLE_CHUNKS = [
 async def test_simple_extraction():
     """Test basic entity extraction."""
     print("\n=== Testing Basic Entity Extraction ===\n")
-    chunk = SAMPLE_CHUNKS[0]
+    chunk = ENHANCED_SAMPLE_CHUNKS[0]
     
     print(f"Text chunk:\n{chunk}")
     
@@ -76,7 +97,7 @@ async def test_simple_extraction():
 async def test_extraction_with_retry():
     """Test entity extraction with retry and debug info."""
     print("\n=== Testing Entity Extraction with Retry ===\n")
-    chunk = SAMPLE_CHUNKS[1]
+    chunk = ENHANCED_SAMPLE_CHUNKS[1]
     
     print(f"Text chunk:\n{chunk}")
     
@@ -125,18 +146,18 @@ async def test_batch_processing():
     # Clear cache before testing
     clear_cache()
     
-    print(f"Processing {len(SAMPLE_CHUNKS)} chunks in batch mode")
+    print(f"Processing {len(ENHANCED_SAMPLE_CHUNKS)} chunks in batch mode")
     
     # Process all chunks in batch
     start_time = time.time()
-    batch_results = await batch_process_chunks(SAMPLE_CHUNKS, batch_size=2, concurrency_limit=2)
+    batch_results = await batch_process_chunks(ENHANCED_SAMPLE_CHUNKS, batch_size=2, concurrency_limit=2)
     elapsed = time.time() - start_time
     
     # Print results
     print(f"\nBatch processing completed in {elapsed:.2f} seconds")
     
     total_entities = sum(len(entities) for entities in batch_results)
-    print(f"Extracted {total_entities} entities from {len(SAMPLE_CHUNKS)} chunks")
+    print(f"Extracted {total_entities} entities from {len(ENHANCED_SAMPLE_CHUNKS)} chunks")
     
     for i, entities in enumerate(batch_results):
         print(f"\nChunk {i+1} ({len(entities)} entities):")
