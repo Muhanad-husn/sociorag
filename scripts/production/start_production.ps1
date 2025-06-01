@@ -15,8 +15,8 @@ Start-Process pwsh -ArgumentList "-NoExit", "-Command", "cd '$ProjectRoot'; pyth
 
 # Wait for backend to load
 Write-Host "⏳ Waiting for backend to initialize (20 seconds)..." -ForegroundColor Yellow
-Write-Host "   (Backend initialization typically takes 12-15 seconds)" -ForegroundColor Gray
-Start-Sleep 20
+Write-Host "   (Backend initialization typically takes 30-45 seconds)" -ForegroundColor Gray
+Start-Sleep 30
 
 # 2. Test Backend
 Write-Host "🔍 Testing backend connection..." -ForegroundColor Cyan
