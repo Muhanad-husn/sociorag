@@ -50,6 +50,54 @@ from fastapi.staticfiles import StaticFiles
 from .core.logging_middleware import LoggingMiddleware
 
 
+def log_database_counts():
+    """Log the number of records in both Chroma and SQLite databases."""
+    from .core.enhanced_logger import get_enhanced_logger
+    logger = get_enhanced_logger()
+    
+    try:
+        logger.info("📊 Database Statistics:")
+        
+        # Count SQLite database records
+        try:
+            from .core.singletons import SQLiteSingleton
+            db_conn = SQLiteSingleton().get()
+            
+            # Get table counts
+            tables = ["entity", "relation", "documents"]
+            total_sqlite_records = 0
+            
+            for table in tables:
+                try:
+                    cursor = db_conn.cursor()
+                    cursor.execute(f"SELECT COUNT(*) FROM {table}")
+                    result = cursor.fetchone()
+                    cursor.close()
+                    count = result[0] if result else 0
+                    total_sqlite_records += count
+                    logger.info(f"  📄 SQLite '{table}' table: {count:,} records")
+                except Exception as e:
+                    logger.warning(f"  ⚠️  Could not count '{table}' table: {str(e)}")
+            
+            logger.info(f"  🗄️  SQLite total records: {total_sqlite_records:,}")
+            
+        except Exception as e:
+            logger.error(f"  ❌ Failed to count SQLite records: {str(e)}")
+        
+        # Count ChromaDB vector store records
+        try:
+            from .core.singletons import ChromaSingleton
+            chroma_instance = ChromaSingleton().get()
+            vector_count = chroma_instance._collection.count()
+            logger.info(f"  🔍 ChromaDB vector store: {vector_count:,} documents")
+            
+        except Exception as e:
+            logger.error(f"  ❌ Failed to count ChromaDB records: {str(e)}")
+        
+    except Exception as e:
+        logger.error(f"❌ Database count logging failed: {str(e)}")
+
+
 def create_app() -> FastAPI:
     """Create and configure the FastAPI application."""
     # Initialize enhanced logging early
@@ -170,6 +218,10 @@ def create_app() -> FastAPI:
     duration = time.time() - start_time
     logger.log_operation_end("app_initialization", success=True, duration=duration)
     logger.info(f"SocioRAG FastAPI application initialization complete in {duration:.2f}s")
+    
+    # Log database record counts at startup
+    log_database_counts()
+    
     return app
 
 
