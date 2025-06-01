@@ -1,4 +1,3 @@
-<!-- filepath: d:\\sociorag\\README.md -->
 # SocioRAG
 
 ![SocioRAG Logo](resources/logo.png)
@@ -22,14 +21,14 @@ SocioRAG is a production-ready system for analyzing and visualizing social dynam
 
 ### One-Command Setup
 
-`powershell
+```powershell
 # Automated setup - handles everything
 .\quick_start.ps1
-`
+```
 
 ### Manual Quick Setup
 
-`powershell
+```powershell
 # 1. Create environment
 python -m venv .venv
 .\.venv\Scripts\Activate.ps1
@@ -44,9 +43,9 @@ Copy-Item config.yaml.example config.yaml
 
 # 4. Start application
 .\start_production.ps1
-`
+```
 
-**Access Points**
+### Access Points
 
 - Backend: [http://127.0.0.1:8000](http://127.0.0.1:8000)
 - API Documentation: [http://127.0.0.1:8000/docs](http://127.0.0.1:8000/docs)
@@ -72,9 +71,9 @@ Copy-Item config.yaml.example config.yaml
 
 ### Method 1: Conda Installation (Recommended)
 
-`ash
+```bash
 # 1. Install Miniconda (if not already installed)
-# Download from: <https://docs.conda.io/en/latest/miniconda.html>
+# Download from: https://docs.conda.io/en/latest/miniconda.html
 
 # 2. Clone the repository
 git clone <repository-url>
@@ -91,13 +90,13 @@ python -m spacy download en_core_web_sm
 
 # 6. Install Playwright browsers for PDF generation (Conda)
 playwright install
-`
+```
 
 ### Method 2: pip Installation
 
 Using pip with virtual environment for Python package management.
 
-`ash
+```bash
 # 1. Clone the repository
 git clone <repository-url>
 cd sociorag
@@ -107,10 +106,10 @@ python -m venv .venv
 
 # 3. Activate the environment
 
-#### On Windows
+# On Windows
 .\.venv\Scripts\Activate.ps1
 
-#### On macOS/Linux
+# On macOS/Linux
 source .venv/bin/activate
 
 # 4. Install dependencies
@@ -121,37 +120,37 @@ python -m spacy download en_core_web_sm
 
 # 6. Install Playwright browsers for PDF generation (pip)
 playwright install
-`
+```
 
 ## 🛠️ Configuration
 
 Copy the example configuration file and update with your settings:
 
-`powershell
+```powershell
 Copy-Item config.yaml.example config.yaml
-`
+```
 
 Edit the `config.yaml` file with your specific configuration:
 
-`yaml
+```yaml
 chunk_sim: 0.8                               # Similarity threshold for chunking
 top_k: 50                                    # Number of top results to retrieve
 vector_dir: /path/to/vector_store            # Path to vector store directory
 openrouter_api_key: sk-or-v1-your-api-key    # OpenRouter API key
 huggingface_token: hf_your_token             # HuggingFace token for translation
-`
+```
 
 ## 🔄 Usage
 
 ### Starting the Application
 
-`powershell
+```powershell
 # Start in production mode
 .\start_production.ps1
 
 # Stop the application
 .\stop_production.ps1
-`
+```
 
 ### API Endpoints
 
@@ -168,23 +167,19 @@ Full API documentation is available at [http://127.0.0.1:8000/docs](http://127.0
 
 ### Core Components
 
-1. **Data Ingestion Pipeline** (\ackend/app/ingest/\)
+1. **Data Ingestion Pipeline** (`backend/app/ingest/`)
    - Enhanced entity extraction with LLM-powered analysis
    - Document chunking and metadata extraction
-
-2. **Vector Storage & Retrieval** (\ackend/app/retriever/\)
+2. **Vector Storage & Retrieval** (`backend/app/retriever/`)
    - SQLite-vec based vector storage
    - Semantic search with reranking
-
-3. **Answer Generation** (\ackend/app/answer/\)
+3. **Answer Generation** (`backend/app/answer/`)
    - Complete response generation with LLM integration
    - Citation management and source linking
-
-4. **Core Infrastructure** (\ackend/app/core/\)
+4. **Core Infrastructure** (`backend/app/core/`)
    - Centralized configuration management
    - Logging and error handling
-
-5. **API Layer** (\ackend/app/api/\)
+5. **API Layer** (`backend/app/api/`)
    - FastAPI endpoints for Q&A functionality
    - RESTful interface design
 
@@ -211,13 +206,13 @@ Comprehensive documentation is available in the `docs/` directory:
 
 Run tests using pytest:
 
-`ash
+```bash
 # Run all tests
 pytest
 
 # Run specific test file
 pytest tests/path/to/test_file.py
-`
+```
 
 ## 📄 License
 
@@ -229,7 +224,3 @@ pytest tests/path/to/test_file.py
 - FastAPI for the web framework
 - SQLite-vec for vector storage
 - spaCy for NLP processing
-
----
-
-## SocioRAG - Advanced Social Text Analysis with Retrieval Augmented Generation
