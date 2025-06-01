@@ -30,24 +30,29 @@ class _Config(BaseSettings):
     ANSWER_LLM_CONTEXT_WINDOW: int = 128000
     ANSWER_LLM_MAX_TOKENS: int = 4000
     ANSWER_LLM_STREAM: bool = False
-    
-    # Translation LLM parameters
+      # Translation LLM parameters
     TRANSLATE_LLM_MODEL: str = "mistralai/mistral-nemo:free"
     TRANSLATE_LLM_TEMPERATURE: float = 0.5
     TRANSLATE_LLM_MAX_TOKENS: int = 5000
-    TRANSLATE_LLM_STREAM: bool = False# ---------------- thresholds & params -------------- #
+    TRANSLATE_LLM_STREAM: bool = False
+
+    # ---------------- thresholds & params -------------- #
     CHUNK_SIM: float = 0.85
     ENTITY_SIM: float = 0.90
     GRAPH_SIM: float = 0.50
     TOP_K: int = 80  # Default value for vector retrieval
     TOP_K_RERANK: int = 15  # Default value for reranking
-    MAX_CONTEXT_FRACTION: float = 0.4    # ---------------------- API keys ------------------- #
+    MAX_CONTEXT_FRACTION: float = 0.4
+
+    # ---------------------- API keys ------------------- #
     OPENROUTER_API_KEY: Optional[str] = None
-    HUGGINGFACE_TOKEN: Optional[str] = None  # Added HF token for model authentication# ---------------- resources & misc ---------------- #
+    HUGGINGFACE_TOKEN: Optional[str] = None  # Added HF token for model authentication
+
+    # ---------------- resources & misc ---------------- #
     SPACY_MODEL: str = "en_core_web_sm"
     LOG_LEVEL: str = "INFO"
     HISTORY_LIMIT: int = 15
-    SAVED_LIMIT: int = 15
+    SAVED_LIMIT: int = 20
     
     # -------------- enhanced logging settings ---------- #
     ENHANCED_LOGGING_ENABLED: bool = True

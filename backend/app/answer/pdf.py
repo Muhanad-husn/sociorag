@@ -140,6 +140,61 @@ def _ensure_saved_dir() -> Path:
     return saved_dir
 
 
+def cleanup_old_saved_files(max_files: Optional[int] = None) -> int:
+    """Remove old saved PDF files, keeping only the most recent ones.
+    
+    Args:
+        max_files: Maximum number of files to keep (uses config default if None)
+        
+    Returns:
+        Number of files removed
+    """
+    if max_files is None:
+        max_files = _cfg.SAVED_LIMIT
+        
+    try:
+        saved_dir = _ensure_saved_dir()
+        
+        # Get all PDF files in the saved directory
+        pdf_files = []
+        for file_path in saved_dir.iterdir():
+            if file_path.is_file() and file_path.suffix.lower() == '.pdf':
+                try:
+                    stat = file_path.stat()
+                    pdf_files.append((file_path, stat.st_mtime))
+                except (OSError, PermissionError):
+                    # Skip files that can't be accessed
+                    continue
+        
+        # Sort by modification time (newest first)
+        pdf_files.sort(key=lambda x: x[1], reverse=True)
+        
+        if len(pdf_files) <= max_files:
+            return 0  # Nothing to clean up
+            
+        # Keep only the most recent files, remove the rest
+        files_to_remove = pdf_files[max_files:]
+        removed_count = 0
+        
+        for file_path, _ in files_to_remove:
+            try:
+                file_path.unlink()  # Delete the file
+                removed_count += 1
+                _logger.debug(f"Removed old saved file: {file_path.name}")
+            except (OSError, PermissionError) as e:
+                _logger.warning(f"Could not remove file {file_path.name}: {e}")
+                continue
+                
+        if removed_count > 0:
+            _logger.info(f"Cleaned up {removed_count} old saved PDF files (kept {len(pdf_files) - removed_count} most recent)")
+        
+        return removed_count
+        
+    except Exception as e:
+        _logger.error(f"Error cleaning up saved files: {e}")
+        return 0
+
+
 def _get_resource_path(resource_name: str) -> Path:
     """Get the absolute path to a resource.
     
@@ -460,8 +515,7 @@ async def save_pdf_async(answer_md: str, query: str, filename: Optional[str] = N
             await page.set_content(html_content, wait_until="networkidle")
               # Emulate print media for proper styling
             await page.emulate_media(media="print")
-            
-            # Generate PDF with optimized settings
+              # Generate PDF with optimized settings
             _logger.info(f"Rendering PDF to {output_path}")
             await page.pdf(
                 path=str(output_path),
@@ -479,6 +533,15 @@ async def save_pdf_async(answer_md: str, query: str, filename: Optional[str] = N
         if output_path.exists():
             file_size = output_path.stat().st_size
             _logger.info(f"PDF successfully created: {output_path} ({file_size} bytes)")
+            
+            # Clean up old files to maintain the saved files limit
+            try:
+                removed_count = cleanup_old_saved_files()
+                if removed_count > 0:
+                    _logger.info(f"Cleaned up {removed_count} old saved files to maintain limit of {_cfg.SAVED_LIMIT}")
+            except Exception as cleanup_error:
+                _logger.warning(f"Failed to clean up old saved files: {cleanup_error}")
+            
             return output_path
         else:
             raise RuntimeError("PDF file was not created")
@@ -558,11 +621,19 @@ def _save_pdf_sync(answer_md: str, query: str, filename: Optional[str] = None, l
         finally:
             # Always close the context to free memory
             context.close()
-        
-        # Verify file was created
+          # Verify file was created
         if output_path.exists():
             file_size = output_path.stat().st_size
             _logger.info(f"PDF successfully created: {output_path} ({file_size} bytes)")
+            
+            # Clean up old files to maintain the saved files limit
+            try:
+                removed_count = cleanup_old_saved_files()
+                if removed_count > 0:
+                    _logger.info(f"Cleaned up {removed_count} old saved files to maintain limit of {_cfg.SAVED_LIMIT}")
+            except Exception as cleanup_error:
+                _logger.warning(f"Failed to clean up old saved files: {cleanup_error}")
+            
             return output_path
         else:
             raise RuntimeError("PDF file was not created")
