@@ -359,7 +359,7 @@ plugin_manager.register("topic", TopicModelingPlugin())
 
 ### Deployment Options
 - **Development**: Local uvicorn server
-- **Production**: Docker containers (future)
+- **Production**: Native Python deployment
 - **Scaling**: Kubernetes orchestration (future)
 - **Monitoring**: Structured logging with external tools
 

@@ -1599,38 +1599,23 @@ export default defineConfig({
      Cache-Control: public, max-age=31536000, immutable
    ```
 
-### Docker Deployment
-**Multi-stage Dockerfile:**
-```dockerfile
-# Build stage
-FROM node:18-alpine AS builder
+### Production Deployment
+**Build for Production:**
+```bash
+# Build the frontend
+cd ui
+npm run build
 
-WORKDIR /app
-COPY ui/package*.json ./
-RUN npm ci --only=production
-
-COPY ui/ .
-RUN npm run build
-
-# Production stage
-FROM nginx:alpine
-
-# Copy built assets
-COPY --from=builder /app/dist /usr/share/nginx/html
-
-# Copy nginx configuration
-COPY nginx.conf /etc/nginx/nginx.conf
-
-EXPOSE 80
-CMD ["nginx", "-g", "daemon off;"]
+# The built files will be in the dist/ directory
+# Copy these to your web server's document root
 ```
 
-**nginx.conf:**
+**nginx.conf Example:**
 ```nginx
 server {
     listen 80;
     server_name _;
-    root /usr/share/nginx/html;
+    root /path/to/sociorag/ui/dist;
     index index.html;
 
     # Gzip compression
@@ -1646,7 +1631,7 @@ server {
 
     # API proxy
     location /api/ {
-        proxy_pass http://backend-api:8000/api/;
+        proxy_pass http://localhost:8000/api/;
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
     }
@@ -1659,7 +1644,7 @@ server {
 }
 ```
 
-**Docker Compose:**
+**Production Setup:**
 ```yaml
 version: '3.8'
 services:

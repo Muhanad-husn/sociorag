@@ -514,21 +514,9 @@ pytest tests/
 
 ## Production Deployment
 
-### Docker Setup (Future)
+### Production Deployment
 
-```dockerfile
-# Dockerfile (example for future implementation)
-FROM python:3.12.9-slim
-
-WORKDIR /app
-COPY requirements.txt .
-RUN pip install -r requirements.txt
-
-COPY . .
-EXPOSE 8000
-
-CMD ["uvicorn", "backend.app.main:app", "--host", "0.0.0.0", "--port", "8000"]
-```
+For production deployment, see the [Production Deployment Guide](production_deployment_guide.md) for comprehensive instructions on setting up the application in a production environment.
 
 ### Environment-Specific Configuration
 

@@ -27,25 +27,13 @@ jobs:
     - name: Run tests
       run: pytest tests/ -v
       env:
-        OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
-        CHUNK_SIM: 0.80
+        OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}        CHUNK_SIM: 0.80
         LOG_LEVEL: INFO
     
-    - name: Build Docker image for release
+    - name: Build distribution package
       run: |
-        docker build -t sociorag:${{ github.ref_name }} .
-        docker tag sociorag:${{ github.ref_name }} ghcr.io/${{ github.repository }}:${{ github.ref_name }}
-    
-    - name: Login to GitHub Container Registry
-      uses: docker/login-action@v3
-      with:
-        registry: ghcr.io
-        username: ${{ github.actor }}
-        password: ${{ secrets.GITHUB_TOKEN }}
-    
-    - name: Push Docker image
-      run: |
-        docker push ghcr.io/${{ github.repository }}:${{ github.ref_name }}
+        python -m pip install --upgrade build
+        python -m build
     
     - name: Generate changelog
       id: changelog
@@ -69,12 +57,11 @@ jobs:
         release_name: Release ${{ steps.changelog.outputs.version }}
         body: |
           ## Changes in ${{ steps.changelog.outputs.version }}
+            ${{ steps.changelog.outputs.changelog }}
           
-          ${{ steps.changelog.outputs.changelog }}
-          
-          ## Docker Image
+          ## Installation
           ```bash
-          docker pull ghcr.io/${{ github.repository }}:${{ github.ref_name }}
+          pip install dist/sociorag-${{ steps.changelog.outputs.version }}-py3-none-any.whl
           ```
           
           ## Quick Start
