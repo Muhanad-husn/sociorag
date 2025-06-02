@@ -104,12 +104,11 @@ export function FileUploader({ onUploadComplete, onUploadStart, language, disabl
 
   return (
     <div className="space-y-4">
-      {/* Upload area */}
-      <div
+      {/* Upload area */}      <div
         className={clsx(
-          'border-2 border-dashed rounded-lg p-8 text-center transition-colors',
-          isDragging ? 'border-primary bg-primary/5' : 'border hover:border-primary/50',
-          isDisabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'
+          'border-2 border-dashed rounded-lg p-8 text-center transition-all duration-200',
+          isDragging ? 'border-primary bg-primary/5 hover-glow' : 'border hover:border-primary/50',
+          isDisabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer hover-lift'
         )}
         onDragOver={handleDragOver}
         onDragLeave={handleDragLeave}
@@ -126,10 +125,9 @@ export function FileUploader({ onUploadComplete, onUploadStart, language, disabl
           disabled={isUploading}
         />
         
-        <div className="space-y-3">
-          <Upload className={clsx(
+        <div className="space-y-3">          <Upload className={clsx(
             'mx-auto h-12 w-12',
-            isUploading ? 'text-muted-foreground animate-pulse' : 'text-primary'
+            isUploading ? 'text-muted-foreground pulse-enhanced' : 'text-primary'
           )} />
           
           <div>
@@ -150,17 +148,16 @@ export function FileUploader({ onUploadComplete, onUploadStart, language, disabl
       {uploadedFiles.length > 0 && (
         <div className="space-y-2">
           <h4 className="text-sm font-medium">{t('upload.recentlyUploaded', currentLanguage)}:</h4>
-          <div className="space-y-1">
-            {uploadedFiles.map((filename, index) => (
-              <div key={index} className="flex items-center justify-between p-2 bg-accent rounded">
+          <div className="space-y-1">            {uploadedFiles.map((filename, index) => (
+              <div key={index} className="flex items-center justify-between p-2 bg-accent rounded card-interactive">
                 <div className="flex items-center space-x-2">
                   <File className="h-4 w-4 text-muted-foreground" />
                   <span className="text-sm">{filename}</span>
-                  <CheckCircle className="h-4 w-4 text-green-600" />
+                  <CheckCircle className="h-4 w-4 text-green-600 animate-success" />
                 </div>
                 <button
                   onClick={() => removeUploadedFile(filename)}
-                  className="btn-secondary h-6 w-6 p-0"
+                  className="btn-secondary h-6 w-6 p-0 hover-scale active-press focus-ring-enhanced"
                   title={t('common.remove', currentLanguage)}
                 >
                   <X className="h-3 w-3" />

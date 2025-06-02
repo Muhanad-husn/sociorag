@@ -4,6 +4,7 @@ import { resetCorpus, getSystemConfig, getSystemHealth, updateApiKeys, updateLLM
 import type { SystemConfig, HealthStatus, ApiKeyUpdate } from '../lib/api';
 import { t } from '../lib/i18n';
 import { Card } from '../components/ui/Card';
+import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from '../components/ui/Accordion';
 import { Moon, Sun, Settings as SettingsIcon, AlertTriangle, Save, Shield, CheckCircle, XCircle, RefreshCw } from 'lucide-preact';
 import { toast } from 'sonner';
 import clsx from 'clsx';
@@ -271,11 +272,10 @@ export function Settings() {
 
   return (
     <div className="container mx-auto px-4 py-8 max-w-2xl">
-      <div className="space-y-6">
-        {/* Header */}
+      <div className="space-y-6">        {/* Header */}
         <div className="flex items-center space-x-3">
           <SettingsIcon className="h-8 w-8 text-primary" />
-          <h1 className="text-3xl font-bold">{t('settings.title', language)}</h1>
+          <h1 className="text-2xl sm:text-3xl font-bold">{t('settings.title', language)}</h1>
         </div>
         
         {/* Unsaved Changes Warning */}
@@ -294,8 +294,8 @@ export function Settings() {
             </div>
           </Card>
         )}        {/* Appearance Settings */}
-        <Card className="p-6">
-          <h2 className="text-xl font-semibold mb-4">{t('settings.appearance', language)}</h2>
+        <Card className="p-6 card-interactive">
+          <h2 className="text-lg sm:text-xl font-semibold mb-4">{t('settings.appearance', language)}</h2>
           
           <div className="space-y-4">
             {/* Language Selection */}
@@ -305,11 +305,10 @@ export function Settings() {
                 <p className="text-xs text-muted-foreground">
                   Choose your preferred language
                 </p>
-              </div>
-              <select
+              </div>              <select
                 value={language}
                 onChange={(e) => setLanguage((e.target as HTMLSelectElement).value as 'en' | 'ar')}
-                className="w-32 px-3 py-1 text-sm border rounded-md bg-background focus:ring-2 focus:ring-primary focus:border-transparent"
+                className="w-32 px-3 py-1 text-sm border rounded-md bg-background focus:ring-2 focus:ring-primary focus:border-transparent input-enhanced hover-lift"
               >
                 <option value="en">English</option>
                 <option value="ar">العربية</option>
@@ -322,11 +321,10 @@ export function Settings() {
                 <p className="text-xs text-muted-foreground">
                   {t('settings.darkModeDesc', language)}
                 </p>
-              </div>
-              <button
+              </div>              <button
                 onClick={toggleTheme}
                 className={clsx(
-                  'relative inline-flex h-6 w-11 items-center rounded-full transition-colors',
+                  'relative inline-flex h-6 w-11 items-center rounded-full transition-colors hover-scale active-press focus-ring-enhanced',
                   isDark ? 'bg-primary' : 'bg-gray-200'
                 )}
               >
@@ -343,11 +341,9 @@ export function Settings() {
                 )}
               </button>
             </div>
-          </div>        </Card>
-
-        {/* PDF Generation Settings */}
-        <Card className="p-6">
-          <h2 className="text-xl font-semibold mb-4">{t('settings.pdfGeneration', language)}</h2>
+          </div>        </Card>        {/* PDF Generation Settings */}
+        <Card className="p-6 card-interactive">
+          <h2 className="text-lg sm:text-xl font-semibold mb-4">{t('settings.pdfGeneration', language)}</h2>
           
           <div className="space-y-6">
             {/* Enable PDF Generation */}
@@ -357,14 +353,13 @@ export function Settings() {
                 <p className="text-xs text-muted-foreground">
                   {t('settings.pdfGenerationDesc', language)}
                 </p>
-              </div>
-              <button
+              </div>              <button
                 onClick={() => setTempSettings(prev => ({ 
                   ...prev, 
                   generatePdf: !prev.generatePdf 
                 }))}
                 className={clsx(
-                  'relative inline-flex h-6 w-11 items-center rounded-full transition-colors',
+                  'relative inline-flex h-6 w-11 items-center rounded-full transition-colors hover-scale active-press focus-ring-enhanced',
                   tempSettings.generatePdf ? 'bg-primary' : 'bg-gray-200'
                 )}
               >
@@ -379,9 +374,8 @@ export function Settings() {
           </div>
         </Card>
 
-        {/* Search Settings */}
-        <Card className="p-6">
-          <h2 className="text-xl font-semibold mb-4">{t('settings.search', language)}</h2>
+        {/* Search Settings */}        <Card className="p-6 card-interactive">
+          <h2 className="text-lg sm:text-xl font-semibold mb-4">{t('settings.search', language)}</h2>
           
           <div className="space-y-6">
             {/* Top K */}
@@ -390,8 +384,7 @@ export function Settings() {
               <p className="text-xs text-muted-foreground">
                 Number of top results to retrieve from vector store (5-250)
               </p>
-              <div className="flex items-center space-x-3">
-                <input
+              <div className="flex items-center space-x-3">                <input
                   type="range"
                   min="5"
                   max="250"
@@ -400,7 +393,7 @@ export function Settings() {
                     ...prev, 
                     topK: parseInt((e.target as HTMLInputElement).value) 
                   }))}
-                  className="flex-1"
+                  className="flex-1 hover-glow"
                 />
                 <span className="text-sm font-mono w-12 text-center">
                   {tempSettings.topK}
@@ -413,8 +406,7 @@ export function Settings() {
               <p className="text-xs text-muted-foreground">
                 Number of results to rerank and display (3-100)
               </p>
-              <div className="flex items-center space-x-3">
-                <input
+              <div className="flex items-center space-x-3">                <input
                   type="range"
                   min="3"
                   max="100"
@@ -423,7 +415,7 @@ export function Settings() {
                     ...prev, 
                     topKR: parseInt((e.target as HTMLInputElement).value) 
                   }))}
-                  className="flex-1"
+                  className="flex-1 hover-glow"
                 />
                 <span className="text-sm font-mono w-12 text-center">
                   {tempSettings.topKR}                </span>
@@ -436,8 +428,7 @@ export function Settings() {
               <p className="text-xs text-muted-foreground">
                 Controls randomness in responses (0.0-2.0)
               </p>
-              <div className="flex items-center space-x-3">
-                <input
+              <div className="flex items-center space-x-3">                <input
                   type="range"
                   min="0"
                   max="2"
@@ -447,7 +438,7 @@ export function Settings() {
                     ...prev, 
                     temperature: parseFloat((e.target as HTMLInputElement).value) 
                   }))}
-                  className="flex-1"
+                  className="flex-1 hover-glow"
                 />
                 <span className="text-sm font-mono w-12 text-center">
                   {tempSettings.temperature.toFixed(1)}
@@ -457,12 +448,11 @@ export function Settings() {
           </div>
 
           {/* Save/Reset Buttons */}
-          <div className="flex items-center space-x-3 mt-6 pt-4 border-t">
-            <button
+          <div className="flex items-center space-x-3 mt-6 pt-4 border-t">            <button
               onClick={handleSaveSettings}
               disabled={!hasUnsavedChanges}
               className={clsx(
-                'btn-primary',
+                'btn-primary hover-scale active-press focus-ring-enhanced',
                 !hasUnsavedChanges && 'opacity-50 cursor-not-allowed'
               )}
             >
@@ -470,17 +460,15 @@ export function Settings() {
               {t('common.save', language)}
             </button>            <button
               onClick={handleResetDefaults}
-              className="btn-secondary"
+              className="btn-secondary hover-scale active-press focus-ring-enhanced"
             >
               {t('settings.resetDefaults', language)}
             </button>
           </div>
-        </Card>
-        
-        {/* Model Selection */}
-        <Card className="p-6">
+        </Card>          {/* Model Selection */}
+        <Card className="p-6 card-interactive">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xl font-semibold">Model Selection</h2>
+            <h2 className="text-lg sm:text-xl font-semibold">Model Selection</h2>
             {loadingLLMSettings && (
               <div className="animate-spin rounded-full h-4 w-4 border-b border-primary" />
             )}
@@ -492,8 +480,7 @@ export function Settings() {
               <label className="text-sm font-medium">Entities and Relationships Extraction Model</label>
               <p className="text-xs text-muted-foreground">
                 Model used for extracting entities and relationships (Default: google/gemini-flash-1.5)
-              </p>
-              <input
+              </p>              <input
                 type="text"
                 value={tempSettings.entityModel}
                 onChange={(e) => setTempSettings(prev => ({ 
@@ -502,7 +489,7 @@ export function Settings() {
                 }))}
                 placeholder="google/gemini-flash-1.5"
                 className={clsx(
-                  "w-full px-3 py-2 text-sm border rounded-md bg-background focus:ring-2 focus:ring-primary focus:border-transparent",
+                  "w-full px-3 py-2 text-sm border rounded-md bg-background focus:ring-2 focus:ring-primary focus:border-transparent input-enhanced",
                   !tempSettings.entityModel.trim() ? "border-red-500" : "border-border"
                 )}
               />
@@ -514,8 +501,7 @@ export function Settings() {
               <label className="text-sm font-medium">Answer Generation Model</label>
               <p className="text-xs text-muted-foreground">
                 Model used for generating answers to questions (Default: meta-llama/llama-3.3-70b-instruct:free)
-              </p>
-              <input
+              </p>              <input
                 type="text"
                 value={tempSettings.answerModel}
                 onChange={(e) => setTempSettings(prev => ({ 
@@ -524,7 +510,7 @@ export function Settings() {
                 }))}
                 placeholder="meta-llama/llama-3.3-70b-instruct:free"
                 className={clsx(
-                  "w-full px-3 py-2 text-sm border rounded-md bg-background focus:ring-2 focus:ring-primary focus:border-transparent",
+                  "w-full px-3 py-2 text-sm border rounded-md bg-background focus:ring-2 focus:ring-primary focus:border-transparent input-enhanced",
                   !tempSettings.answerModel.trim() ? "border-red-500" : "border-border"
                 )}
               />
@@ -536,8 +522,7 @@ export function Settings() {
               <label className="text-sm font-medium">Translation Model</label>
               <p className="text-xs text-muted-foreground">
                 Model used for language translation (Default: mistralai/mistral-nemo:free)
-              </p>
-              <input
+              </p>              <input
                 type="text"
                 value={tempSettings.translateModel}
                 onChange={(e) => setTempSettings(prev => ({ 
@@ -546,7 +531,7 @@ export function Settings() {
                 }))}
                 placeholder="mistralai/mistral-nemo:free"
                 className={clsx(
-                  "w-full px-3 py-2 text-sm border rounded-md bg-background focus:ring-2 focus:ring-primary focus:border-transparent",
+                  "w-full px-3 py-2 text-sm border rounded-md bg-background focus:ring-2 focus:ring-primary focus:border-transparent input-enhanced",
                   !tempSettings.translateModel.trim() ? "border-red-500" : "border-border"
                 )}
               />
@@ -590,81 +575,86 @@ export function Settings() {
               </button>
             </div>
           </div>
-        </Card>
+        </Card>        {/* Advanced Settings - Progressive Disclosure */}
+        <Accordion>          <AccordionItem value="advanced-settings">
+            <AccordionTrigger>
+              <span className="text-lg sm:text-xl font-semibold">Advanced Settings</span>
+            </AccordionTrigger>
+            <AccordionContent>
+              <div className="space-y-6 pt-2">
+                {/* Max Tokens for Answer */}
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Max Tokens (Answer)</label>
+                  <p className="text-xs text-muted-foreground">
+                    Maximum tokens for answer generation (1000-8000)
+                  </p>
+                  <div className="flex items-center space-x-3">
+                    <input
+                      type="range"
+                      min="1000"
+                      max="8000"
+                      step="500"
+                      value={tempSettings.maxTokensAnswer}
+                      onChange={(e) => setTempSettings(prev => ({ 
+                        ...prev, 
+                        maxTokensAnswer: parseInt((e.target as HTMLInputElement).value) 
+                      }))}
+                      className="flex-1"
+                    />
+                    <span className="text-sm font-mono w-16 text-center">
+                      {tempSettings.maxTokensAnswer}
+                    </span>
+                  </div>
+                </div>
 
-        {/* Advanced Settings */}
-        <Card className="p-6">
-          <h2 className="text-xl font-semibold mb-4">Advanced Settings</h2>
-          
-          <div className="space-y-6">
-            {/* Max Tokens for Answer */}
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Max Tokens (Answer)</label>
-              <p className="text-xs text-muted-foreground">
-                Maximum tokens for answer generation (1000-8000)
-              </p>
-              <div className="flex items-center space-x-3">
-                <input
-                  type="range"
-                  min="1000"
-                  max="8000"
-                  step="500"
-                  value={tempSettings.maxTokensAnswer}
-                  onChange={(e) => setTempSettings(prev => ({ 
-                    ...prev, 
-                    maxTokensAnswer: parseInt((e.target as HTMLInputElement).value) 
-                  }))}
-                  className="flex-1"
-                />
-                <span className="text-sm font-mono w-16 text-center">
-                  {tempSettings.maxTokensAnswer}
-                </span>
+                {/* Context Window */}
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Context Window</label>
+                  <p className="text-xs text-muted-foreground">
+                    Context window size for large models (16K-128K)
+                  </p>
+                  <div className="flex items-center space-x-3">
+                    <input
+                      type="range"
+                      min="16000"
+                      max="128000"
+                      step="16000"
+                      value={tempSettings.contextWindow}
+                      onChange={(e) => setTempSettings(prev => ({ 
+                        ...prev, 
+                        contextWindow: parseInt((e.target as HTMLInputElement).value) 
+                      }))}
+                      className="flex-1"
+                    />
+                    <span className="text-sm font-mono w-16 text-center">
+                      {Math.round(tempSettings.contextWindow / 1000)}K
+                    </span>
+                  </div>
+                </div>
               </div>
-            </div>
-
-            {/* Context Window */}
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Context Window</label>
-              <p className="text-xs text-muted-foreground">
-                Context window size for large models (16K-128K)
-              </p>
-              <div className="flex items-center space-x-3">
-                <input
-                  type="range"
-                  min="16000"
-                  max="128000"
-                  step="16000"
-                  value={tempSettings.contextWindow}
-                  onChange={(e) => setTempSettings(prev => ({ 
-                    ...prev, 
-                    contextWindow: parseInt((e.target as HTMLInputElement).value) 
-                  }))}
-                  className="flex-1"
-                />
-                <span className="text-sm font-mono w-16 text-center">
-                  {Math.round(tempSettings.contextWindow / 1000)}K
-                </span>
+            </AccordionContent>
+          </AccordionItem>
+        </Accordion>        {/* System Configuration - Progressive Disclosure */}
+        <Accordion>
+          <AccordionItem value="system-config">            <AccordionTrigger>
+              <div className="flex items-center space-x-2">
+                <Shield className="h-5 w-5 text-primary" />
+                <span className="text-lg sm:text-xl font-semibold">System Configuration</span>
               </div>
-            </div>
-          </div>
-        </Card>
-
-        {/* System Configuration */}
-        <Card className="p-6">
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center space-x-2">
-              <Shield className="h-5 w-5 text-primary" />
-              <h2 className="text-xl font-semibold">System Configuration</h2>
-            </div>
-            <button
-              onClick={loadAdminData}
-              disabled={loadingAdmin}
-              className="btn-secondary p-2"
-              title="Refresh system information"
-            >
-              <RefreshCw className={clsx('h-4 w-4', loadingAdmin && 'animate-spin')} />
-            </button>
-          </div>
+            </AccordionTrigger>
+            <AccordionContent>
+              <div className="space-y-4 pt-2">
+                {/* Refresh Button */}
+                <div className="flex justify-end">
+                  <button
+                    onClick={loadAdminData}
+                    disabled={loadingAdmin}
+                    className="btn-secondary p-2"
+                    title="Refresh system information"
+                  >
+                    <RefreshCw className={clsx('h-4 w-4', loadingAdmin && 'animate-spin')} />
+                  </button>
+                </div>
 
           {loadingAdmin ? (
             <div className="flex items-center justify-center py-8">
@@ -806,15 +796,15 @@ export function Settings() {
                       </p>
                     </div>
                   </div>
-                </div>
-              )}
+                </div>              )}
             </div>
           )}
-        </Card>
-
-        {/* Danger Zone */}
+              </div>
+            </AccordionContent>
+          </AccordionItem>
+        </Accordion>        {/* Danger Zone */}
         <Card className="p-6 border-destructive">
-          <h2 className="text-xl font-semibold mb-4 text-destructive">Danger Zone</h2>
+          <h2 className="text-lg sm:text-xl font-semibold mb-4 text-destructive">Danger Zone</h2>
           
           <div className="space-y-4">
             <div className="space-y-2">              <h3 className="font-medium">{t('settings.reset', language)}</h3>
@@ -853,10 +843,8 @@ export function Settings() {
               </button>
             )}
           </div>
-        </Card>
-
-        {/* Info */}
-        <Card className="p-4 bg-accent/50">
+        </Card>        {/* Info */}
+        <Card className="p-4 bg-accent/50 card-interactive">
           <h3 className="font-semibold mb-2">About Settings</h3>
           <ul className="space-y-1 text-sm text-muted-foreground">
             <li>• Settings are automatically saved to your browser</li>

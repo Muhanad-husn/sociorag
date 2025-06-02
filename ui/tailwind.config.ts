@@ -7,8 +7,7 @@ export default {
   ],
   darkMode: 'class',
   theme: {
-    extend: {
-      colors: {
+    extend: {      colors: {
         primary: {
           DEFAULT: 'hsl(var(--primary))',
           foreground: 'hsl(var(--primary-foreground))',
@@ -38,15 +37,19 @@ export default {
           DEFAULT: 'hsl(var(--destructive))',
           foreground: 'hsl(var(--destructive-foreground))',
         },
+        /* New surface-2 color token */
+        'surface-2': 'hsl(var(--surface-2))',
       },
       fontFamily: {
         'inter': ['Inter', 'sans-serif'],
         'arabic': ['Noto Sans Arabic', 'sans-serif'],
-      },
-      animation: {
+      },      animation: {
         'fade-in': 'fadeIn 0.5s ease-in-out',
         'slide-in': 'slideIn 0.3s ease-out',
         'pulse-slow': 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+        /* New accordion animation for progressive disclosure */
+        'accordion-down': 'accordion-down 0.2s ease-out',
+        'accordion-up': 'accordion-up 0.2s ease-out',
       },
       keyframes: {
         fadeIn: {
@@ -56,6 +59,35 @@ export default {
         slideIn: {
           '0%': { transform: 'translateX(-100%)' },
           '100%': { transform: 'translateX(0)' },
+        },
+        /* New accordion keyframes */
+        'accordion-down': {
+          from: { height: '0' },
+          to: { height: 'var(--radix-accordion-content-height)' },
+        },
+        'accordion-up': {
+          from: { height: 'var(--radix-accordion-content-height)' },
+          to: { height: '0' },
+        },
+      },
+      /* Typography enhancements */
+      typography: {
+        DEFAULT: {
+          css: {
+            lineHeight: '1.7',
+          },
+        },
+        sm: {
+          css: {
+            fontSize: '0.875rem',
+            lineHeight: '1.7142857',
+          },
+        },
+        lg: {
+          css: {
+            fontSize: '1.125rem',
+            lineHeight: '1.7777778',
+          },
         },
       },
     },

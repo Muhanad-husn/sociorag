@@ -38,19 +38,17 @@ export function Navigation({ currentPath }: NavigationProps) {
   const currentPageId = getCurrentPageId();
   const isRTL = language === 'ar';
 
-  return (
-    <>
+  return (    <>
       {/* Desktop Navigation */}
-      <nav className="hidden md:flex fixed top-0 left-0 right-0 z-50 bg-white/80 dark:bg-gray-900/80 backdrop-blur-md border-b border-gray-200 dark:border-gray-700">
+      <nav className="nav-sticky hidden md:flex fixed top-0 left-0 right-0 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
           <div className={`flex justify-between items-center h-16 ${isRTL ? 'flex-row-reverse' : ''}`}>            {/* Logo */}
             <div className="flex items-center">
               <img 
                 src="/socioRAG-logo.png" 
                 alt="SocioRAG Logo" 
-                className="h-8 w-8 mr-2" 
-              />
-              <h1 className="text-xl font-bold text-gray-900 dark:text-white">
+                className="h-8 w-8 mr-2"              />
+              <h1 className="text-lg sm:text-xl font-bold text-gray-900 dark:text-white">
                 SocioRAG
               </h1>
             </div>
@@ -61,26 +59,23 @@ export function Navigation({ currentPath }: NavigationProps) {
                 const Icon = item.icon;
                 const isActive = currentPageId === item.id;
                 
-                return (
-                  <button
+                return (                  <button
                     key={item.id}
                     onClick={() => handleNavigation(item.path)}
-                    className={`flex items-center space-x-2 rtl:space-x-reverse px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                    className={`nav-item flex items-center space-x-2 rtl:space-x-reverse px-3 py-2 rounded-md text-sm font-medium transition-soft hover-lift active-press focus-ring-enhanced ${
                       isActive
-                        ? 'text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/30'
+                        ? 'text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/30 active'
                         : 'text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-50 dark:hover:bg-gray-800'
-                    }`}                  >
+                    }`}>
                     <Icon className="w-4 h-4" />
                     <span>{t(`navigation.${item.id}`, language)}</span>
                   </button>
                 );
               })}
-            </div>
-
-            {/* Theme Toggle */}
+            </div>            {/* Theme Toggle */}
             <button
               onClick={toggleTheme}
-              className="p-2 rounded-md text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+              className="p-2 rounded-md text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-50 dark:hover:bg-gray-800 transition-soft hover-lift active-press focus-ring-enhanced"
               aria-label={t('navigation.toggleTheme', language)}
             >
               {theme === 'dark' ? (
@@ -91,10 +86,8 @@ export function Navigation({ currentPath }: NavigationProps) {
             </button>
           </div>
         </div>
-      </nav>
-
-      {/* Mobile Navigation */}
-      <nav className="md:hidden fixed top-0 left-0 right-0 z-50 bg-white/80 dark:bg-gray-900/80 backdrop-blur-md border-b border-gray-200 dark:border-gray-700">
+      </nav>      {/* Mobile Navigation */}
+      <nav className="nav-sticky md:hidden fixed top-0 left-0 right-0 z-50">
         <div className="px-4 sm:px-6">
           <div className={`flex justify-between items-center h-16 ${isRTL ? 'flex-row-reverse' : ''}`}>            {/* Logo */}
             <div className="flex items-center">
@@ -106,12 +99,10 @@ export function Navigation({ currentPath }: NavigationProps) {
               <h1 className="text-lg font-bold text-gray-900 dark:text-white">
                 SocioRAG
               </h1>
-            </div>
-
-            {/* Mobile Menu Button */}
+            </div>            {/* Mobile Menu Button */}
             <button
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              className="p-2 rounded-md text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+              className="p-2 rounded-md text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-50 dark:hover:bg-gray-800 transition-soft hover-lift active-press focus-ring-enhanced"
               aria-label={t('navigation.menu', language)}
             >
               {isMobileMenuOpen ? (
@@ -131,25 +122,23 @@ export function Navigation({ currentPath }: NavigationProps) {
                 const Icon = item.icon;
                 const isActive = currentPageId === item.id;
                 
-                return (
-                  <button
+                return (                  <button
                     key={item.id}
                     onClick={() => handleNavigation(item.path)}
-                    className={`w-full flex items-center space-x-3 rtl:space-x-reverse px-3 py-3 rounded-md text-sm font-medium transition-colors ${
+                    className={`w-full flex items-center space-x-3 rtl:space-x-reverse px-3 py-3 rounded-md text-sm font-medium transition-soft hover-lift active-press focus-ring-enhanced ${
                       isActive
                         ? 'text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/30'
                         : 'text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-50 dark:hover:bg-gray-800'
-                    } ${isRTL ? 'text-right' : 'text-left'}`}                  >
+                    } ${isRTL ? 'text-right' : 'text-left'}`}>
                     <Icon className="w-5 h-5" />
                     <span>{t(`navigation.${item.id}`, language)}</span>
                   </button>
                 );
               })}
-              
-              {/* Theme Toggle for Mobile */}
+                {/* Theme Toggle for Mobile */}
               <button
                 onClick={toggleTheme}
-                className={`w-full flex items-center space-x-3 rtl:space-x-reverse px-3 py-3 rounded-md text-sm font-medium text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors ${
+                className={`w-full flex items-center space-x-3 rtl:space-x-reverse px-3 py-3 rounded-md text-sm font-medium text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-50 dark:hover:bg-gray-800 transition-soft hover-lift active-press focus-ring-enhanced ${
                   isRTL ? 'text-right' : 'text-left'
                 }`}
               >

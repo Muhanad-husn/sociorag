@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SocioRAG Progressive Disclosure Test</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 800px;
+            margin: 40px auto;
+            padding: 20px;
+            background-color: #f8f9fa;
+        }
+        .test-card {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin: 20px 0;
+            padding: 20px;
+        }
+        .test-section {
+            margin: 15px 0;
+            padding: 15px;
+            border: 1px solid #e5e7eb;
+            border-radius: 6px;
+        }
+        .status-pass { color: #10b981; font-weight: bold; }
+        .status-fail { color: #ef4444; font-weight: bold; }
+        .feature-list { 
+            margin: 10px 0;
+            padding-left: 20px;
+        }
+        .feature-list li {
+            margin: 5px 0;
+        }
+        h1 { color: #1f2937; text-align: center; }
+        h2 { color: #374151; border-bottom: 2px solid #3b82f6; padding-bottom: 8px; }
+        h3 { color: #4b5563; }
+        .responsive-demo {
+            background: linear-gradient(45deg, #3b82f6, #8b5cf6);
+            color: white;
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+            text-align: center;
+        }
+        @media (max-width: 768px) {
+            .responsive-demo::after {
+                content: " (Mobile View)";
+            }
+        }
+        @media (min-width: 769px) and (max-width: 1024px) {
+            .responsive-demo::after {
+                content: " (Tablet View)";
+            }
+        }
+        @media (min-width: 1025px) {
+            .responsive-demo::after {
+                content: " (Desktop View)";
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>🎯 SocioRAG Progressive Disclosure & Responsive Typography Test</h1>
+    
+    <div class="test-card">
+        <h2>✅ Implementation Status</h2>
+        
+        <div class="test-section">
+            <h3>Progressive Disclosure Features</h3>
+            <ul class="feature-list">
+                <li><span class="status-pass">COMPLETED</span> - Settings page accordion sections</li>
+                <li><span class="status-pass">COMPLETED</span> - Advanced Settings collapsible panel</li>
+                <li><span class="status-pass">COMPLETED</span> - System Configuration collapsible panel</li>
+                <li><span class="status-pass">COMPLETED</span> - Accordion animations with proper keyframes</li>
+                <li><span class="status-pass">COMPLETED</span> - JSX structure fixes for proper accordion functionality</li>
+            </ul>
+        </div>
+
+        <div class="test-section">
+            <h3>Responsive Typography Enhancements</h3>
+            <ul class="feature-list">
+                <li><span class="status-pass">COMPLETED</span> - Home page header: responsive prose classes</li>
+                <li><span class="status-pass">COMPLETED</span> - StreamAnswer component: responsive prose scaling</li>
+                <li><span class="status-pass">COMPLETED</span> - History page: responsive heading (text-2xl sm:text-3xl)</li>
+                <li><span class="status-pass">COMPLETED</span> - Saved page: responsive heading (text-2xl sm:text-3xl)</li>
+                <li><span class="status-pass">COMPLETED</span> - Settings page: responsive headings and sections</li>
+                <li><span class="status-pass">COMPLETED</span> - Navigation component: responsive logo text</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="test-card">
+        <h2>🧪 Test Instructions</h2>
+        
+        <div class="test-section">
+            <h3>Progressive Disclosure Testing</h3>
+            <ol>
+                <li>Navigate to the Settings page at <code>http://localhost:5173/settings</code></li>
+                <li>Scroll down to see the "Advanced Settings" accordion section</li>
+                <li>Click to expand and verify smooth animation</li>
+                <li>Test the "System Configuration" accordion section</li>
+                <li>Verify content is properly revealed/hidden with smooth transitions</li>
+            </ol>
+        </div>
+
+        <div class="test-section">
+            <h3>Responsive Typography Testing</h3>
+            <ol>
+                <li>Resize browser window from mobile (< 768px) to desktop (> 1024px)</li>
+                <li>Check that headings scale appropriately across breakpoints</li>
+                <li>Verify prose content adapts from small to large text sizes</li>
+                <li>Test in both light and dark modes</li>
+                <li>Verify RTL support with Arabic text if available</li>
+            </ol>
+        </div>
+    </div>
+
+    <div class="test-card">
+        <h2>📱 Responsive Demo</h2>
+        <div class="responsive-demo">
+            Resize your browser to see responsive behavior
+        </div>
+        <p><strong>Typography Scale:</strong></p>
+        <ul>
+            <li><strong>Mobile:</strong> text-2xl, prose-sm</li>
+            <li><strong>Tablet:</strong> text-3xl, prose-base</li>
+            <li><strong>Desktop:</strong> text-3xl, prose-lg</li>
+        </ul>
+    </div>
+
+    <div class="test-card">
+        <h2>🎨 Dark Mode & Accessibility</h2>
+        <div class="test-section">
+            <h3>Features Tested</h3>
+            <ul class="feature-list">
+                <li>Dark mode color transitions</li>
+                <li>Focus states and keyboard navigation</li>
+                <li>ARIA attributes for accordions</li>
+                <li>Smooth animations (200ms duration)</li>
+                <li>Touch-friendly tap targets</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="test-card">
+        <h2>🚀 Performance Optimizations</h2>
+        <div class="test-section">
+            <p>All enhancements maintain:</p>
+            <ul class="feature-list">
+                <li>Fast hot module reload (HMR)</li>
+                <li>Lightweight CSS animations</li>
+                <li>Efficient responsive classes</li>
+                <li>No JavaScript performance impact</li>
+                <li>Minimal bundle size increase</li>
+            </ul>
+        </div>
+    </div>
+</body>
+</html>

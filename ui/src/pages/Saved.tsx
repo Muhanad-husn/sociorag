@@ -71,13 +71,39 @@ export function Saved() {
     return sortOrder === 'desc' ? <ChevronDown className="h-4 w-4" /> : <ChevronUp className="h-4 w-4" />;
   };
 
-  const totalSize = savedFiles.reduce((sum, file) => sum + file.size, 0);
-  if (loading) {
+  const totalSize = savedFiles.reduce((sum, file) => sum + file.size, 0);  if (loading) {
     return (
       <div className="container mx-auto px-4 py-8 max-w-7xl">
-        <div className="flex items-center justify-center py-12">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-          <span className="ml-2">{t('common.loading', language)}</span>
+        <div className="space-y-6">          {/* Header skeleton */}
+          <div className="flex items-center justify-between">
+            <div className="skeleton h-8 w-48 skeleton-shimmer"></div>
+            <div className="skeleton h-9 w-32 skeleton-shimmer"></div>
+          </div>
+          
+          {/* Stats skeleton */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {Array.from({ length: 3 }).map((_, i) => (
+              <Card key={i} className="p-4">
+                <div className="skeleton h-4 w-20 mb-2 skeleton-shimmer"></div>
+                <div className="skeleton h-6 w-16 skeleton-shimmer"></div>
+              </Card>
+            ))}
+          </div>
+          
+          {/* Table skeleton */}
+          <Card className="overflow-hidden">
+            <div className="p-6 space-y-4">
+              {Array.from({ length: 8 }).map((_, i) => (
+                <div key={i} className="flex items-center space-x-4">
+                  <div className="skeleton h-4 w-1/3 skeleton-shimmer"></div>
+                  <div className="skeleton h-4 w-20 skeleton-shimmer"></div>
+                  <div className="skeleton h-4 w-24 skeleton-shimmer"></div>
+                  <div className="skeleton h-4 w-24 skeleton-shimmer"></div>
+                  <div className="skeleton h-8 w-16 skeleton-shimmer"></div>
+                </div>
+              ))}
+            </div>
+          </Card>
         </div>
       </div>
     );
@@ -86,37 +112,34 @@ export function Saved() {
   return (
     <div className="container mx-auto px-4 py-8 max-w-7xl">
       <div className="space-y-6">
-        {/* Header */}
-        <div className="flex items-center justify-between">
+        {/* Header */}        <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold">{t('saved.title', language)}</h1>
+            <h1 className="text-2xl sm:text-3xl font-bold">{t('saved.title', language)}</h1>
             <p className="text-muted-foreground mt-1">
               {savedFiles.length} PDF files • {formatFileSize(totalSize)} total
             </p>
-          </div>
-          <button
+          </div>          <button
             onClick={loadSavedFiles}
-            className="btn-secondary"
+            className="btn-secondary hover-scale active-press focus-ring-enhanced"
           >
             {t('saved.refresh', language)}
           </button>
         </div>        {/* Files Table */}
         {savedFiles.length === 0 ? (
-          <Card className="p-12 text-center">
+          <Card className="p-12 text-center card-interactive">
             <File className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
             <h3 className="text-lg font-semibold mb-2">{t('saved.empty', language)}</h3>
             <p className="text-muted-foreground">
               {t('saved.emptyDesc', language)}
             </p>
           </Card>
-        ) : (
-          <Card className="overflow-hidden">
+        ) : (          <Card className="overflow-hidden card-interactive">
             <div className="overflow-x-auto">
               <table className="min-w-full divide-y divide-border">
                 <thead className="bg-muted/50">
                   <tr>
                     <th 
-                      className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider cursor-pointer hover:bg-muted/70 transition-colors"
+                      className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider cursor-pointer hover-lift transition-colors"
                       onClick={() => handleSort('filename')}
                     >
                       <div className="flex items-center space-x-1">
@@ -125,7 +148,7 @@ export function Saved() {
                       </div>
                     </th>
                     <th 
-                      className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider cursor-pointer hover:bg-muted/70 transition-colors"
+                      className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider cursor-pointer hover-lift transition-colors"
                       onClick={() => handleSort('size')}
                     >
                       <div className="flex items-center space-x-1">
@@ -134,7 +157,7 @@ export function Saved() {
                       </div>
                     </th>
                     <th 
-                      className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider cursor-pointer hover:bg-muted/70 transition-colors"
+                      className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider cursor-pointer hover-lift transition-colors"
                       onClick={() => handleSort('created_at')}
                     >
                       <div className="flex items-center space-x-1">
@@ -142,7 +165,7 @@ export function Saved() {
                         {getSortIcon('created_at')}
                       </div>
                     </th>                    <th 
-                      className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider cursor-pointer hover:bg-muted/70 transition-colors"
+                      className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider cursor-pointer hover-lift transition-colors"
                       onClick={() => handleSort('modified_at')}
                     >
                       <div className="flex items-center space-x-1">
@@ -151,11 +174,10 @@ export function Saved() {
                       </div>
                     </th>
                   </tr>
-                </thead>
-                <tbody className="bg-background divide-y divide-border">                  {savedFiles.map((file, index) => (
+                </thead>                <tbody className="bg-background divide-y divide-border">                  {savedFiles.map((file, index) => (
                     <tr 
                       key={index} 
-                      className="hover:bg-muted/30 transition-colors"
+                      className="hover-lift transition-colors"
                     >
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="flex items-center">
@@ -189,7 +211,7 @@ export function Saved() {
             </div>
           </Card>
         )}        {/* Info Card */}
-        <Card className="p-4 bg-accent/50">
+        <Card className="p-4 bg-accent/50 card-interactive">
           <h3 className="text-lg font-semibold mb-2">About Saved Files</h3>
           <ul className="space-y-1 text-sm text-muted-foreground">
             <li>• View all your saved PDF files in one organized list</li>

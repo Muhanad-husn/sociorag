@@ -70,10 +70,9 @@ export function StreamAnswer({ html, markdown, isComplete = false, error, pdfUrl
       setDownloading(false);
     }
   };
-
   if (error) {
     return (
-      <div className="card p-4 border-destructive">
+      <div className="card p-4 border-destructive animate-error">
         <div className="flex items-center space-x-2 text-destructive">
           <span className="font-medium">Error:</span>
           <span>{error}</span>
@@ -85,7 +84,6 @@ export function StreamAnswer({ html, markdown, isComplete = false, error, pdfUrl
   if (!markdown && !isLoading) {
     return null;
   }
-
   // Show loading skeleton when in loading state with no content yet
   if (isLoading && !markdown) {
     return (
@@ -95,11 +93,11 @@ export function StreamAnswer({ html, markdown, isComplete = false, error, pdfUrl
             <span className="text-sm font-medium">Answer</span>
           </div>
         </div>
-        <div className="p-4 animate-pulse space-y-2">
-          <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-3/4"></div>
-          <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-full"></div>
-          <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-5/6"></div>
-          <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-4/5"></div>
+        <div className="p-4 space-y-2">
+          <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-3/4 skeleton-shimmer"></div>
+          <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-full skeleton-shimmer"></div>
+          <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-5/6 skeleton-shimmer"></div>
+          <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-4/5 skeleton-shimmer"></div>
         </div>
       </div>
     );  }
@@ -109,13 +107,12 @@ export function StreamAnswer({ html, markdown, isComplete = false, error, pdfUrl
   const renderedContent = html || content;
 
   return (
-    <div className="space-y-4">
-      {/* Answer container */}
-      <div className="card">        <div className="flex items-center justify-between p-3 border-b">
+    <div className="space-y-4">      {/* Answer container */}
+      <div className="card card-interactive">        <div className="flex items-center justify-between p-3 border-b">
           <div className="flex items-center space-x-2">
             <span className="text-sm font-medium">Answer</span>
             {language === 'ar' && (
-              <span className="text-xs bg-accent text-accent-foreground px-2 py-1 rounded">
+              <span className="text-xs bg-accent text-accent-foreground px-2 py-1 rounded status-indicator">
                 العربية
               </span>
             )}
@@ -126,13 +123,13 @@ export function StreamAnswer({ html, markdown, isComplete = false, error, pdfUrl
                 onClick={handleDownloadPdf}
                 disabled={downloading || isLoading}
                 className={clsx(
-                  "btn-secondary h-8 px-3 text-xs",
+                  "btn-secondary h-8 px-3 text-xs hover-scale active-press focus-ring-enhanced",
                   (downloading || isLoading) && "opacity-50 cursor-not-allowed"
                 )}
                 title={t('common.downloadPdf', appLanguage)}
               >
                 {downloading ? (
-                  <div className="animate-spin rounded-full h-3 w-3 border-b border-gray-600 mr-1" />
+                  <div className="pulse-enhanced rounded-full h-3 w-3 border-b border-gray-600 mr-1" />
                 ) : (
                   <Download className="h-3 w-3 mr-1" />
                 )}
@@ -143,13 +140,13 @@ export function StreamAnswer({ html, markdown, isComplete = false, error, pdfUrl
               onClick={handleCopy}
               disabled={isLoading}
               className={clsx(
-                "btn-secondary h-8 w-8 p-0",
+                "btn-secondary h-8 w-8 p-0 hover-scale active-press focus-ring-enhanced",
                 isLoading && "opacity-50 cursor-not-allowed"
               )}
               title="Copy to clipboard"
             >
               {copied ? (
-                <Check className="h-4 w-4 text-green-600" />
+                <Check className="h-4 w-4 text-green-600 animate-success" />
               ) : (
                 <Copy className="h-4 w-4" />
               )}
@@ -157,10 +154,9 @@ export function StreamAnswer({ html, markdown, isComplete = false, error, pdfUrl
           </div>
         </div>
           <div
-          ref={containerRef}
-          className={clsx(
+          ref={containerRef}          className={clsx(
             'p-4 max-h-96 overflow-y-auto',
-            'prose prose-sm max-w-none',
+            'prose prose-sm sm:prose-base lg:prose-lg max-w-none',
             'dark:prose-invert',
             direction === 'rtl' && 'text-right prose-rtl',
             language === 'ar' && 'prose-rtl'
@@ -191,9 +187,8 @@ export function StreamAnswer({ html, markdown, isComplete = false, error, pdfUrl
         </span>        <div className="flex items-center space-x-4">
           <span>
             {content.length} characters
-          </span>
-          {pdfUrl && isComplete && (
-            <span className="text-green-600">
+          </span>          {pdfUrl && isComplete && (
+            <span className="text-green-600 status-indicator">
               {t('common.pdfReady', appLanguage)}
             </span>
           )}

@@ -84,13 +84,31 @@ export function History() {
       return timestamp;
     }
   };
-
   if (loading) {
     return (
       <div className="container mx-auto px-4 py-8 max-w-4xl">
-        <div className="flex items-center justify-center py-12">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-          <span className="ml-2">{t('common.loading', language)}</span>
+        <div className="space-y-6">
+          {/* Header skeleton */}
+          <div className="flex items-center justify-between">
+            <div className="skeleton h-8 w-32"></div>
+            <div className="skeleton h-9 w-24"></div>
+          </div>
+          
+          {/* History items skeleton */}
+          <div className="space-y-4">
+            {Array.from({ length: 5 }).map((_, i) => (
+              <Card key={i} className="p-4">
+                <div className="space-y-3">
+                  <div className="skeleton h-6 w-3/4"></div>
+                  <div className="flex items-center space-x-4">
+                    <div className="skeleton h-4 w-24"></div>
+                    <div className="skeleton h-5 w-16"></div>
+                  </div>
+                  <div className="skeleton h-16 w-full"></div>
+                </div>
+              </Card>
+            ))}
+          </div>
         </div>
       </div>
     );
@@ -99,16 +117,14 @@ export function History() {
   return (
     <div className="container mx-auto px-4 py-8 max-w-4xl">
       <div className="space-y-6">
-        {/* Header */}
-        <div className="flex items-center justify-between">
-          <h1 className="text-3xl font-bold">{t('history.title', language)}</h1>
-          <button
+        {/* Header */}        <div className="flex items-center justify-between">
+          <h1 className="text-2xl sm:text-3xl font-bold">{t('history.title', language)}</h1>          <button
             onClick={loadHistory}
-            className="btn-secondary"
+            className="btn-secondary hover-scale active-press focus-ring-enhanced"
           >
             {t('history.refresh', language)}
           </button>
-        </div>        {/* History List */}
+        </div>{/* History List */}
         {historyItems.length === 0 ? (
           <Card className="p-12 text-center">
             <MessageSquare className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
@@ -118,9 +134,8 @@ export function History() {
             </p>
           </Card>
         ) : (
-          <div className="space-y-4">
-            {historyItems.map((item, index) => (
-              <Card key={item.id || index} className="p-4 hover:shadow-md transition-shadow">
+          <div className="space-y-4">            {historyItems.map((item, index) => (
+              <Card key={item.id || index} className="p-4 card-interactive">
                 <div className="space-y-3">
                   {/* Query */}
                   <div className="flex items-start justify-between">
@@ -139,21 +154,18 @@ export function History() {
                     {/* Actions */}
                     <div className="flex items-center space-x-2">                      <button
                         onClick={() => handleCopyQuery(item.query)}
-                        className="btn-primary h-8 px-3 text-xs"
+                        className="btn-primary h-8 px-3 text-xs hover-scale active-press focus-ring-enhanced"
                         title={t('history.copyQuery', language)}
                       >
                         <Copy className="h-3 w-3 mr-1" />
                         {t('history.copyQuery', language)}
-                      </button>
-                      <button
+                      </button>                      <button
                         onClick={() => handleDeleteRecord(item)}
-                        className="btn-destructive h-8 w-8 p-0"
+                        className="btn-destructive h-8 w-8 p-0 hover-scale active-press focus-ring-enhanced"
                         title={t('history.delete', language)}
                         disabled={deletingId === item.id}
-                      >
-                        {deletingId === item.id ? (
-                          <div className="animate-spin h-4 w-4 border-2 border-t-transparent rounded-full"></div>
-                        ) : (
+                      >                        {deletingId === item.id ? (
+                          <div className="animate-spin h-4 w-4 border-2 border-t-transparent rounded-full pulse-enhanced"></div>) : (
                           <Trash2 className="h-3 w-3" />
                         )}
                       </button>
