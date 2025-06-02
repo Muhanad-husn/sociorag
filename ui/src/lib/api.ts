@@ -2,6 +2,11 @@ import axios from 'axios';
 
 const BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000';
 
+// Export the base URL for use by other modules
+export function getApiUrl(): string {
+  return BASE_URL;
+}
+
 export interface UploadResponse {
   success: boolean;
   message: string;

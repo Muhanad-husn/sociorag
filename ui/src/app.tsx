@@ -1,4 +1,4 @@
-import { useState } from 'preact/hooks';
+import { useState, useEffect } from 'preact/hooks';
 import { Router, Route } from 'preact-router';
 import { Toaster } from 'sonner';
 import { useAppStore } from './hooks/useLocalState';
@@ -8,10 +8,16 @@ import { Saved } from './pages/Saved';
 import { Settings } from './pages/Settings';
 import { Navigation } from './components/Navigation';
 import { getDirection } from './lib/i18n';
+import { setupShutdownTrigger } from './lib/shutdown';
 
 export function App() {
   const { theme, language } = useAppStore();
   const [currentPath, setCurrentPath] = useState('/');
+
+  // Set up shutdown trigger when app initializes
+  useEffect(() => {
+    setupShutdownTrigger();
+  }, []);
 
   const handleRoute = (e: any) => {
     setCurrentPath(e.url);

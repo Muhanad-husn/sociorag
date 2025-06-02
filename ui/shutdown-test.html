@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SocioRAG Shutdown Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+        }
+        .success {
+            background-color: #d4edda;
+            border-color: #c3e6cb;
+            color: #155724;
+        }
+        .warning {
+            background-color: #fff3cd;
+            border-color: #ffeaa7;
+            color: #856404;
+        }
+        .error {
+            background-color: #f8d7da;
+            border-color: #f5c6cb;
+            color: #721c24;
+        }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        button.danger {
+            background: #dc3545;
+        }
+        button.danger:hover {
+            background: #c82333;
+        }
+        .log {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            padding: 10px;
+            font-family: monospace;
+            font-size: 12px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+    </style>
+</head>
+<body>
+    <h1>🛑 SocioRAG Shutdown Test Page</h1>
+    
+    <div class="test-section success">
+        <h2>✅ Implementation Status</h2>
+        <ul>
+            <li><strong>Backend Shutdown Endpoint:</strong> ✅ Implemented at <code>/api/admin/shutdown</code></li>
+            <li><strong>Frontend Shutdown Module:</strong> ✅ Implemented in <code>src/lib/shutdown.ts</code></li>
+            <li><strong>Browser Event Listeners:</strong> ✅ Integrated in main app</li>
+            <li><strong>Settings Page Button:</strong> ✅ Added to Danger Zone</li>
+        </ul>
+    </div>
+
+    <div class="test-section warning">
+        <h2>🧪 Test Instructions</h2>
+        <ol>
+            <li><strong>Manual Shutdown Test:</strong> Click the button below to test manual shutdown</li>
+            <li><strong>Browser Event Test:</strong> Close this tab/window to test automatic shutdown</li>
+            <li><strong>Settings Page Test:</strong> Navigate to <a href="/settings" target="_blank">Settings</a> and use the shutdown button in Danger Zone</li>
+        </ol>
+    </div>
+
+    <div class="test-section">
+        <h2>🎮 Manual Test Controls</h2>
+        
+        <button onclick="testBackendHealth()">Test Backend Health</button>
+        <button onclick="testManualShutdown()" class="danger">Test Manual Shutdown</button>
+        <button onclick="clearLog()">Clear Log</button>
+        
+        <h3>Test Log:</h3>
+        <div id="log" class="log"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>📋 Expected Behavior</h2>
+        <ul>
+            <li><strong>Manual Shutdown:</strong> Should display success message and stop both servers</li>
+            <li><strong>Browser Close:</strong> Should automatically trigger shutdown when tab/window closes</li>
+            <li><strong>Settings Button:</strong> Should show confirmation dialog and perform shutdown</li>
+            <li><strong>PowerShell Script:</strong> Should execute <code>stop_production.ps1</code> to stop processes</li>
+        </ul>
+    </div>
+
+    <script>
+        // Import the shutdown functions (this would normally be bundled)
+        async function testBackendHealth() {
+            log('Testing backend health...');
+            try {
+                const response = await fetch('http://127.0.0.1:8000/api/admin/health');
+                const data = await response.json();
+                log('✅ Backend health check successful');
+                log(`Status: ${data.status}, Uptime: ${data.uptime}s`);
+            } catch (error) {
+                log('❌ Backend health check failed: ' + error.message);
+            }
+        }
+
+        async function testManualShutdown() {
+            if (!confirm('This will shutdown both backend and frontend servers. Continue?')) {
+                return;
+            }
+            
+            log('🛑 Initiating manual shutdown...');
+            try {
+                const response = await fetch('http://127.0.0.1:8000/api/admin/shutdown', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ source: 'manual_test' }),
+                });
+
+                if (response.ok) {
+                    const result = await response.json();
+                    log('✅ Shutdown initiated successfully');
+                    log(`Message: ${result.message}`);
+                    log('🔄 Servers should stop in a few seconds...');
+                } else {
+                    log('❌ Shutdown failed: ' + response.statusText);
+                }
+            } catch (error) {
+                log('❌ Shutdown request failed: ' + error.message);
+            }
+        }
+
+        function log(message) {
+            const logElement = document.getElementById('log');
+            const timestamp = new Date().toLocaleTimeString();
+            logElement.innerHTML += `[${timestamp}] ${message}\n`;
+            logElement.scrollTop = logElement.scrollHeight;
+        }
+
+        function clearLog() {
+            document.getElementById('log').innerHTML = '';
+        }
+
+        // Set up shutdown trigger when this page loads (simulating the app behavior)
+        window.addEventListener('beforeunload', (event) => {
+            // This simulates the actual shutdown trigger
+            log('🔄 Browser unload detected - would trigger shutdown');
+            
+            // In the real app, this would call the shutdown endpoint
+            // navigator.sendBeacon('http://127.0.0.1:8000/api/admin/shutdown', 
+            //   JSON.stringify({ source: 'browser_close' }));
+        });
+
+        // Initial log entry
+        log('🚀 Shutdown test page loaded');
+        log('✅ Browser event listeners set up');
+    </script>
+</body>
+</html>

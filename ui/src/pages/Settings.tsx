@@ -5,9 +5,10 @@ import type { SystemConfig, HealthStatus, ApiKeyUpdate } from '../lib/api';
 import { t } from '../lib/i18n';
 import { Card } from '../components/ui/Card';
 import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from '../components/ui/Accordion';
-import { Moon, Sun, Settings as SettingsIcon, AlertTriangle, Save, Shield, CheckCircle, XCircle, RefreshCw } from 'lucide-preact';
+import { Moon, Sun, Settings as SettingsIcon, AlertTriangle, Save, Shield, CheckCircle, XCircle, RefreshCw, Power } from 'lucide-preact';
 import { toast } from 'sonner';
 import clsx from 'clsx';
+import { manualShutdown } from '../lib/shutdown';
 
 export function Settings() {
   const { isDark, toggleTheme, settings, updateSettings, language, setLanguage } = useAppStore();
@@ -25,6 +26,10 @@ export function Settings() {
   const [editingApiKey, setEditingApiKey] = useState(false);
   const [newApiKey, setNewApiKey] = useState('');
   const [savingApiKey, setSavingApiKey] = useState(false);
+  
+  // Shutdown state
+  const [isShuttingDown, setIsShuttingDown] = useState(false);
+  const [showShutdownConfirm, setShowShutdownConfirm] = useState(false);
   // Load admin data on component mount
   useEffect(() => {
     loadAdminData();
@@ -178,11 +183,29 @@ export function Settings() {
       setSavingApiKey(false);
     }
   };
-
   const handleCancelApiKeyEdit = () => {
     setEditingApiKey(false);
     setNewApiKey('');
   };
+
+  const handleShutdown = async () => {
+    setIsShuttingDown(true);
+    try {
+      const success = await manualShutdown();
+      if (success) {
+        toast.success('System shutdown initiated - both servers will stop shortly');
+        setShowShutdownConfirm(false);
+      } else {
+        toast.error('Failed to initiate system shutdown');
+      }
+    } catch (error) {
+      console.error('Shutdown failed:', error);
+      toast.error('Failed to initiate system shutdown');
+    } finally {
+      setIsShuttingDown(false);
+    }
+  };
+
   const hasUnsavedChanges = JSON.stringify(settings) !== JSON.stringify(tempSettings);
   
   // Helper function to check if model selections have changed
@@ -806,44 +829,97 @@ export function Settings() {
         <Card className="p-6 border-destructive">
           <h2 className="text-lg sm:text-xl font-semibold mb-4 text-destructive">Danger Zone</h2>
           
-          <div className="space-y-4">
-            <div className="space-y-2">              <h3 className="font-medium">{t('settings.reset', language)}</h3>
-              <p className="text-sm text-muted-foreground">
-                {t('settings.resetConfirm', language)}
-              </p>
-            </div>
+          <div className="space-y-6">
+            {/* Reset Corpus Section */}
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <h3 className="font-medium">{t('settings.reset', language)}</h3>
+                <p className="text-sm text-muted-foreground">
+                  {t('settings.resetConfirm', language)}
+                </p>
+              </div>
 
-            {showResetConfirm ? (
-              <div className="flex items-center space-x-3">
+              {showResetConfirm ? (
+                <div className="flex items-center space-x-3">
+                  <button
+                    onClick={handleResetCorpus}
+                    disabled={isResetting}
+                    className="btn-destructive"
+                  >
+                    {isResetting ? (
+                      <>
+                        <div className="animate-spin rounded-full h-4 w-4 border-b border-white mr-2" />
+                        Resetting...
+                      </>
+                    ) : (
+                      'Confirm Reset'
+                    )}
+                  </button>
+                  <button
+                    onClick={() => setShowResetConfirm(false)}
+                    className="btn-secondary"
+                  >
+                    {t('common.cancel', language)}
+                  </button>
+                </div>
+              ) : (
                 <button
-                  onClick={handleResetCorpus}
-                  disabled={isResetting}
+                  onClick={() => setShowResetConfirm(true)}
                   className="btn-destructive"
                 >
-                  {isResetting ? (
-                    <>
-                      <div className="animate-spin rounded-full h-4 w-4 border-b border-white mr-2" />
-                      Resetting...
-                    </>
-                  ) : (
-                    'Confirm Reset'
-                  )}
-                </button>                <button
-                  onClick={() => setShowResetConfirm(false)}
-                  className="btn-secondary"
-                >
-                  {t('common.cancel', language)}
+                  {t('settings.reset', language)}
                 </button>
+              )}
+            </div>
+
+            {/* Shutdown Application Section */}
+            <div className="space-y-4 pt-4 border-t border-destructive/20">
+              <div className="space-y-2">
+                <h3 className="font-medium">Shutdown Application</h3>
+                <p className="text-sm text-muted-foreground">
+                  Stop both backend and frontend servers. This will close the entire application.
+                </p>
               </div>
-            ) : (              <button
-                onClick={() => setShowResetConfirm(true)}
-                className="btn-destructive"
-              >
-                {t('settings.reset', language)}
-              </button>
-            )}
+
+              {showShutdownConfirm ? (
+                <div className="flex items-center space-x-3">
+                  <button
+                    onClick={handleShutdown}
+                    disabled={isShuttingDown}
+                    className="btn-destructive"
+                  >
+                    {isShuttingDown ? (
+                      <>
+                        <div className="animate-spin rounded-full h-4 w-4 border-b border-white mr-2" />
+                        Shutting Down...
+                      </>
+                    ) : (
+                      <>
+                        <Power className="h-4 w-4 mr-2" />
+                        Confirm Shutdown
+                      </>
+                    )}
+                  </button>
+                  <button
+                    onClick={() => setShowShutdownConfirm(false)}
+                    disabled={isShuttingDown}
+                    className="btn-secondary"
+                  >
+                    {t('common.cancel', language)}
+                  </button>
+                </div>
+              ) : (
+                <button
+                  onClick={() => setShowShutdownConfirm(true)}
+                  className="btn-destructive"
+                >
+                  <Power className="h-4 w-4 mr-2" />
+                  Shutdown Application
+                </button>
+              )}
+            </div>
           </div>
-        </Card>        {/* Info */}
+        </Card>{/* Info */}
         <Card className="p-4 bg-accent/50 card-interactive">
           <h3 className="font-semibold mb-2">About Settings</h3>
           <ul className="space-y-1 text-sm text-muted-foreground">

@@ -599,6 +599,64 @@ async def restart_system() -> StatusResponse:
         raise HTTPException(status_code=500, detail=f"Restart failed: {str(e)}")
 
 
+@router.post("/shutdown")
+async def shutdown_system() -> StatusResponse:
+    """Shutdown the entire SocioRAG application.
+    
+    This endpoint triggers the execution of stop_production.ps1 to cleanly
+    shutdown both the backend and frontend services.
+    """
+    try:
+        import os
+        import subprocess
+        import platform
+        
+        _logger.warning("System shutdown requested via API")
+        
+        # Determine the script path relative to the project root
+        current_dir = os.path.dirname(os.path.abspath(__file__))
+        project_root = os.path.join(current_dir, "..", "..", "..")
+        stop_script = os.path.join(project_root, "stop_production.ps1")
+        
+        if platform.system() == "Windows":
+            # Execute the PowerShell script asynchronously
+            try:
+                # Use subprocess.Popen to run the script without waiting
+                subprocess.Popen([
+                    "powershell.exe", 
+                    "-ExecutionPolicy", "Bypass",
+                    "-File", stop_script
+                ], cwd=project_root)
+                
+                _logger.info("Shutdown script initiated successfully")
+                
+                return StatusResponse(
+                    success=True,
+                    message="Shutdown initiated - both backend and frontend will stop shortly",
+                    data={"script_executed": stop_script}
+                )
+                
+            except Exception as script_error:
+                _logger.error(f"Failed to execute shutdown script: {str(script_error)}")
+                return StatusResponse(
+                    success=False,
+                    message="Failed to execute shutdown script",
+                    data={"error": str(script_error)}
+                )
+        else:
+            # For non-Windows systems, provide a graceful message
+            _logger.warning("Shutdown endpoint called on non-Windows system")
+            return StatusResponse(
+                success=False,
+                message="Shutdown endpoint is currently only supported on Windows systems",
+                data={"platform": platform.system()}
+            )
+        
+    except Exception as e:
+        _logger.error(f"Failed to shutdown system: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Shutdown failed: {str(e)}")
+    
+
 @router.get("/llm-settings")
 async def get_llm_settings() -> Dict[str, Any]:
     """Get current LLM settings.

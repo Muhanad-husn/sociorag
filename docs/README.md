@@ -21,6 +21,7 @@
 
 - [**Production Deployment Guide**](./production_deployment_guide.md) - Deployment, runtime, and maintenance
 - [**Developer Guide**](./guides/developer_guide.md) - All development guides consolidated
+- [**Shutdown Implementation Guide**](./guides/shutdown_implementation_guide.md) - Browser shutdown trigger implementation
 - [**Logging Documentation**](./logging_system_documentation.md) - Logging configuration
 
 ### Reports & History
