@@ -109,6 +109,8 @@ Copy-Item config.yaml.example config.yaml
 
 # 4. Start application
 .\start_production.ps1
+# Or start with monitoring dashboard
+# .\start_production.ps1 -EnableMonitoring
 ```
 
 ### Access Points
@@ -213,6 +215,9 @@ huggingface_token: hf_your_token             # HuggingFace token for translation
 ```powershell
 # Start in production mode
 .\start_production.ps1
+
+# Start with monitoring dashboard
+.\start_production.ps1 -EnableMonitoring
 
 # Stop the application
 .\stop_production.ps1
