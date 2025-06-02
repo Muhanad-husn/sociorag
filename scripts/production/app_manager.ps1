@@ -23,7 +23,7 @@ $CONFIG = @{
     BackendUrl = "http://127.0.0.1:8000"
     FrontendUrl = "http://localhost:5173"
     PidFile = "logs\sociorag.pid"
-    LogFile = "logs\app_manager_$(Get-Date -Format 'yyyyMMdd_HHmmss').log"
+    LogFile = "logs\app_manager.log"
 }
 
 # Ensure logs directory exists
