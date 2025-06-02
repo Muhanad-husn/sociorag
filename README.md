@@ -29,6 +29,39 @@ See `.env.example` for the full list.
 
 SocioRAG is a production-ready system for analyzing social dynamics in texts through advanced NLP, entity extraction, vector search, and answer generation capabilities. The system follows a modular architecture with distinct phases for data ingestion, storage, retrieval, and answer generation.
 
+## 🐳 Docker Deployment
+
+```bash
+# Quick Docker setup
+docker-compose up -d
+
+# Or build from source
+docker build -t sociorag .
+docker run -p 8000:8000 --env-file .env sociorag
+```
+
+📖 **Complete guides**: [DEPLOYMENT.md](DEPLOYMENT.md) | [Docker Compose](docker-compose.yml)
+
+## 🚀 Quick Start
+
+```bash
+# Clone the repository
+git clone https://github.com/your-username/sociorag.git
+cd sociorag
+
+# Set up environment
+cp .env.example .env
+cp config.yaml.example config.yaml
+
+# Install dependencies and run
+pip install -r requirements.txt
+python -m backend.app.main
+```
+
+Access the application at `http://localhost:8000`
+
+📖 **Full deployment guide**: [DEPLOYMENT.md](DEPLOYMENT.md)
+
 ## ✨ Feature Overview
 
 | Feature                | Description                                  | Status   |
@@ -83,7 +116,7 @@ Recommended cleanup steps: [docs/production_deployment_guide.md](docs/production
 - [Production Deployment Guide](docs/production_deployment_guide.md) – Deployment & runtime
 - [Project Status Dashboard](docs/project_status.md) – Version, health, and changelog
 
-## 🚀 Quick Start
+## ⚡ Getting Started
 
 ### One-Command Setup
 
