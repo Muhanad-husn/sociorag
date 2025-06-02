@@ -146,7 +146,7 @@ Copy-Item config.yaml.example config.yaml
 
 #### Minimum Requirements
 
-- **Operating System**: Windows 10/11, macOS 10.15+, or Linux (Ubuntu 18.04+)
+- **Operating System**: Windows 11 (tested and verified), Windows 10, macOS 10.15+, or Linux (Ubuntu 18.04+) - *We welcome testing and feedback on other operating systems*
 - **Python**: 3.12.9 (required for compatibility)
 - **Memory**: 4GB RAM minimum, 8GB recommended
 - **Storage**: 2GB free space for dependencies and models
