@@ -1,8 +1,15 @@
 # SocioRAG Production Start - Convenience Wrapper
 # This script redirects to the organized script location
 
-Write-Host "🚀 Starting SocioRAG Production..." -ForegroundColor Green
-Write-Host "Redirecting to: scripts\production\start_production.ps1" -ForegroundColor Yellow
+param(
+    [switch]$EnableMonitoring
+)
 
-# Execute the actual script
-& ".\scripts\production\start_production.ps1"
+Write-Host "🚀 Starting SocioRAG Production..." -ForegroundColor Green
+
+if ($EnableMonitoring) {
+    Write-Host "Starting with monitoring enabled" -ForegroundColor Cyan
+    & ".\scripts\production\app_manager.ps1" -Action start -WaitForReady -TimeoutSeconds 120 -EnableMonitoring
+} else {
+    & ".\scripts\production\app_manager.ps1" -Action start -WaitForReady -TimeoutSeconds 120
+}

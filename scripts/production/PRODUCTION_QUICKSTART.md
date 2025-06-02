@@ -5,19 +5,19 @@
 ### 1. Quick Production Launch
 ```powershell
 # One-command production startup with monitoring
-.\app_manager.ps1 -Action start -EnableMonitoring
+.\scripts\production\app_manager.ps1 -Action start -EnableMonitoring
 ```
 
 ### 2. Real-time Performance Dashboard
 ```powershell
 # Launch monitoring dashboard (separate window)
-.\monitoring_dashboard.ps1 -RefreshInterval 10 -DetailedMode
+.\scripts\testing\monitoring_dashboard.ps1 -RefreshInterval 10 -DetailedMode
 ```
 
 ### 3. Performance Monitoring
 ```powershell
 # Start continuous performance tracking
-.\performance_monitor.ps1 -MonitorDurationMinutes 60 -RefreshIntervalSeconds 30
+.\scripts\testing\performance_monitor.ps1 -MonitorDurationMinutes 60 -RefreshIntervalSeconds 30
 ```
 
 ---
@@ -27,7 +27,7 @@
 ### Check Application Status
 ```powershell
 # Quick health check
-.\app_manager.ps1 -Action status
+.\scripts\production\app_manager.ps1 -Action status
 
 # Detailed system status
 Get-Process -Name "python" | Where-Object { $_.CommandLine -like "*uvicorn*" }
@@ -36,19 +36,19 @@ Get-Process -Name "python" | Where-Object { $_.CommandLine -like "*uvicorn*" }
 ### Monitor Performance Metrics
 ```powershell
 # Standard monitoring (15 minutes)
-.\performance_monitor.ps1
+.\scripts\testing\performance_monitor.ps1
 
 # Extended monitoring (1 hour with detailed metrics)
-.\performance_monitor.ps1 -MonitorDurationMinutes 60 -RefreshIntervalSeconds 15
+.\scripts\testing\performance_monitor.ps1 -MonitorDurationMinutes 60 -RefreshIntervalSeconds 15
 
 # High-frequency monitoring for troubleshooting
-.\performance_monitor.ps1 -MonitorDurationMinutes 30 -RefreshIntervalSeconds 5
+.\scripts\testing\performance_monitor.ps1 -MonitorDurationMinutes 30 -RefreshIntervalSeconds 5
 ```
 
 ### Load Testing for Production Validation
 ```powershell
 # Light production load test
-.\load_test.ps1 -ConcurrentUsers 2 -TestDurationMinutes 5
+.\scripts\testing\load_test.ps1 -ConcurrentUsers 2 -TestDurationMinutes 5
 
 # Standard production load test
 .\load_test.ps1 -ConcurrentUsers 3 -TestDurationMinutes 10
@@ -64,16 +64,16 @@ Get-Process -Name "python" | Where-Object { $_.CommandLine -like "*uvicorn*" }
 ### Start/Stop Services
 ```powershell
 # Start all services
-.\app_manager.ps1 -Action start -WaitForReady
+.\scripts\production\app_manager.ps1 -Action start -WaitForReady
 
 # Stop all services cleanly
-.\app_manager.ps1 -Action stop
+.\scripts\production\app_manager.ps1 -Action stop
 
 # Emergency stop (force kill all processes)
-.\kill_app_processes.ps1
+.\scripts\utilities\kill_app_processes.ps1
 
 # Restart services
-.\app_manager.ps1 -Action restart -WaitForReady
+.\scripts\production\app_manager.ps1 -Action restart -WaitForReady
 ```
 
 ### Access Points
