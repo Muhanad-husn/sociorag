@@ -1,6 +1,4 @@
 import { useState } from 'preact/hooks';
-import { useAppStore } from '../hooks/useLocalState';
-import { t } from '../lib/i18n';
 import { Card } from './ui/Card';
 
 interface WelcomeScreenProps {
@@ -8,7 +6,6 @@ interface WelcomeScreenProps {
 }
 
 export function WelcomeScreen({ onContinue }: WelcomeScreenProps) {
-  const { language } = useAppStore();
   const [loading, setLoading] = useState(false);
 
   const handleContinue = () => {
