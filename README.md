@@ -87,6 +87,7 @@ Recommended cleanup steps: [docs/production_deployment_guide.md](docs/production
 3. **Store**:
    - Document chunks as vector embeddings for semantic retrieval
    - Entities as separate vector embeddings for entity-level search and graph analysis
+   - **Semantic Chunking**: Intelligently divides text based on semantic boundaries rather than arbitrary length, with adaptive parameters for different document types and fallback mechanisms
 4. **Query**: Semantic search and answer generation using both chunk and entity vectors
 5. **Export**: Download answers and reports as PDF
 
@@ -268,7 +269,9 @@ Detailed diagrams & component docs → [docs/architecture_documentation.md](docs
 2. **Vector Storage & Retrieval** (`backend/app/retriever/`)
    - **Chunk Embeddings**: Stores document segments as vectors for semantic search (e.g., SQLite-vec)
    - **Entity Embeddings**: Stores named entities as separate vectors for entity-level similarity and graph operations
-   - Enables both chunk-based and entity-based retrieval
+   - **Advanced Retrieval System**: Employs hybrid retrieval combining vector similarity, BM25 keyword matching, and cross-encoder reranking for comprehensive coverage
+   - **Intelligent Context Management**: Dynamically balances relevance, diversity, and token limits with priority-based selection and semantic deduplication
+   - Enables both chunk-based and entity-based retrieval with source diversity enforcement
 3. **Answer Generation** (`backend/app/answer/`)
    - Complete response generation with LLM integration
    - Citation management and source linking
