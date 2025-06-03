@@ -15,6 +15,11 @@ from functools import partial
 from backend.app.core.singletons import get_logger, get_sqlite, embed_texts
 from backend.app.retriever.vector_utils import calculate_cosine_similarity, extract_vector
 
+try:
+    import sqlite_vec
+except ImportError:
+    sqlite_vec = None
+
 # Initialize logger
 _logger = get_logger()
 
@@ -114,35 +119,58 @@ def get_entity_by_embedding(
         con.row_factory = sqlite3.Row
         
         # Get embedding for the text
-        query_embedding = embed_texts(text, use_cache=use_cache)
-        
-        # Try to use native vector search if available
+        query_embedding = embed_texts(text, use_cache=use_cache)        # Try to use native vector search if available
         try:
-            # Convert query embedding to binary for the vector search
-            query_binary = embedding_to_binary(query_embedding)
-            
             # Check if sqlite_vec extension is loaded and working
             cursor = con.cursor()
-            cursor.execute("SELECT sqlite_vec_version()")
+            cursor.execute("SELECT vec_version()")
             version = cursor.fetchone()
             
             if version:
                 _logger.debug(f"Using sqlite-vec native vector search (version: {version[0]})")
                 
-                # Use native vector search with cosine distance
-                sql_text = """
-                SELECT id, name, type, embedding,
-                       sqlite_vec_cosine_similarity(embedding, ?) as similarity
-                FROM entity 
-                WHERE embedding IS NOT NULL
-                  AND similarity >= ?
-                ORDER BY similarity DESC
-                """
-                cursor.execute(sql_text, (query_binary, similarity_threshold))
-                rows = cursor.fetchall()
+                # Check if entity_vectors table exists
+                cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='entity_vectors'")
+                vectors_table_exists = cursor.fetchone() is not None
                 
-                # Convert rows to dictionaries
-                return [dict(row) for row in rows]
+                if vectors_table_exists:
+                    # Convert query embedding to proper format
+                    import sqlite_vec
+                    query_vector = sqlite_vec.serialize_float32(extract_vector(query_embedding))
+                      # Use native vector search with the virtual table
+                    sql_text = """
+                    SELECT e.id, e.name, e.type, e.embedding, 
+                           vec_distance_cosine(v.embedding, ?) as distance
+                    FROM entity_vectors v
+                    JOIN entity e ON e.id = v.entity_id
+                    WHERE v.embedding MATCH ?
+                      AND k = 50
+                    ORDER BY distance
+                    """
+                    
+                    # For sqlite-vec, we need to pass the query vector twice
+                    cursor.execute(sql_text, (query_vector, query_vector))
+                    rows = cursor.fetchall()
+                    
+                    # Convert to the expected format
+                    results = []
+                    for row in rows:
+                        # Convert cosine distance to similarity
+                        similarity = 1.0 - row[4]
+                        if similarity >= similarity_threshold:
+                            result = {
+                                'id': row[0],
+                                'name': row[1], 
+                                'type': row[2],
+                                'embedding': row[3],
+                                'similarity': similarity
+                            }
+                            results.append(result)
+                    
+                    _logger.debug(f"sqlite-vec returned {len(results)} results")
+                    return results
+                else:
+                    _logger.warning("entity_vectors table not found, falling back to manual similarity")
         except Exception as e:
             _logger.warning(f"Native vector search failed, falling back to manual similarity: {e}")
         
@@ -310,26 +338,27 @@ def batch_store_embeddings(entities_data: List[Dict[str, Any]], use_cache: bool 
         
         # Extract texts for batch embedding
         texts = [entity['name'] for entity in entities_data]
-          # Get embeddings for all texts at once
+        
+        # Get embeddings for all texts at once
         embeddings = embed_texts(texts, use_cache=use_cache)
         
         # Prepare data for batch insert/update
         processed_count = 0
         for i, entity in enumerate(entities_data):
-            try:
-                # Get the embedding for this entity
+            try:                # Get the embedding for this entity
                 entity_embedding = None
                 if isinstance(embeddings, list) and len(embeddings) > i:
                     if isinstance(embeddings[i], list):
                         entity_embedding = embeddings[i]
                     else:
                         # Handle case where embeddings is a single embedding
-                        entity_embedding = embeddings
+                        if isinstance(embeddings, list):
+                            entity_embedding = embeddings
                 else:
                     continue
                 
-                # Ensure we have a valid embedding
-                if entity_embedding is None:
+                # Ensure we have a valid embedding and it's a list
+                if entity_embedding is None or not isinstance(entity_embedding, list):
                     continue
                 
                 # Convert embedding to binary
@@ -347,6 +376,12 @@ def batch_store_embeddings(entities_data: List[Dict[str, Any]], use_cache: bool 
                     embedding_binary
                 ))
                 
+                # Get the entity ID
+                entity_id = cursor.lastrowid
+                if entity_id and isinstance(entity_embedding, list):
+                    # Sync to vector table if available
+                    sync_entity_to_vector_table(entity_id, entity_embedding)
+                
                 processed_count += 1
                 
             except Exception as e:
@@ -361,4 +396,90 @@ def batch_store_embeddings(entities_data: List[Dict[str, Any]], use_cache: bool 
         
     except Exception as e:
         _logger.error(f"Error in batch_store_embeddings: {e}")
+        return 0
+
+def sync_entity_to_vector_table(entity_id: int, embedding: Union[List[float], List[List[float]]]) -> bool:
+    """Sync an entity's embedding to the sqlite-vec virtual table.
+    
+    Args:
+        entity_id: The entity ID
+        embedding: The embedding vector
+        
+    Returns:
+        True if successful, False otherwise
+    """
+    if sqlite_vec is None:
+        return False
+        
+    try:
+        con = get_sqlite()
+        cursor = con.cursor()
+        
+        # Check if entity_vectors table exists
+        cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='entity_vectors'")
+        if not cursor.fetchone():
+            return False
+            
+        # Convert embedding to proper format
+        vector = extract_vector(embedding)
+        vector_data = sqlite_vec.serialize_float32(vector)
+        
+        # Insert or replace the vector
+        cursor.execute("""
+            INSERT OR REPLACE INTO entity_vectors (entity_id, embedding)
+            VALUES (?, ?)
+        """, (entity_id, vector_data))
+        
+        con.commit()
+        return True
+        
+    except Exception as e:
+        _logger.error(f"Error syncing entity {entity_id} to vector table: {e}")
+        return False
+
+def batch_sync_entities_to_vector_table() -> int:
+    """Sync all entities with embeddings to the sqlite-vec virtual table.
+    
+    Returns:
+        Number of entities successfully synced
+    """
+    if sqlite_vec is None:
+        _logger.warning("sqlite_vec not available for batch sync")
+        return 0
+        
+    try:
+        con = get_sqlite()
+        cursor = con.cursor()
+        
+        # Check if entity_vectors table exists
+        cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='entity_vectors'")
+        if not cursor.fetchone():
+            _logger.warning("entity_vectors table not found")
+            return 0
+            
+        # Get all entities with embeddings
+        cursor.execute("SELECT id, embedding FROM entity WHERE embedding IS NOT NULL")
+        entities = cursor.fetchall()
+        
+        if not entities:
+            _logger.info("No entities with embeddings found")
+            return 0
+            
+        synced_count = 0
+        for entity_id, embedding_blob in entities:
+            try:
+                # Convert binary embedding back to vector
+                if embedding_blob:
+                    embedding = binary_to_embedding(embedding_blob)
+                    if embedding and sync_entity_to_vector_table(entity_id, embedding):
+                        synced_count += 1
+            except Exception as e:
+                _logger.warning(f"Error syncing entity {entity_id}: {e}")
+                continue
+                
+        _logger.info(f"Synced {synced_count}/{len(entities)} entities to vector table")
+        return synced_count
+        
+    except Exception as e:
+        _logger.error(f"Error in batch sync: {e}")
         return 0

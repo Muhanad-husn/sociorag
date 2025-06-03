@@ -325,6 +325,108 @@ async def run_enhanced_pipeline(input_dir: Optional[Path] = None, reset: bool = 
     return await run_semantic_pipeline(input_dir, reset)
 
 
+def process_all() -> Generator[Dict[str, Any], None, None]:
+    """Process all PDFs in the input directory using semantic pipeline.
+    
+    This function provides the same interface as the traditional pipeline
+    but uses semantic chunking internally.
+    
+    Yields:
+        Progress updates as dictionaries
+    """
+    logger.info("Starting semantic ingestion pipeline")
+    
+    # Get PDF files
+    pdf_files = list(config.INPUT_DIR.glob("*.pdf"))
+    total_files = len(pdf_files)
+    
+    if total_files == 0:
+        logger.warning("No PDF files found in input directory")
+        yield {"phase": "complete", "percent": 100}
+        return
+    
+    logger.info(f"Found {total_files} PDF files to process")
+    
+    # Initialize processor
+    processor = get_semantic_processor()
+    
+    # Process each PDF
+    total_chunks = 0
+    total_entities = 0
+    
+    for i, pdf in enumerate(pdf_files):
+        file_progress = i / total_files
+        
+        # Report progress
+        yield {
+            "phase": "loading",
+            "percent": round(file_progress * 100),
+            "file": pdf.name
+        }
+        
+        try:
+            # Load pages from the PDF file
+            pages = load_pages(pdf)
+            
+            # Combine all pages into a single text for processing
+            text = "\n\n".join(pages)
+            
+            # Process with semantic chunking
+            chunks_data = processor.add_chunks_to_store(text, pdf.stem)
+            chunk_count = len(chunks_data)
+            total_chunks += chunk_count
+            
+            # Report chunk processing progress
+            yield {
+                "phase": "chunking",
+                "percent": round(file_progress * 100),
+                "file": pdf.name,
+                "chunks": chunk_count
+            }
+            
+            # Extract entities from chunks using the semantic chunks directly
+            chunks_text = [chunk_data['content'] for chunk_data in chunks_data]
+            
+            # Use asyncio to run the async entity extraction
+            import asyncio
+            entities_result = asyncio.run(batch_process_chunks(chunks_text))
+            
+            # Count total entities and insert them into database
+            entities_count = 0
+            for chunk_entities in entities_result:
+                if chunk_entities:
+                    # Insert entities for this chunk into the database
+                    insert_graph_rows(chunk_entities, pdf.stem)
+                    entities_count += len(chunk_entities)
+            
+            total_entities += entities_count
+            
+            # Report entity extraction progress
+            yield {
+                "phase": "extracting_entities",
+                "percent": round(file_progress * 100),
+                "file": pdf.name,
+                "entities": entities_count
+            }
+            
+            logger.info(f"Completed processing {pdf.name}: {chunk_count} chunks, {entities_count} entities")
+            
+        except Exception as e:
+            logger.error(f"Error processing {pdf.name}: {e}")
+            continue
+    
+    # Final report
+    yield {
+        "phase": "complete",
+        "percent": 100,
+        "files": total_files,
+        "chunks": total_chunks,
+        "entities": total_entities
+    }
+    
+    logger.info(f"Semantic pipeline completed: {total_files} files, {total_chunks} chunks, {total_entities} entities")
+
+
 # Import and run functions for compatibility
 def run_semantic_ingest():
     """Run semantic ingestion pipeline synchronously."""

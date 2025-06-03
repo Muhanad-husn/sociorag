@@ -1,7 +1,0 @@
-# config.yaml.example
-chunk_sim: 0.8
-top_k: 50
-vector_dir: /mnt/fast_ssd/vector_store
-openrouter_api_key: sk-or-v1-your-api-key-here
-huggingface_token: hf_your_huggingface_token_here  # Required for Arabic translation
-log_level: DEBUG

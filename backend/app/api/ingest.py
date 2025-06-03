@@ -17,7 +17,7 @@ from concurrent.futures import ThreadPoolExecutor
 
 from ..core.config import get_config
 from ..ingest import reset_corpus
-from ..ingest.pipeline import process_all
+from ..ingest.semantic_pipeline import process_all
 from ..core.singletons import LoggerSingleton
 from ..core.process_state import get_process_manager, ProcessStatus
 

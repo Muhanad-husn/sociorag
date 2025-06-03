@@ -13,7 +13,8 @@ This module provides lazy-loaded, thread-safe singletons for all heavy infrastru
 import logging
 import sqlite3
 import threading
-from typing import Any, AsyncGenerator, Dict, List, Optional, Union
+import sys
+from typing import Any, AsyncGenerator, Dict, List, Optional, Union, cast
 from pathlib import Path
 import os
 
@@ -74,16 +75,20 @@ class LoggerSingleton(metaclass=_SingletonMeta):
                 self._logger.propagate = False
                 
         return self._logger
-    
     def _setup_handlers(self, config):
         """Set up logging handlers efficiently."""
+        # Ensure logger is initialized
+        if self._logger is None:
+            return
+            
         # Create logs directory only once
         logs_dir = config.BASE_DIR / "logs"
         logs_dir.mkdir(exist_ok=True)
         
         # Import once for all handlers
         from logging.handlers import RotatingFileHandler
-          # Create UTF-8 safe formatters
+        
+        # Create UTF-8 safe formatters
         simple_formatter = logging.Formatter(
             '%(asctime)s - %(name)s - %(levelname)s - %(message)s',
             datefmt='%Y-%m-%d %H:%M:%S'
@@ -92,16 +97,16 @@ class LoggerSingleton(metaclass=_SingletonMeta):
             '%(asctime)s - %(name)s - %(levelname)s - %(filename)s:%(lineno)d - %(message)s',
             datefmt='%Y-%m-%d %H:%M:%S'
         )
-          # Console handler with UTF-8 encoding support
-        import sys
-        console_handler = logging.StreamHandler(sys.stdout)
         
-        # Configure UTF-8 encoding for Windows compatibility
-        if hasattr(console_handler.stream, 'reconfigure'):
-            try:
-                console_handler.stream.reconfigure(encoding='utf-8', errors='replace')
-            except Exception:
-                pass
+        # Console handler with UTF-8 encoding support
+        console_handler = logging.StreamHandler(sys.stdout)
+          # Configure UTF-8 encoding for Windows compatibility - skip reconfigure for compatibility
+        try:
+            if hasattr(console_handler.stream, 'reconfigure') and callable(getattr(console_handler.stream, 'reconfigure', None)):
+                console_handler.stream.reconfigure(encoding='utf-8', errors='replace')  # type: ignore
+        except (AttributeError, TypeError, Exception):
+            # Ignore reconfigure errors on older Python versions or incompatible streams
+            pass
         
         # Use a safe formatter that handles Unicode properly
         safe_formatter = logging.Formatter(
@@ -113,7 +118,8 @@ class LoggerSingleton(metaclass=_SingletonMeta):
         
         # Only create file handlers if log level suggests they'll be used
         log_level = getattr(logging, config.LOG_LEVEL.upper(), logging.INFO)
-          # Main log file with UTF-8 encoding
+        
+        # Main log file with UTF-8 encoding
         file_handler = RotatingFileHandler(
             logs_dir / "sociorag.log",
             maxBytes=10*1024*1024,  # 10MB
@@ -292,7 +298,8 @@ class SQLiteSingleton(metaclass=_SingletonMeta):
         if self._connection is None:
             config = get_config()
             logger = LoggerSingleton().get()
-              # Ensure parent directory exists
+            
+            # Ensure parent directory exists
             config.GRAPH_DB.parent.mkdir(parents=True, exist_ok=True)
             
             logger.info(f"Connecting to SQLite database: {config.GRAPH_DB}")
@@ -305,31 +312,51 @@ class SQLiteSingleton(metaclass=_SingletonMeta):
             
             # Set row_factory to return rows as dictionaries
             self._connection.row_factory = sqlite3.Row
-              # Enable WAL mode for better concurrency
+            
+            # Enable WAL mode for better concurrency
             self._connection.execute("PRAGMA journal_mode=WAL")
             
-            # Try to load sqlite-vec extension
+            # Enable extension loading first
+            self._connection.enable_load_extension(True)
+              # Try to load sqlite-vec extension
             try:
                 if sqlite_vec is not None:
                     # Use the load method from sqlite_vec
                     sqlite_vec.load(self._connection)
                     logger.info("Loaded sqlite-vec extension using sqlite_vec.load()")
+                    
+                    # Test that the extension is working
+                    cursor = self._connection.cursor()
+                    cursor.execute("SELECT vec_version()")
+                    version = cursor.fetchone()
+                    logger.info(f"sqlite-vec version confirmed: {version[0]}")
+                    cursor.close()
                 else:
                     logger.warning("sqlite_vec module not available")
             except Exception as e:
+                logger.warning(f"Primary sqlite-vec loading failed: {e}")
                 try:
                     if sqlite_vec is not None:
                         # Fallback to manual loading
-                        self._connection.enable_load_extension(True)
                         extension_path = sqlite_vec.loadable_path()
                         logger.info(f"SQLite-vec extension path: {extension_path}")
                         self._connection.load_extension(extension_path)
                         logger.info("Loaded sqlite-vec extension from path")
+                        
+                        # Test that the extension is working
+                        cursor = self._connection.cursor()
+                        cursor.execute("SELECT vec_version()")
+                        version = cursor.fetchone()
+                        logger.info(f"sqlite-vec version confirmed: {version[0]}")
+                        cursor.close()
                     else:
                         logger.warning("sqlite_vec module not available for manual loading")
                 except Exception as inner_e:
-                    logger.warning(f"Could not load sqlite-vec extension: {inner_e}")
+                    logger.error(f"Could not load sqlite-vec extension: {inner_e}")
                     # Continue without vector extension for now
+            finally:
+                # Disable extension loading for security
+                self._connection.enable_load_extension(False)
             
             # Create tables if they don't exist
             self._create_tables()
@@ -351,6 +378,10 @@ class SQLiteSingleton(metaclass=_SingletonMeta):
         cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='relation'")
         relation_exists = cursor.fetchone() is not None
         
+        # Check if entity_vectors virtual table exists
+        cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='entity_vectors'")
+        entity_vectors_exists = cursor.fetchone() is not None
+        
         if not entity_exists:
             # Entity table with embedding column
             cursor.execute("""
@@ -369,6 +400,20 @@ class SQLiteSingleton(metaclass=_SingletonMeta):
             columns = {row[1] for row in cursor.fetchall()}
             if 'created_at' not in columns:
                 cursor.execute("ALTER TABLE entity ADD COLUMN created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
+          # Create sqlite-vec virtual table if sqlite-vec is available and table doesn't exist
+        if not entity_vectors_exists:
+            try:
+                cursor.execute("SELECT vec_version()")
+                # If we get here, sqlite-vec is loaded
+                cursor.execute("""
+                    CREATE VIRTUAL TABLE entity_vectors USING vec0(
+                        entity_id INTEGER PRIMARY KEY,
+                        embedding float[384]
+                    )
+                """)
+                LoggerSingleton().get().info("Created entity_vectors virtual table for sqlite-vec")
+            except Exception as e:
+                LoggerSingleton().get().warning(f"Could not create entity_vectors table: {e}")
         
         if not relation_exists:
             # Relation table with standard schema
@@ -412,7 +457,8 @@ class LLMClientSingleton(metaclass=_SingletonMeta):
             from .config import get_config
             cfg = get_config()
             self._api_key = cfg.OPENROUTER_API_KEY
-        if not self._api_key:        raise ValueError("OPENROUTER_API_KEY not set in configuration or environment variables")
+        if not self._api_key:
+            raise ValueError("OPENROUTER_API_KEY not set in configuration or environment variables")
         return self._api_key
 
     async def create_chat(
@@ -437,7 +483,8 @@ class LLMClientSingleton(metaclass=_SingletonMeta):
             request_data = {
                 "model": model,
                 "messages": messages,
-                "temperature": temperature,            "stream": False,  # Always disable streaming
+                "temperature": temperature,
+                "stream": False,  # Always disable streaming
                 **kwargs
             }
             
@@ -449,7 +496,8 @@ class LLMClientSingleton(metaclass=_SingletonMeta):
             # Get complete response (non-streaming)
             try:
                 response = await create_chat_completion(request)
-                content = self._extract_response_content(response)                
+                content = self._extract_response_content(response)
+                
                 if content:
                     yield content
                 else:
@@ -460,7 +508,8 @@ class LLMClientSingleton(metaclass=_SingletonMeta):
             except TypeError:
                 # If await fails, try without await (some client versions)
                 response = create_chat_completion(request)  # type: ignore
-                content = self._extract_response_content(response)                
+                content = self._extract_response_content(response)
+                
                 if content:
                     yield content
                 else:
@@ -472,7 +521,8 @@ class LLMClientSingleton(metaclass=_SingletonMeta):
         except ImportError:
             # Fallback for testing when openrouter is not available
             yield f"Mock LLM response for model {model}: {messages[-1]['content']}"
-        except Exception as e:              # Handle other errors gracefully
+        except Exception as e:
+            # Handle other errors gracefully
             yield f"Error: {str(e)}"
 
     def _extract_response_content(self, response) -> Optional[str]:
@@ -583,7 +633,7 @@ class NLPSingleton(metaclass=_SingletonMeta):
     
     def __init__(self):
         self._nlp = None
-        
+    
     def get(self):
         """Get the singleton spaCy pipeline."""
         if self._nlp is None:
@@ -654,9 +704,15 @@ def extract_vector(embedding: Union[List[float], List[List[float]]]) -> List[flo
         A flat list of floats representing the embedding vector
     """
     # Handle case where embedding is a list of lists (batch embeddings)
-    if isinstance(embedding, list) and embedding and isinstance(embedding[0], list):
-        return embedding[0]  # Take first embedding from batch
-    return embedding  # Already a flat list
+    if isinstance(embedding, list) and embedding:
+        if isinstance(embedding[0], list):
+            # It's a list of lists, take the first embedding
+            return cast(List[float], embedding[0])
+        else:
+            # It's already a flat list of floats
+            return cast(List[float], embedding)
+    else:
+        return []  # Fallback for invalid input
 
 def calculate_cosine_similarity(vec1: Union[List[float], List[List[float]]], vec2: Union[List[float], List[List[float]]]) -> float:
     """Calculate cosine similarity between two vectors.
@@ -671,25 +727,20 @@ def calculate_cosine_similarity(vec1: Union[List[float], List[List[float]]], vec
         Cosine similarity score between 0 and 1
     """
     # Ensure we're working with flat lists of floats
-    # If vec1 is a list of lists (batch embeddings) and not empty, take first element
-    if isinstance(vec1, list) and vec1 and isinstance(vec1[0], list):
-        v1 = vec1[0]
-    else:
-        v1 = vec1
-        
-    # Same for vec2
-    if isinstance(vec2, list) and vec2 and isinstance(vec2[0], list):
-        v2 = vec2[0]
-    else:
-        v2 = vec2
+    v1 = extract_vector(vec1)
+    v2 = extract_vector(vec2)
+    
+    if not v1 or not v2 or len(v1) != len(v2):
+        return 0.0
         
     # Calculate dot product
-    dot_product = sum(float(a) * float(b) for a, b in zip(v1, v2))
+    dot_product = sum(a * b for a, b in zip(v1, v2))
     
     # Calculate magnitudes
-    magnitude1 = (sum(float(a) * float(a) for a in v1)) ** 0.5 # type: ignore
-    magnitude2 = (sum(float(b) * float(b) for b in v2)) ** 0.5
-      # Calculate cosine similarity
+    magnitude1 = (sum(a * a for a in v1)) ** 0.5
+    magnitude2 = (sum(b * b for b in v2)) ** 0.5
+    
+    # Calculate cosine similarity
     if magnitude1 > 0 and magnitude2 > 0:
         return float(dot_product / (magnitude1 * magnitude2))
     else:
