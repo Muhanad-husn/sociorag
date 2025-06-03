@@ -42,9 +42,9 @@ jobs:
         # Extract version from tag
         VERSION=${GITHUB_REF#refs/tags/v}
         echo "version=$VERSION" >> $GITHUB_OUTPUT
-        
-        # Generate changelog from commit messages
-        CHANGELOG=$(git log --pretty=format:"- %s" $(git describe --tags --abbrev=0 HEAD^)..HEAD)        echo "changelog<<EOF" >> $GITHUB_OUTPUT
+          # Generate changelog from commit messages
+        CHANGELOG=$(git log --pretty=format:"- %s" $(git describe --tags --abbrev=0 HEAD^)..HEAD)
+        echo "changelog<<EOF" >> $GITHUB_OUTPUT
         echo "$CHANGELOG" >> $GITHUB_OUTPUT
         echo "EOF" >> $GITHUB_OUTPUT
     
