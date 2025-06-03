@@ -44,13 +44,12 @@ async def _initialize_playwright():
     start_time = time.time()
     try:        # Check if Playwright is available
         import playwright
-        _playwright_available = True
-        # Get version from package metadata instead of __version__
+        _playwright_available = True        # Get version from package metadata instead of __version__
         try:
-            import pkg_resources
-            playwright_version = pkg_resources.get_distribution("playwright").version
+            from importlib.metadata import version
+            playwright_version = version("playwright")
             _logger.info(f"Playwright version: {playwright_version}")
-        except (ImportError, pkg_resources.DistributionNotFound):
+        except ImportError:
             _logger.info("Playwright installed (version detection unavailable)")
         
         # Initialize async browser for better performance
