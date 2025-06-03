@@ -44,6 +44,15 @@ class _Config(BaseSettings):
     TOP_K_RERANK: int = 15  # Default value for reranking
     MAX_CONTEXT_FRACTION: float = 0.4
 
+    # ------------- Semantic Chunking Configuration ---------- #
+    SEMANTIC_CHUNKING_ENABLED: bool = True
+    SEMANTIC_CHUNK_BUFFER_SIZE: int = 1
+    SEMANTIC_CHUNK_THRESHOLD: int = 85
+    SEMANTIC_MAX_CHUNK_SIZE: int = 1000
+    SEMANTIC_MIN_CHUNK_SIZE: int = 100
+    ADAPTIVE_CHUNKING: bool = True
+    HYBRID_CHUNKING_FALLBACK: bool = True
+
     # ---------------------- API keys ------------------- #
     OPENROUTER_API_KEY: Optional[str] = None
     HUGGINGFACE_TOKEN: Optional[str] = None  # Added HF token for model authentication

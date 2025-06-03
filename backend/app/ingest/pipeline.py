@@ -37,6 +37,20 @@ logger = get_logger()
 config = get_config()
 
 
+# Import semantic chunking components
+try:
+    from backend.app.ingest.semantic_pipeline import (
+        add_chunks_to_store as add_chunks_to_store_semantic,
+        run_semantic_pipeline,
+        get_semantic_processor
+    )
+    SEMANTIC_CHUNKING_AVAILABLE = True
+    logger.info("Semantic chunking modules loaded successfully")
+except ImportError as e:
+    SEMANTIC_CHUNKING_AVAILABLE = False
+    logger.warning(f"Semantic chunking not available: {e}")
+
+
 from backend.app.retriever.vector_utils import calculate_cosine_similarity
 
 # Use the centralized cosine similarity function
@@ -46,10 +60,22 @@ cosine_similarity = calculate_cosine_similarity
 def add_chunks_to_store(chunks: List[str], source_file: str) -> None:
     """Add chunks to the vector store.
     
+    This function now routes to semantic processing if enabled,
+    maintaining backward compatibility.
+    
     Args:
         chunks: List of text chunks
         source_file: Source filename (without extension)
     """
+    # Route to semantic processing if available and enabled
+    if (SEMANTIC_CHUNKING_AVAILABLE and 
+        config.SEMANTIC_CHUNKING_ENABLED and 
+        hasattr(config, 'SEMANTIC_CHUNKING_ENABLED')):
+        logger.info(f"Routing to semantic chunking for {source_file}")
+        add_chunks_to_store_semantic(chunks, source_file)
+        return
+    
+    # Original implementation for backward compatibility
     logger.info(f"Adding {len(chunks)} chunks from {source_file} to vector store")
     
     if not chunks:
@@ -448,3 +474,125 @@ async def process_entities(chunks: List[str], source_file: str) -> None:
     async for _ in extract_entities_from_chunks(chunks, source_file):
         # We don't need to yield progress here since this is an internal function
         pass
+
+
+async def run_pipeline(input_dir: Optional[Path] = None, reset: bool = False, use_semantic: Optional[bool] = None) -> Dict[str, Any]:
+    """
+    Run the appropriate ingestion pipeline based on configuration.
+    
+    Args:
+        input_dir: Directory containing PDF files (defaults to config.INPUT_DIR)
+        reset: Whether to reset the corpus before processing
+        use_semantic: Force semantic chunking on/off, or None to use config
+        
+    Returns:
+        Dictionary with processing statistics
+    """
+    # Determine which pipeline to use
+    should_use_semantic = use_semantic
+    if should_use_semantic is None:
+        should_use_semantic = (
+            SEMANTIC_CHUNKING_AVAILABLE and 
+            getattr(config, 'SEMANTIC_CHUNKING_ENABLED', False)
+        )
+    
+    if should_use_semantic and SEMANTIC_CHUNKING_AVAILABLE:
+        logger.info("Running semantic ingestion pipeline")
+        return await run_semantic_pipeline(input_dir, reset)
+    else:
+        logger.info("Running traditional rule-based ingestion pipeline")
+        return await run_traditional_pipeline(input_dir, reset)
+
+
+async def run_traditional_pipeline(input_dir: Optional[Path] = None, reset: bool = False) -> Dict[str, Any]:
+    """
+    Run the traditional rule-based ingestion pipeline.
+    
+    Args:
+        input_dir: Directory containing PDF files (defaults to config.INPUT_DIR)
+        reset: Whether to reset the corpus before processing
+        
+    Returns:
+        Dictionary with processing statistics
+    """
+    if input_dir is None:
+        input_dir = config.INPUT_DIR
+    
+    logger.info(f"Starting traditional ingestion pipeline from {input_dir}")
+    
+    if reset:
+        logger.info("Resetting corpus before processing")
+        reset_corpus()
+    
+    # Load and process documents
+    pages = load_pages(input_dir)
+    total_chunks = 0
+    total_entities = 0
+    processed_files = 0
+    
+    stats = {
+        "processed_files": 0,
+        "total_chunks": 0,
+        "total_entities": 0,
+        "chunking_method": "rule_based",
+        "adaptive_chunking": False,
+        "hybrid_fallback": False
+    }
+    
+    for filename, text in pages:
+        try:
+            logger.info(f"Processing file: {filename}")
+            
+            # Chunk using traditional method
+            chunks = chunk_page(text)
+            total_chunks += len(chunks)
+            stats["total_chunks"] = total_chunks
+            
+            # Add to vector store
+            add_chunks_to_store(chunks, filename)
+            
+            # Extract entities from chunks  
+            entities_count = 0
+            async for progress in extract_entities_from_chunks(chunks, filename):
+                if "entities" in progress:
+                    entities_count = progress["entities"]
+            
+            total_entities += entities_count
+            stats["total_entities"] = total_entities
+            
+            processed_files += 1
+            stats["processed_files"] = processed_files
+            
+            logger.info(f"Completed processing {filename}: {len(chunks)} chunks, {entities_count} entities")
+            
+        except Exception as e:
+            logger.error(f"Error processing {filename}: {e}")
+            continue
+    
+    logger.info(f"Traditional pipeline completed: {processed_files} files, {total_chunks} chunks, {total_entities} entities")
+    return stats
+
+
+# Backward compatibility functions
+def run_ingest():
+    """Run ingestion pipeline synchronously with current configuration."""
+    import asyncio
+    return asyncio.run(run_pipeline())
+
+
+def run_ingest_semantic():
+    """Run semantic ingestion pipeline synchronously."""
+    import asyncio
+    return asyncio.run(run_pipeline(use_semantic=True))
+
+
+def run_ingest_traditional():
+    """Run traditional rule-based ingestion pipeline synchronously."""
+    import asyncio
+    return asyncio.run(run_pipeline(use_semantic=False))
+
+
+if __name__ == "__main__":
+    # Run the appropriate pipeline based on configuration
+    stats = run_ingest()
+    print(f"Processing complete: {stats}")
