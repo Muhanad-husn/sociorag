@@ -113,6 +113,56 @@ function Start-BackendProcess {
     }
 }
 
+function Install-FrontendDependencies {
+    Write-AppLog "Checking frontend dependencies..." "INFO"
+    
+    if (-not (Test-Path "ui\node_modules")) {
+        Write-AppLog "Frontend dependencies not found. Installing..." "INFO"
+        
+        try {
+            # Determine package manager
+            $packageManager = "npm"
+            if (Test-Path "ui\pnpm-lock.yaml") {
+                $packageManager = "pnpm"
+            } elseif (Test-Path "ui\yarn.lock") {
+                $packageManager = "yarn"
+            }
+            
+            Write-AppLog "Installing dependencies using $packageManager..." "INFO"
+            
+            # Get full path to package manager
+            $packageManagerPath = $null
+            if ($packageManager -eq "npm") {
+                $packageManagerPath = (Get-Command npm.cmd -ErrorAction SilentlyContinue).Source
+                if (-not $packageManagerPath) {
+                    $packageManagerPath = "npm"
+                }
+            } else {
+                $packageManagerPath = $packageManager
+            }
+            
+            # Install dependencies in UI directory
+            $installProcess = Start-Process -FilePath "cmd.exe" -ArgumentList "/c", "`"$packageManagerPath`"", "install" `
+                -WorkingDirectory "ui" -Wait -PassThru -NoNewWindow
+            
+            if ($installProcess.ExitCode -eq 0) {
+                Write-AppLog "Frontend dependencies installed successfully!" "SUCCESS"
+                return $true
+            } else {
+                Write-AppLog "Failed to install frontend dependencies (Exit code: $($installProcess.ExitCode))" "ERROR"
+                return $false
+            }
+        }
+        catch {
+            Write-AppLog "Error installing frontend dependencies: $($_.Exception.Message)" "ERROR"
+            return $false
+        }
+    } else {
+        Write-AppLog "Frontend dependencies already installed" "INFO"
+        return $true
+    }
+}
+
 function Start-FrontendProcess {
     Write-AppLog "Starting frontend process..." "INFO"
     
@@ -128,7 +178,13 @@ function Start-FrontendProcess {
     if (-not (Test-Path "ui")) {
         Write-AppLog "Frontend directory 'ui' not found" "ERROR"
         return $null
-    }      try {
+    }
+    
+    # Install dependencies if needed
+    if (-not (Install-FrontendDependencies)) {
+        Write-AppLog "Cannot start frontend without dependencies" "ERROR"
+        return $null
+    }try {
         # Get the full path to the package manager executable
         $packageManagerPath = $null
         $packageManagerType = $null
@@ -152,10 +208,11 @@ function Start-FrontendProcess {
             }
             $packageManagerType = "npm"
         }
+          Write-AppLog "Using package manager: $packageManagerType ($packageManagerPath)" "INFO"
         
-        Write-AppLog "Using package manager: $packageManagerType ($packageManagerPath)" "INFO"
-        
-        $process = Start-Process -FilePath "cmd.exe" -ArgumentList "/c", "$packageManagerPath", "run", "dev" `
+        # Properly quote the path to handle spaces in directory names
+        $quotedPath = "`"$packageManagerPath`""
+        $process = Start-Process -FilePath "cmd.exe" -ArgumentList "/c", "$quotedPath", "run", "dev" `
             -WorkingDirectory "ui" -PassThru -NoNewWindow `
             -RedirectStandardOutput "logs\frontend_output.log" `
             -RedirectStandardError "logs\frontend_error.log"

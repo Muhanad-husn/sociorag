@@ -4,16 +4,38 @@
 
 ### Prerequisites
 
-Before contributing to SocioGraph, ensure you have the following installed:
+Before contributing to SocioRAG, ensure you have the following installed:
 
-- **Python 3.12.9** (exact version required for compatibility)
+- **Python 3.8+** (Python 3.12.9 recommended for full compatibility)
+- **Node.js 18+** (with npm) - automatically detected by startup scripts
 - **Git 2.30+** for version control
 - **VS Code** or **PyCharm** (recommended IDEs)
-- **Miniconda** or **Anaconda** (recommended package management)
+- **Miniconda** or **Anaconda** (optional but recommended)
 
-### Setting Up Development Environment
+### Quick Development Setup
 
-#### 1. Clone and Setup Repository
+#### ⚡ Instant Setup (Recommended)
+```powershell
+# Clone and setup
+git clone <repository-url>
+cd sociorag
+
+# Copy environment templates
+cp .env.example .env
+cp config.yaml.example config.yaml
+
+# Start development environment - auto-installs dependencies!
+.\start_production.ps1
+```
+
+The startup script provides:
+- ✅ **Auto-dependency detection**: Installs missing frontend/backend dependencies
+- ✅ **Smart package manager support**: Auto-detects npm, pnpm, or yarn
+- ✅ **Windows compatibility**: Handles paths with spaces properly
+- ✅ **Development server**: Hot-reload enabled for both frontend and backend
+- ✅ **Service health monitoring**: Waits for services to be ready
+
+#### 🔧 Manual Development Setup
 
 ```bash
 # Clone the repository
@@ -31,7 +53,37 @@ source .venv/bin/activate  # Unix/macOS
 
 # Install development dependencies
 pip install -r requirements-dev.txt
+
+# Install frontend dependencies
+cd ui && npm install && cd ..
 ```
+
+### Development Workflow
+
+#### Starting Development Services
+```powershell
+# Auto-install and start all services
+.\start_production.ps1
+
+# Or manually start individual services
+python -m backend.app.main  # Backend (Terminal 1)
+cd ui && npm run dev        # Frontend (Terminal 2)
+```
+
+#### After System Restart
+
+Simply run the startup script - it will detect and reinstall any missing dependencies:
+
+```powershell
+.\start_production.ps1
+```
+
+The auto-install feature ensures:
+
+- ✅ **Seamless recovery**: No manual intervention needed after system restart
+- ✅ **Smart detection**: Only installs missing dependencies
+- ✅ **Multi-platform support**: Works with npm, pnpm, or yarn
+- ✅ **Error resilience**: Clear error messages and fallback options
 
 #### 2. IDE Configuration
 

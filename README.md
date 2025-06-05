@@ -29,25 +29,88 @@ See `.env.example` for the full list.
 
 SocioRAG is a production-ready system for analyzing social dynamics in texts through advanced NLP, entity extraction, vector search, and answer generation capabilities. The system follows a modular architecture with distinct phases for data ingestion, storage, retrieval, and answer generation.
 
+### 🛡️ System Requirements
+
+- **Python**: 3.8+ (with pip)
+- **Node.js**: 18+ (with npm)
+- **Operating System**: Windows (PowerShell), Linux/macOS (with minor script modifications)
+- **Memory**: 4GB+ RAM recommended
+- **Storage**: 2GB+ free space
+
+### 🔄 Auto-Install Features
+
+- **Smart Dependency Detection**: Automatically detects missing `node_modules` and installs frontend dependencies
+- **Package Manager Support**: Works with npm, pnpm, or yarn (auto-detected)
+- **Windows Path Handling**: Properly handles paths with spaces (e.g., "Program Files")
+- **Robust Error Handling**: Clear error messages and automatic fallbacks
+- **Zero Configuration**: Works out-of-the-box after environment setup
+
 📖 **Complete guide**: [DEPLOYMENT.md](DEPLOYMENT.md)
 
 ## 🚀 Quick Start
 
-```bash
+### ⚡ Instant Setup (Recommended)
+
+```powershell
 # Clone the repository
 git clone https://github.com/your-username/sociorag.git
 cd sociorag
 
-# Set up environment
+# Set up environment files
 cp .env.example .env
 cp config.yaml.example config.yaml
 
-# Install dependencies and run
-pip install -r requirements.txt
-python -m backend.app.main
+# Start the application - dependencies install automatically!
+.\start_production.ps1
 ```
 
-Access the application at `http://localhost:8000`
+**That's it!** The startup script automatically:
+
+- ✅ Detects missing dependencies and installs them
+- ✅ Starts both backend and frontend services
+- ✅ Waits for services to be healthy
+- ✅ Opens the application in your browser
+
+### 🔧 First-time Complete Setup (Optional)
+
+For a complete environment setup including database initialization:
+
+```powershell
+# Run the comprehensive setup script
+.\setup.ps1
+
+# Then start normally
+.\start_production.ps1
+```
+
+### 🖥️ Manual Setup (Advanced)
+
+```powershell
+# 1. Install Python dependencies
+pip install -r requirements.txt
+
+# 2. Install frontend dependencies
+cd ui
+npm install
+cd ..
+
+# 3. Start services manually
+# Terminal 1 - Backend
+python -m backend.app.main
+
+# Terminal 2 - Frontend
+cd ui
+npm run dev
+```
+
+### 🌐 Access Points
+
+Once started, access the application at:
+
+- **Frontend**: `http://localhost:5173`
+- **Backend API**: `http://localhost:8000`
+- **API Documentation**: `http://localhost:8000/docs`
+- **Admin Panel**: `http://localhost:8000/api/admin/status`
 
 📖 **Full deployment guide**: [DEPLOYMENT.md](DEPLOYMENT.md)
 

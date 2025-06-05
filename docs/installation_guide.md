@@ -1,54 +1,87 @@
 # SocioRAG Installation Guide
 
-## 🚀 Quick Start (< 5 minutes)
+## 🚀 Quick Start (< 2 minutes)
 
-### One-Command Setup
+### ⚡ Instant Setup (Recommended)
 ```powershell
-# Automated setup - handles everything
-.\quick_start.ps1
+# Clone and setup environment
+git clone https://github.com/your-username/sociorag.git
+cd sociorag
+cp .env.example .env
+cp config.yaml.example config.yaml
+
+# Start application - auto-installs all dependencies!
+.\start_production.ps1
 ```
 
-### Manual Quick Setup
+**That's it!** The startup script automatically:
+- ✅ Detects and installs missing dependencies
+- ✅ Handles npm, pnpm, or yarn (auto-detected)
+- ✅ Properly manages Windows paths with spaces
+- ✅ Starts both backend and frontend services
+- ✅ Opens the application in your browser
+
+### 🔧 Complete Setup (First-time)
 ```powershell
-# 1. Create environment
+# For comprehensive setup including database initialization
+.\setup.ps1
+
+# Then start normally
+.\start_production.ps1
+```
+
+### 📋 Manual Setup (Advanced Users)
+```powershell
+# 1. Create virtual environment (optional)
 python -m venv .venv
 .\.venv\Scripts\Activate.ps1
 
-# 2. Install dependencies  
+# 2. Install dependencies manually
 pip install -r requirements.txt
+cd ui && npm install && cd ..
 
-# 3. Set up API key
+# 3. Set up environment
 echo "OPENROUTER_API_KEY=your_key_here" > .env
 
-# 4. Start application
-.\quick_start.ps1
+# 4. Start services manually
+python -m backend.app.main  # Terminal 1
+cd ui && npm run dev        # Terminal 2
 ```
 
-**Access Points:** Frontend: http://localhost:5173 | Backend: http://127.0.0.1:8000 | API Docs: http://127.0.0.1:8000/docs
+**Access Points:**
+
+- **Frontend**: `http://localhost:5173`
+- **Backend API**: `http://localhost:8000`
+- **API Documentation**: `http://localhost:8000/docs`
+- **Admin Panel**: `http://localhost:8000/api/admin/status` 
+- Frontend: http://localhost:5173 
+- Backend: http://127.0.0.1:8000 
+- API Docs: http://127.0.0.1:8000/docs
 
 ---
 
-# SocioRAG Installation & Setup Guide
+## 🛡️ System Requirements
 
-## Quick Start
+- **Python**: 3.8+ (with pip)
+- **Node.js**: 18+ (with npm) - automatically detected
+- **Operating System**: Windows (PowerShell), Linux/macOS (with minor modifications)
+- **Memory**: 4GB+ RAM recommended
+- **Storage**: 2GB+ free space
 
-For a quick start experience, use the provided script:
+## 🔄 Auto-Install Features
 
-```powershell
-# From the project root
-.\quick_start.ps1
-```
+The startup scripts include intelligent dependency management:
 
-This script will:
-1. Start the backend server
-2. Wait for the backend to be fully ready
-3. Start the frontend development server
-4. Open the application in your default web browser
+### Frontend Dependencies
+- **Auto-detection**: Checks for missing `node_modules` directory
+- **Package Manager Support**: Automatically detects and uses npm, pnpm, or yarn
+- **Windows Compatibility**: Handles paths with spaces (e.g., "Program Files")
+- **Error Handling**: Clear error messages and automatic fallbacks
 
-You can then access:
-- Frontend: http://localhost:5173
-- Backend API: http://127.0.0.1:8000
-- API Documentation: http://127.0.0.1:8000/docs
+### Backend Dependencies
+- **Python Environment**: Automatically detects Python installation
+- **Dependency Validation**: Checks for required packages
+- **Virtual Environment**: Works with or without virtual environments
 
 ## System Requirements
 
