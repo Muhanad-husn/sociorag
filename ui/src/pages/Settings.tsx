@@ -113,8 +113,7 @@ export function Settings() {
       console.error('Failed to update LLM settings:', error);
       toast.error(t('settings.settingsFailedServer', language));
     }
-  };
-    const handleResetDefaults = () => {
+  };    const handleResetDefaults = () => {
     const defaultSettings = {
       topK: 80,
       topKR: 15,
@@ -125,7 +124,6 @@ export function Settings() {
       translateModel: "mistralai/mistral-nemo:free",
       maxTokensAnswer: 4000,
       contextWindow: 128000,
-      generatePdf: true,
     };
     setTempSettings(defaultSettings);
     updateSettings(defaultSettings);
@@ -364,40 +362,9 @@ export function Settings() {
                 )}
               </button>
             </div>
-          </div>        </Card>        {/* PDF Generation Settings */}
-        <Card className="p-6 card-interactive">
-          <h2 className="text-lg sm:text-xl font-semibold mb-4">{t('settings.pdfGeneration', language)}</h2>
-          
-          <div className="space-y-6">
-            {/* Enable PDF Generation */}
-            <div className="flex items-center justify-between">
-              <div className="space-y-1">
-                <label className="text-sm font-medium">{t('settings.enablePdfGeneration', language)}</label>
-                <p className="text-xs text-muted-foreground">
-                  {t('settings.pdfGenerationDesc', language)}
-                </p>
-              </div>              <button
-                onClick={() => setTempSettings(prev => ({ 
-                  ...prev, 
-                  generatePdf: !prev.generatePdf 
-                }))}
-                className={clsx(
-                  'relative inline-flex h-6 w-11 items-center rounded-full transition-colors hover-scale active-press focus-ring-enhanced',
-                  tempSettings.generatePdf ? 'bg-primary' : 'bg-gray-200'
-                )}
-              >
-                <span
-                  className={clsx(
-                    'inline-block h-4 w-4 transform rounded-full bg-white transition-transform',
-                    tempSettings.generatePdf ? 'translate-x-6' : 'translate-x-1'
-                  )}
-                />
-              </button>
-            </div>
-          </div>
-        </Card>
+          </div>        </Card>
 
-        {/* Search Settings */}        <Card className="p-6 card-interactive">
+        {/* Search Settings */}<Card className="p-6 card-interactive">
           <h2 className="text-lg sm:text-xl font-semibold mb-4">{t('settings.search', language)}</h2>
           
           <div className="space-y-6">

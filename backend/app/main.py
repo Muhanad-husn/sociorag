@@ -108,17 +108,14 @@ def create_app() -> FastAPI:
     with logger.correlation_context() as correlation_id:
         logger.info(f"Initializing SocioRAG FastAPI application... [correlation_id: {correlation_id}]")
         logger.log_operation_start("app_initialization")
-    
     from .api.ingest import router as ingest_router
     from .api.qa import router as qa_router
     from .api.history_new import router as history_router
     from .api.documents import router as documents_router
     from .api.search import router as search_router
-    from .api.export import router as export_router
     from .api.admin import router as admin_router
     from .api.websocket_new import router as websocket_router
     from .api.logs import router as logs_router
-    from .api.saved_files import router as saved_files_router
     
     # Create FastAPI application
     app = FastAPI(
@@ -147,25 +144,17 @@ def create_app() -> FastAPI:
             {
                 "name": "documents",
                 "description": "Document management endpoints"
-            },
-            {
+            },            {
                 "name": "search",
                 "description": "Search endpoints for finding content in the knowledge base"
             },
             {
-                "name": "export",
-                "description": "Export endpoints for retrieving data in various formats"
-            },
-            {
                 "name": "admin",
                 "description": "Administrative endpoints for system management"
-            },            {
-                "name": "logs",
-                "description": "Log analysis and monitoring endpoints"
             },
             {
-                "name": "saved",
-                "description": "Saved files management and listing endpoints"
+                "name": "logs",
+                "description": "Log analysis and monitoring endpoints"
             }
         ]
     )
@@ -178,35 +167,19 @@ def create_app() -> FastAPI:
         CORSMiddleware,
         allow_origins=["*"],  # Allow all origins for development
         allow_credentials=True,
-        allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-        allow_headers=["*"],
+        allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],        allow_headers=["*"],
         expose_headers=["Content-Disposition"],
         max_age=600,  # Cache preflight requests for 10 minutes
     )
-    
-    # Mount static files for serving saved PDFs
-    import os
-    from pathlib import Path
-    
-    saved_dir = Path("saved")
-    if not saved_dir.exists():        # Try project root
-        project_root = Path(__file__).parent.parent.parent
-        saved_dir = project_root / "saved"
-        if not saved_dir.exists():
-            # Create it if it doesn't exist
-            saved_dir.mkdir(parents=True, exist_ok=True)
-    
-    app.mount("/static/saved", StaticFiles(directory=str(saved_dir)), name="saved")    # Include routers
-    app.include_router(ingest_router)
+
+    # Include routersapp.include_router(ingest_router)
     app.include_router(qa_router)
     app.include_router(history_router)
     app.include_router(documents_router)
     app.include_router(search_router)
-    app.include_router(export_router)
     app.include_router(admin_router)
     app.include_router(websocket_router)
     app.include_router(logs_router)
-    app.include_router(saved_files_router)
     
     logger.info("All API routers registered successfully")
 

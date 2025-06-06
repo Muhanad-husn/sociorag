@@ -14,13 +14,9 @@ export interface Settings {
   entityModel: string;
   answerModel: string;
   translateModel: string;
-  
-  // Advanced parameters
+    // Advanced parameters
   maxTokensAnswer: number;
   contextWindow: number;
-  
-  // PDF generation
-  generatePdf: boolean;
 }
 
 export interface AppState {
@@ -63,13 +59,9 @@ const defaultSettings: Settings = {
   entityModel: "google/gemini-flash-1.5",
   answerModel: "meta-llama/llama-3.3-70b-instruct:free",
   translateModel: "mistralai/mistral-nemo:free",
-  
-  // Advanced parameters
+    // Advanced parameters
   maxTokensAnswer: 4000,
-  contextWindow: 128000,
-  
-  // PDF generation
-  generatePdf: true, // Default to enabled for backward compatibility
+  contextWindow: 128000
 };
 
 export const useAppStore = create<AppState>()(

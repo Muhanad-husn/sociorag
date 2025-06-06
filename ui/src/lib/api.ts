@@ -37,15 +37,6 @@ export interface StatsResponse {
   avg_response_time: number;
 }
 
-export interface SavedFile {
-  filename: string;
-  size: number;
-  created_at: string;
-  modified_at: string;
-  file_type: string;
-  download_url: string;
-}
-
 // Upload PDF file
 export async function uploadPDF(file: File): Promise<UploadResponse> {
   const formData = new FormData();
@@ -70,7 +61,6 @@ export interface AskRequest {
   answer_model?: string;
   max_tokens?: number;
   context_window?: number;
-  generate_pdf?: boolean;
 }
 
 // Interface for ask question response
@@ -79,7 +69,6 @@ export interface AskResponse {
   answer_html: string;  // Pre-rendered HTML for frontend consumption
   query: string;
   language: string;
-  pdf_url: string;
   context_count: number;
   token_count: number;
   duration: number;
@@ -104,8 +93,7 @@ export async function askQuestion(query: string, settings: any = {}): Promise<As
     temperature: settings.temperature || 0.7,
     answer_model: settings.answerModel || '',
     max_tokens: settings.maxTokensAnswer || 4000,
-    context_window: settings.contextWindow || 128000,
-    generate_pdf: settings.generatePdf !== undefined ? settings.generatePdf : true
+    context_window: settings.contextWindow || 128000
   };
 
   const response = await axios.post(`${BASE_URL}/api/qa/ask`, requestData);
@@ -129,33 +117,6 @@ export async function getHistory(page = 1, per_page = 15): Promise<HistoryRespon
 // Get stats
 export async function getStats(): Promise<StatsResponse> {
   const response = await axios.get(`${BASE_URL}/api/qa/stats`);
-  return response.data;
-}
-
-// Get saved files
-export async function getSavedFiles(sortBy?: string, sortOrder?: string): Promise<SavedFile[]> {
-  try {
-    const params = new URLSearchParams();
-    if (sortBy) params.append('sort_by', sortBy);
-    if (sortOrder) params.append('sort_order', sortOrder);
-    
-    const response = await axios.get(`${BASE_URL}/api/saved/files?${params.toString()}`);
-    return response.data.files;
-  } catch (error) {
-    console.error('Failed to get saved files:', error);
-    return [];
-  }
-}
-
-// Download saved file - fetch from working endpoint and return blob for local saving
-export async function downloadSavedFile(filename: string): Promise<Blob> {
-  const response = await axios.get(`${BASE_URL}/static/saved/${filename}`, {
-    responseType: 'blob',
-    // Ensure we get the raw binary data without any transformations
-    headers: {
-      'Accept': 'application/pdf,application/octet-stream,*/*'
-    }
-  });
   return response.data;
 }
 
@@ -253,31 +214,7 @@ export async function getLLMSettings(): Promise<{ success: boolean; data: any }>
   return response.data;
 }
 
-// Complete PDF download workflow - fetch from working endpoint and save to user location
-export async function downloadAndSavePDF(filename: string, userFilename?: string): Promise<boolean> {
-  try {
-    // Step 1: Fetch the PDF blob from the working backend endpoint
-    const blob = await downloadSavedFile(filename);
-    
-    // Step 2: Use file-utils to save with user dialog
-    const { saveFileWithDialog } = await import('./file-utils');
-    
-    const success = await saveFileWithDialog({
-      filename: userFilename || filename,
-      blob,
-      fileType: {
-        description: 'PDF files',
-        mimeType: 'application/pdf',
-        extension: '.pdf'
-      }
-    });
-    
-    return success;
-  } catch (error) {
-    console.error('Failed to download and save PDF:', error);
-    throw error;
-  }
-}
+
 
 // Delete history record
 export async function deleteHistoryRecord(recordId: number): Promise<{ success: boolean; message: string }> {

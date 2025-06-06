@@ -12,32 +12,26 @@ import { Card } from '../components/ui/Card';
 import clsx from 'clsx';
 
 export function Home() {
-  const { currentQuery, setCurrentQuery, settings, isProcessing, setIsProcessing, language } = useAppStore();  const [activeTab, setActiveTab] = useState('search');
-  const [answer, setAnswer] = useState('');
+  const { currentQuery, setCurrentQuery, settings, isProcessing, setIsProcessing, language } = useAppStore();  const [activeTab, setActiveTab] = useState('search');  const [answer, setAnswer] = useState('');
   const [answerHtml, setAnswerHtml] = useState('');
-  const [pdfUrl, setPdfUrl] = useState<string | null>(null);
   
   const { execute: executeSearch, loading: isSearching, error } = useAsyncRequest<AskResponse>();
   const handleSearch = async () => {
     if (!currentQuery.trim()) return;
     
-    try {
-      // Clear previous results when starting a new search
+    try {      // Clear previous results when starting a new search
       setAnswer('');
       setAnswerHtml('');
-      setPdfUrl(null);
       
       const response = await executeSearch(() => askQuestion(currentQuery, settings));
       if (response) {
         setAnswer(response.answer);
         setAnswerHtml(response.answer_html || '');
-        setPdfUrl(response.pdf_url || null);
       }
     } catch (err) {
       console.error('Search error:', err);
       setAnswer('');
       setAnswerHtml('');
-      setPdfUrl(null);
     }
   };
 
@@ -117,17 +111,15 @@ export function Home() {
                 disabled={isLoading}
                 language={language}
               />
-            </Card>{/* Results Section */}
-            {(answer || error || isSearching) && (
+            </Card>{/* Results Section */}            {(answer || error || isSearching) && (
               <StreamAnswer
                 html={answerHtml}
                 markdown={answer}
                 isComplete={!isSearching}
                 error={error}
-                pdfUrl={pdfUrl || undefined}
                 isLoading={isSearching}
               />
-            )}            {/* Quick Start Guide */}
+            )}{/* Quick Start Guide */}
             {!answer && !error && !isSearching && (
               <Card className="p-6 surface-2 card-interactive">
                 <h3 className="text-lg font-semibold mb-3">{t('home.quickStart', language)}</h3>

@@ -4,7 +4,6 @@ import { Toaster } from 'sonner';
 import { useAppStore } from './hooks/useLocalState';
 import { Home } from './pages/Home';
 import { History } from './pages/History';
-import { Saved } from './pages/Saved';
 import { Settings } from './pages/Settings';
 import { Navigation } from './components/Navigation';
 import { getDirection } from './lib/i18n';
@@ -32,11 +31,9 @@ export function App() {
       <Navigation currentPath={currentPath} />
       
       {/* Main Content */}
-      <main className="pt-16">
-        <Router onChange={handleRoute}>
+      <main className="pt-16">        <Router onChange={handleRoute}>
           <Route path="/" component={Home} />
           <Route path="/history" component={History} />
-          <Route path="/saved" component={Saved} />
           <Route path="/settings" component={Settings} />
         </Router>
       </main>

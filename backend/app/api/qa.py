@@ -15,7 +15,7 @@ from pydantic import BaseModel
 from backend.app.core.singletons import LoggerSingleton
 from backend.app.retriever import retrieve_context
 from backend.app.answer.generator import generate_answer, generate_answer_complete
-from backend.app.answer.pdf import save_pdf_async, get_pdf_url
+
 from backend.app.answer.history import append_record, get_recent_history, get_history_stats
 from backend.app.answer.prompt import extract_title_and_content, sanitize_filename
 from backend.app.answer.markdown_renderer import render_markdown_to_html_safe_cached
@@ -35,14 +35,12 @@ class AskRequest(BaseModel):
     context_window: Optional[int] = None
     top_k: Optional[int] = None  # Number of vector results to retrieve
     top_k_rerank: Optional[int] = None  # Number of results to keep after reranking
-    generate_pdf: Optional[bool] = True  # Whether to generate PDF report
 
 
 class AskResponse(BaseModel):
     """Response model for non-streaming ask requests."""
     answer: str
     answer_html: str  # Pre-rendered HTML for frontend consumption
-    pdf_url: str
     context_count: int
     token_count: int
     duration: float
@@ -130,35 +128,26 @@ async def _generate_complete_answer(query: str, context_items: list, start_time:
                 language = "ar"
                 _logger.info("Translation completed")
             except Exception as e:
-                _logger.error(f"Translation error: {e}")
-                # Continue with English answer if translation fails        # Generate PDF only if requested
-        pdf_url = ""
-        pdf_path = None
-        if request.generate_pdf:
-            # Extract title from the answer for filename
-            title, _ = extract_title_and_content(complete_answer)
-            filename = sanitize_filename(title)
-            
-            pdf_path = await save_pdf_async(complete_answer, query, filename=filename, language=language)
-            pdf_url = get_pdf_url(pdf_path)
+                _logger.error(f"Translation error: {e}")                # Continue with English answer if translation fails
         
         # Calculate duration
         duration = time.time() - start_time
-          # Log to history
+        
+        # Log to history
         append_record(
             query=query,
-            pdf_path=pdf_path,
+            pdf_path=None,
             token_count=token_count,
             context_count=len(context_items),
             duration=duration
         )
-          # Convert markdown to HTML for frontend consumption with sanitization and caching
+        
+        # Convert markdown to HTML for frontend consumption with sanitization and caching
         answer_html = render_markdown_to_html_safe_cached(complete_answer)
         
         return AskResponse(
             answer=complete_answer,
             answer_html=answer_html,
-            pdf_url=pdf_url,
             context_count=len(context_items),
             token_count=token_count,
             duration=duration,
@@ -214,8 +203,7 @@ async def ask_question_get(
     temperature: float = 0.7,
     answer_model: Optional[str] = None,
     max_tokens: Optional[int] = None,
-    context_window: Optional[int] = None,
-    generate_pdf: bool = True
+    context_window: Optional[int] = None
 ) -> AskResponse:
     """Ask a question via GET method with query parameters.
     
@@ -229,7 +217,6 @@ async def ask_question_get(
         max_tokens=max_tokens,
         context_window=context_window,
         top_k=top_k,
-        top_k_rerank=top_k_r,
-        generate_pdf=generate_pdf
+        top_k_rerank=top_k_r
     )
     return await ask_question(request)

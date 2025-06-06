@@ -28,9 +28,17 @@ export async function saveFileWithDialog(options: SaveFileOptions): Promise<bool
   
   const type = fileType || defaultFileType;
   
+  console.log('Save file attempt:', { 
+    filename, 
+    hasFileSystemAccess: 'showSaveFilePicker' in window,
+    isSecureContext: window.isSecureContext,
+    userAgent: navigator.userAgent
+  });
+  
   // Try to use the File System Access API for modern browsers
-  if ('showSaveFilePicker' in window) {
+  if ('showSaveFilePicker' in window && window.isSecureContext) {
     try {
+      console.log('Attempting to use File System Access API for:', filename);
       const fileHandle = await window.showSaveFilePicker!({
         suggestedName: filename,
         types: [{
@@ -43,34 +51,59 @@ export async function saveFileWithDialog(options: SaveFileOptions): Promise<bool
       await writable.write(blob);
       await writable.close();
       
+      console.log('File saved successfully using File System Access API');
       return true;
     } catch (error: any) {
       if (error.name === 'AbortError') {
         // User cancelled the save dialog
+        console.log('User cancelled the save dialog');
         return false;
       }
-      throw error;
+      // For other errors, fall back to traditional download
+      console.warn('File System Access API failed, falling back to download:', error);
     }
   } else {
-    // Fallback for browsers without File System Access API
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = filename;
-    document.body.appendChild(a);
-    a.click();
-    
-    // Cleanup
+    console.log('File System Access API not available. Details:', {
+      hasShowSaveFilePicker: 'showSaveFilePicker' in window,
+      isSecureContext: window.isSecureContext,
+      protocol: window.location.protocol
+    });
+  }
+
+  // Alternative: Try to simulate save dialog behavior
+  try {
+    console.log('Attempting alternative save method with user confirmation');
+    const userConfirmed = confirm(`Save file "${filename}" to Downloads folder?`);
+    if (!userConfirmed) {
+      console.log('User cancelled file save');
+      return false;
+    }
+  } catch (e) {
+    console.log('Confirmation dialog not available, proceeding with download');
+  }
+
+  // Fallback for browsers without File System Access API or when API fails
+  console.log('Using traditional download method for:', filename);
+  const url = window.URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  a.style.display = 'none';
+  document.body.appendChild(a);
+  a.click();
+  
+  // Cleanup
+  setTimeout(() => {
     window.URL.revokeObjectURL(url);
     document.body.removeChild(a);
-    
-    return true;
-  }
+  }, 100);
+  
+  return true;
 }
 
 /**
  * Check if the File System Access API is supported
  */
 export function isFileSystemAccessSupported(): boolean {
-  return 'showSaveFilePicker' in window;
+  return 'showSaveFilePicker' in window && window.isSecureContext;
 }

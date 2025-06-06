@@ -88,14 +88,7 @@ The project is now production-ready with all major development phases completed.
 - Standard JSON response format
 - Comprehensive error handling
 
-### 4. PDF Export System
-- Professional PDF generation with Playwright
-- Custom CSS styling and layout
-- HTML fallback for dependency issues
-- Static file serving through FastAPI
-- Download management
-
-### 5. Query History & Analytics
+### 4. Query History & Analytics
 - JSONL-based append-only logging
 - Query statistics and performance metrics
 - History retrieval with pagination

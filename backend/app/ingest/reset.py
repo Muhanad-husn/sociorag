@@ -8,9 +8,9 @@ import shutil
 import sqlite3
 from pathlib import Path
 
-from backend.app.core.config import get_config
-from backend.app.core.singletons import SQLiteSingleton, ChromaSingleton, LoggerSingleton
-from backend.app.retriever.embedding_cache import get_embedding_cache
+from ..core.config import get_config
+from ..core.singletons import SQLiteSingleton, ChromaSingleton, LoggerSingleton
+from ..retriever.embedding_cache import get_embedding_cache
 
 
 def reset_corpus():

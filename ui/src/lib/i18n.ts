@@ -106,24 +106,14 @@ export const translations = {
     modelSelectionFailed: { en: 'Failed to save model selection to server', ar: 'فشل في حفظ اختيار النموذج على الخادم' },
     modelSelectionLocal: { en: 'Model selection confirmed!', ar: 'تم تأكيد اختيار النموذج!' },
     modelSelectionError: { en: 'Failed to confirm model selection', ar: 'فشل في تأكيد اختيار النموذج' },    modelsReset: { en: 'Model selections reset to system defaults', ar: 'تم إعادة تعيين اختيارات النماذج للافتراضيات' },    loadInfoFailed: { en: 'Failed to load system information', ar: 'فشل في تحميل معلومات النظام' },
-    loadSettingsFailed: { en: 'Failed to load LLM settings', ar: 'فشل في تحميل إعدادات LLM' },
-    validationError: { en: 'Please fix the following issues:', ar: 'يرجى إصلاح المشاكل التالية:' },
-    pdfGeneration: { en: 'PDF Generation', ar: 'توليد PDF' },
-    enablePdfGeneration: { en: 'Enable automatic PDF generation', ar: 'تفعيل توليد PDF التلقائي' },
-    pdfGenerationDesc: { en: 'Automatically generate downloadable PDF reports for answers', ar: 'توليد تقارير PDF قابلة للتحميل تلقائياً للإجابات' }
+    loadSettingsFailed: { en: 'Failed to load LLM settings', ar: 'فشل في تحميل إعدادات LLM' },    validationError: { en: 'Please fix the following issues:', ar: 'يرجى إصلاح المشاكل التالية:' }
   },common: {
     loading: { en: 'Loading...', ar: 'جاري التحميل...' },
     error: { en: 'Error', ar: 'خطأ' },
     success: { en: 'Success', ar: 'نجح' },
     cancel: { en: 'Cancel', ar: 'إلغاء' },
     confirm: { en: 'Confirm', ar: 'تأكيد' },
-    close: { en: 'Close', ar: 'إغلاق' },
-    save: { en: 'Save', ar: 'حفظ' },    downloadPdf: { en: 'Save PDF', ar: 'حفظ PDF' },
-    pdfReady: { en: 'PDF report is ready', ar: 'تقرير PDF جاهز' },
-    downloadStarted: { en: 'File saved successfully', ar: 'تم حفظ الملف بنجاح' },
-    downloadFailed: { en: 'Save failed', ar: 'فشل الحفظ' },
-    saveAs: { en: 'Save As', ar: 'حفظ باسم' },
-    saveCancelled: { en: 'Save cancelled', ar: 'تم إلغاء الحفظ' }
+    close: { en: 'Close', ar: 'إغلاق' },    save: { en: 'Save', ar: 'حفظ' }
   }
 };
 

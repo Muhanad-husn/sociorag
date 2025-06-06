@@ -1,26 +1,20 @@
 import { useEffect, useRef, useState } from 'preact/hooks';
-import { detectLanguage, getDirection, t } from '../lib/i18n';
-import { Copy, Check, Download } from 'lucide-preact';
+import { detectLanguage, getDirection } from '../lib/i18n';
+import { Copy, Check } from 'lucide-preact';
 import clsx from 'clsx';
-import { toast } from 'sonner';
-import { useAppStore } from '../hooks/useLocalState';
-import { downloadAndSavePDF } from '../lib/api';
 
 interface StreamAnswerProps {
   html?: string;  // Pre-rendered HTML content
   markdown?: string;  // Fallback markdown for backward compatibility
   isComplete?: boolean;
   error?: string | null;
-  pdfUrl?: string;
   isLoading?: boolean;
 }
 
-export function StreamAnswer({ html, markdown, isComplete = false, error, pdfUrl, isLoading = false }: StreamAnswerProps) {
+export function StreamAnswer({ html, markdown, isComplete = false, error, isLoading = false }: StreamAnswerProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [copied, setCopied] = useState(false);
   const [language, setLanguage] = useState<'en' | 'ar' | 'mixed'>('en');
-  const [downloading, setDownloading] = useState(false);
-  const { language: appLanguage } = useAppStore();
 
   // Use HTML if available, otherwise fall back to markdown (for backward compatibility)
   const content = html || markdown || '';
@@ -36,7 +30,6 @@ export function StreamAnswer({ html, markdown, isComplete = false, error, pdfUrl
       containerRef.current.scrollTop = containerRef.current.scrollHeight;
     }
   }, [content]);
-
   const handleCopy = async () => {
     try {
       // Copy the original content (markdown if available, otherwise extract text from HTML)
@@ -46,28 +39,6 @@ export function StreamAnswer({ html, markdown, isComplete = false, error, pdfUrl
       setTimeout(() => setCopied(false), 2000);
     } catch (err) {
       console.error('Failed to copy text:', err);
-    }
-  };  const handleDownloadPdf = async () => {
-    if (!pdfUrl) return;
-    
-    setDownloading(true);
-    try {
-      // Extract filename from the pdfUrl (e.g., "/static/saved/answer_20250531_123456.pdf")
-      const filename = pdfUrl.split('/').pop();
-      if (!filename) {
-        throw new Error('Could not extract filename from PDF URL');
-      }
-      
-      const success = await downloadAndSavePDF(filename, `answer-${Date.now()}.pdf`);
-      
-      if (success) {
-        toast.success(t('common.downloadStarted', appLanguage));
-      }
-    } catch (error: any) {
-      console.error('PDF save failed:', error);
-      toast.error(t('common.downloadFailed', appLanguage));
-    } finally {
-      setDownloading(false);
     }
   };
   if (error) {
@@ -116,26 +87,7 @@ export function StreamAnswer({ html, markdown, isComplete = false, error, pdfUrl
                 العربية
               </span>
             )}
-          </div>
-          <div className="flex items-center space-x-2">
-            {pdfUrl && isComplete && (
-              <button
-                onClick={handleDownloadPdf}
-                disabled={downloading || isLoading}
-                className={clsx(
-                  "btn-secondary h-8 px-3 text-xs hover-scale active-press focus-ring-enhanced",
-                  (downloading || isLoading) && "opacity-50 cursor-not-allowed"
-                )}
-                title={t('common.downloadPdf', appLanguage)}
-              >
-                {downloading ? (
-                  <div className="pulse-enhanced rounded-full h-3 w-3 border-b border-gray-600 mr-1" />
-                ) : (
-                  <Download className="h-3 w-3 mr-1" />
-                )}
-                {t('common.downloadPdf', appLanguage)}
-              </button>
-            )}
+          </div>          <div className="flex items-center space-x-2">
             <button
               onClick={handleCopy}
               disabled={isLoading}
@@ -187,11 +139,7 @@ export function StreamAnswer({ html, markdown, isComplete = false, error, pdfUrl
         </span>        <div className="flex items-center space-x-4">
           <span>
             {content.length} characters
-          </span>          {pdfUrl && isComplete && (
-            <span className="text-green-600 status-indicator">
-              {t('common.pdfReady', appLanguage)}
-            </span>
-          )}
+          </span>
         </div>
       </div>
     </div>

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'preact/hooks';
-import { Home, History, Save, Settings, Menu, X, Moon, Sun } from 'lucide-preact';
+import { Home, History, Settings, Menu, X, Moon, Sun } from 'lucide-preact';
 import { route } from 'preact-router';
 import { useAppStore } from '../hooks/useLocalState';
 import { t } from '../lib/i18n';
@@ -7,7 +7,6 @@ import { t } from '../lib/i18n';
 const navItems = [
   { id: 'home', icon: Home, path: '/' },
   { id: 'history', icon: History, path: '/history' },
-  { id: 'saved', icon: Save, path: '/saved' },
   { id: 'settings', icon: Settings, path: '/settings' },
 ];
 
