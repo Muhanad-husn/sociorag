@@ -360,8 +360,20 @@ def _build_html_document(answer_md: str, query: str, language: str = "en") -> st
 def _get_default_css() -> str:
     """Get default CSS styling for PDF."""
     return """
+        @font-face {
+            font-family: 'Arial';
+            font-style: normal;
+            font-weight: normal;
+        }
+        
+        @font-face {
+            font-family: 'Arial';
+            font-style: normal;
+            font-weight: bold;
+        }
+        
         body {
-            font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            font-family: Arial, 'DejaVu Sans', 'Liberation Sans', sans-serif;
             line-height: 1.6;
             color: #333;
             max-width: 800px;
@@ -513,14 +525,15 @@ async def save_pdf_async(answer_md: str, query: str, filename: Optional[str] = N
             # Set content and wait for it to load
             await page.set_content(html_content, wait_until="networkidle")
               # Emulate print media for proper styling
-            await page.emulate_media(media="print")
-              # Generate PDF with optimized settings
+            await page.emulate_media(media="print")            # Generate PDF with optimized settings for better compatibility
             _logger.info(f"Rendering PDF to {output_path}")
             await page.pdf(
                 path=str(output_path),
                 format="A4",
                 margin={"top": "15mm", "bottom": "15mm", "left": "15mm", "right": "15mm"},
-                print_background=True
+                print_background=True,
+                prefer_css_page_size=True,
+                display_header_footer=False,
                 # Note: generate_tagged_pdf and generate_document_outline are not supported in Playwright
             )
             
@@ -606,14 +619,15 @@ def _save_pdf_sync(answer_md: str, query: str, filename: Optional[str] = None, l
             page.set_content(html_content, wait_until="networkidle")
               # Emulate print media for proper styling
             page.emulate_media(media="print")
-            
-            # Generate PDF
+              # Generate PDF with optimized settings for better compatibility
             _logger.info(f"Rendering PDF to {output_path}")
             page.pdf(
                 path=str(output_path),
                 format="A4",
                 margin={"top": "15mm", "bottom": "15mm", "left": "15mm", "right": "15mm"},
-                print_background=True
+                print_background=True,
+                prefer_css_page_size=True,
+                display_header_footer=False,
                 # Note: generate_tagged_pdf and generate_document_outline are not supported in Playwright
             )
             
