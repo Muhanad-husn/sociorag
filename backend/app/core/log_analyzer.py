@@ -15,12 +15,13 @@ class LogAnalyzer:
     def __init__(self):
         self.config = get_config()
         self.logs_dir = self.config.BASE_DIR / "logs"
-    
     def get_log_files(self) -> List[Path]:
         """Get all log files."""
         if not self.logs_dir.exists():
             return []
-        return list(self.logs_dir.glob("*.log"))
+        
+        # Return only the primary log files, not backup/rotated files
+        return [p for p in self.logs_dir.glob("*.log") if not re.search(r'\.\d+$', p.name)]
     
     def parse_structured_logs(self, hours_back: int = 24) -> List[Dict]:
         """Parse structured JSON logs."""

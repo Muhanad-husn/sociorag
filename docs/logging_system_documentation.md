@@ -41,13 +41,13 @@ Enhanced Logging System
 
 ### Log Files
 
-The system generates multiple log files in the `logs/` directory:
+The system generates a consolidated set of log files in the `logs/` directory:
 
-- `sociorag_main.log` - Main application logs (rotated at 10MB)
-- `sociorag_debug.log` - Debug-level logs (rotated at 10MB)
-- `sociorag_error.log` - Error-only logs (rotated at 5MB)
-- `sociorag_startup.log` - Application startup logs
-- `sociorag_structured.log` - Structured JSON logs with correlation IDs
+- `sociorag_application.log` - Combined application output from frontend and backend processes
+- `sociorag.log` - Main application logs (rotated at 20MB)
+- `sociorag_errors.log` - Error-only logs (rotated at 10MB)
+- `sociorag_structured.log` - Structured JSON logs with correlation IDs (rotated at 20MB)
+- `app_manager.log` - Process management logs
 
 ## Configuration
 

@@ -3,7 +3,7 @@
 # Designed to work seamlessly with performance testing and monitoring scripts
 
 param(
-    [ValidateSet("start", "stop", "restart", "status")]
+    [ValidateSet("start", "stop", "restart", "status", "clean")]
     [string]$Action = "start",
     
     [switch]$WaitForReady,
@@ -24,6 +24,7 @@ $CONFIG = @{
     FrontendUrl = "http://localhost:5173"
     PidFile = "logs\sociorag.pid"
     LogFile = "logs\app_manager.log"
+    AppLogFile = "logs\sociorag_application.log"
 }
 
 # Ensure logs directory exists
@@ -96,13 +97,30 @@ function Start-BackendProcess {
     if ($existingBackend) {
         Write-AppLog "Backend already running (PID: $($existingBackend.Id))" "WARNING"
         return $existingBackend
-    }
-    
-    try {
+    }      try {
+        # Create a unique temp error log that will be merged into the main log
+        $tempErrorLog = "logs\temp_stderr_$([Guid]::NewGuid().ToString()).log"
+        
+        # Start process with separate output and error redirections
         $process = Start-Process -FilePath "python" -ArgumentList "-m", "backend.app.main" `
             -WorkingDirectory $PWD -PassThru -WindowStyle Hidden `
-            -RedirectStandardOutput "logs\backend_output.log" `
-            -RedirectStandardError "logs\backend_error.log"
+            -RedirectStandardOutput "logs\sociorag_application.log" `
+            -RedirectStandardError $tempErrorLog
+        
+        # Start background job to append error log to main log and then delete it
+        Start-Job -ScriptBlock {
+            param($tempLog, $mainLog)
+            # Wait a moment to ensure the process has started writing to the log
+            Start-Sleep -Seconds 2
+            # Keep monitoring and merging logs until the application stops
+            while (Test-Path $tempLog) {
+                if ((Get-Item $tempLog).Length -gt 0) {
+                    Get-Content $tempLog | Add-Content $mainLog
+                    Clear-Content $tempLog
+                }
+                Start-Sleep -Seconds 3
+            }
+        } -ArgumentList $tempErrorLog, "logs\sociorag_application.log" | Out-Null
         
         Write-AppLog "Backend started with PID: $($process.Id)" "SUCCESS"
         return $process
@@ -207,15 +225,30 @@ function Start-FrontendProcess {
                 $packageManagerPath = "npm.cmd" # Fallback to searching in PATH
             }
             $packageManagerType = "npm"
-        }
-          Write-AppLog "Using package manager: $packageManagerType ($packageManagerPath)" "INFO"
+        }        Write-AppLog "Using package manager: $packageManagerType ($packageManagerPath)" "INFO"
         
-        # Properly quote the path to handle spaces in directory names
+        # Use the same approach as backend for merging logs
+        $tempErrorLog = "logs\temp_frontend_stderr_$([Guid]::NewGuid().ToString()).log"
         $quotedPath = "`"$packageManagerPath`""
         $process = Start-Process -FilePath "cmd.exe" -ArgumentList "/c", "$quotedPath", "run", "dev" `
             -WorkingDirectory "ui" -PassThru -NoNewWindow `
-            -RedirectStandardOutput "logs\frontend_output.log" `
-            -RedirectStandardError "logs\frontend_error.log"
+            -RedirectStandardOutput "logs\sociorag_application.log" `
+            -RedirectStandardError $tempErrorLog
+        
+        # Start background job to append error log to main log and then delete it
+        Start-Job -ScriptBlock {
+            param($tempLog, $mainLog)
+            # Wait a moment to ensure the process has started writing to the log
+            Start-Sleep -Seconds 2
+            # Keep monitoring and merging logs until the application stops
+            while (Test-Path $tempLog) {
+                if ((Get-Item $tempLog).Length -gt 0) {
+                    Get-Content $tempLog | Add-Content $mainLog
+                    Clear-Content $tempLog
+                }
+                Start-Sleep -Seconds 3
+            }
+        } -ArgumentList $tempErrorLog, "logs\sociorag_application.log" | Out-Null
         
         Write-AppLog "Frontend started with PID: $($process.Id) using $packageManagerType" "SUCCESS"
         return $process
@@ -264,6 +297,78 @@ function Wait-ForServices {
     return $false
 }
 
+function Cleanup-LogFiles {
+    param(
+        [int]$RetainCount = 3,
+        [switch]$Force
+    )
+    
+    Write-AppLog "Cleaning up log files..." "INFO"
+      # Define log file patterns to consolidate
+    $logPatterns = @(
+        "frontend_*.log",
+        "sociorag_debug*.log",
+        "temp_stderr_*.log",
+        "temp_frontend_stderr_*.log"
+    )
+    
+    $consolidated = 0
+    $removed = 0
+    
+    # Process each log pattern
+    foreach ($pattern in $logPatterns) {
+        $logFiles = Get-ChildItem -Path "logs" -Filter $pattern -ErrorAction SilentlyContinue
+        
+        foreach ($logFile in $logFiles) {
+            try {
+                # Append content to application log if it's not empty
+                if ((Get-Item $logFile.FullName).Length -gt 0) {
+                    Add-Content -Path $CONFIG.AppLogFile -Value "`n--- Consolidated from $($logFile.Name) on $(Get-Date) ---`n"
+                    Get-Content -Path $logFile.FullName | Add-Content -Path $CONFIG.AppLogFile
+                    $consolidated++
+                }
+                
+                # Remove the file
+                Remove-Item -Path $logFile.FullName -Force
+                $removed++
+                Write-AppLog "Consolidated and removed $($logFile.Name)" "SUCCESS"
+            }
+            catch {
+                Write-AppLog "Failed to process $($logFile.Name): $($_.Exception.Message)" "ERROR"
+            }
+        }
+    }
+    
+    # Keep only N most recent rotated log files
+    $rotatedLogs = Get-ChildItem -Path "logs" -Filter "*.log.*" -ErrorAction SilentlyContinue
+    
+    # Group by base log name
+    $groupedLogs = $rotatedLogs | Group-Object { $_.Name -replace '\.\d+$', '' }
+    
+    foreach ($group in $groupedLogs) {
+        # Sort by newest (highest number = newest in rotation scheme)
+        $sortedLogs = $group.Group | Sort-Object { 
+            if ($_.Name -match '\.(\d+)$') { [int]$matches[1] } else { 0 } 
+        } -Descending
+        
+        # Skip the most recent N files
+        $logsToRemove = $sortedLogs | Select-Object -Skip $RetainCount
+        
+        foreach ($log in $logsToRemove) {
+            try {
+                Remove-Item -Path $log.FullName -Force
+                $removed++
+                Write-AppLog "Removed old rotated log file: $($log.Name)" "INFO"
+            }
+            catch {
+                Write-AppLog "Failed to remove $($log.Name): $($_.Exception.Message)" "ERROR"
+            }
+        }
+    }
+    
+    Write-AppLog "Log cleanup completed: $consolidated files consolidated, $removed files removed" "SUCCESS"
+}
+
 function Stop-SocioRAGServices {
     Write-AppLog "Stopping SocioRAG services..." "INFO"
     
@@ -297,11 +402,36 @@ function Stop-SocioRAGServices {
             Write-AppLog "Failed to stop frontend process (PID: $($process.Id)): $($_.Exception.Message)" "ERROR"
         }
     }
-    
-    if ($stopped -eq 0) {
+      if ($stopped -eq 0) {
         Write-AppLog "No SocioRAG processes found to stop" "WARNING"
     } else {
         Write-AppLog "Stopped $stopped processes" "SUCCESS"
+    }
+    
+    # Clean up temp log files
+    $tempLogFiles = Get-ChildItem -Path "logs" -Filter "temp_*stderr_*.log" -ErrorAction SilentlyContinue
+    foreach ($logFile in $tempLogFiles) {
+        try {
+            # Append content to application log if it's not empty
+            if ((Get-Item $logFile.FullName).Length -gt 0) {
+                Add-Content -Path $CONFIG.AppLogFile -Value "`n--- Final content from $($logFile.Name) on $(Get-Date) ---`n"
+                Get-Content -Path $logFile.FullName | Add-Content -Path $CONFIG.AppLogFile
+            }
+            
+            # Remove the file
+            Remove-Item -Path $logFile.FullName -Force
+            Write-AppLog "Cleaned up temporary log file: $($logFile.Name)" "INFO"
+        }
+        catch {
+            Write-AppLog "Failed to clean up $($logFile.Name): $($_.Exception.Message)" "ERROR"
+        }
+    }
+    
+    # Stop background log monitoring jobs
+    $logJobs = Get-Job | Where-Object { $_.Command -like "*tempLog*mainLog*" }
+    if ($logJobs) {
+        $logJobs | Stop-Job -PassThru | Remove-Job -Force
+        Write-AppLog "Stopped $($logJobs.Count) background log monitoring jobs" "INFO"
     }
     
     # Clean up PID file
@@ -424,6 +554,9 @@ switch ($Action.ToLower()) {
             exit 1
         }
         
+        # Clean up logs first
+        Cleanup-LogFiles -RetainCount 3
+        
         # Start backend
         $backendProcess = Start-BackendProcess
         if (-not $backendProcess) {
@@ -483,13 +616,18 @@ switch ($Action.ToLower()) {
         Start-Sleep -Seconds 3
         & $MyInvocation.MyCommand.Path -Action "start" -WaitForReady:$WaitForReady -SkipBrowser:$SkipBrowser -EnableMonitoring:$EnableMonitoring -TimeoutSeconds $TimeoutSeconds
     }
-    
-    "status" {
+      "status" {
         Get-ServiceStatus | Out-Null
     }
     
+    "clean" {
+        Write-AppLog "🧹 Cleaning up SocioRAG Log Files" "INFO"
+        Cleanup-LogFiles -RetainCount 3 -Force
+        Write-AppLog "Log cleanup completed" "SUCCESS"
+    }
+    
     default {
-        Write-AppLog "Invalid action: $Action. Use: start, stop, restart, or status" "ERROR"
+        Write-AppLog "Invalid action: $Action. Use: start, stop, restart, status, or clean" "ERROR"
         exit 1
     }
 }

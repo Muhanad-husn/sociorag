@@ -118,33 +118,20 @@ class LoggerSingleton(metaclass=_SingletonMeta):
         
         # Only create file handlers if log level suggests they'll be used
         log_level = getattr(logging, config.LOG_LEVEL.upper(), logging.INFO)
-        
-        # Main log file with UTF-8 encoding
+          # Main log file with UTF-8 encoding - consolidated logs
         file_handler = RotatingFileHandler(
             logs_dir / "sociorag.log",
-            maxBytes=10*1024*1024,  # 10MB
+            maxBytes=20*1024*1024,  # 20MB
             backupCount=5,
             encoding='utf-8'
         )
         file_handler.setFormatter(simple_formatter)
         self._logger.addHandler(file_handler)
         
-        # Debug handler only if debug level or below
-        if log_level <= logging.DEBUG:
-            debug_handler = RotatingFileHandler(
-                logs_dir / "sociorag_debug.log",
-                maxBytes=10*1024*1024,  # 10MB
-                backupCount=3,
-                encoding='utf-8'
-            )
-            debug_handler.setLevel(logging.DEBUG)
-            debug_handler.setFormatter(detailed_formatter)
-            self._logger.addHandler(debug_handler)
-        
         # Error handler with UTF-8 encoding
         error_handler = RotatingFileHandler(
             logs_dir / "sociorag_errors.log",
-            maxBytes=5*1024*1024,   # 5MB
+            maxBytes=10*1024*1024,   # 10MB
             backupCount=3,
             encoding='utf-8'
         )
