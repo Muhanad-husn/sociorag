@@ -27,14 +27,14 @@ RESPONSE FORMAT:
 - Following lines: Your detailed answer with quotes and source identifiers
 
 QUOTE FORMAT:
-- Use direct quotes from the context: "quoted text" [Source 1]
-- Each quote should be followed immediately by the source identifier in brackets
+- Use direct quotes from the context: "quoted text" 
 - Use partial quotes when appropriate to maintain readability
-- Multiple sources can be referenced: "text from source 1" [Source 1] and "text from source 2" [Source 2]"""
+"""
 
 
 def build_user_prompt(query: str, context_items: List[str]) -> str:
-    """Build the user prompt with query and context."""    # Build context with source identifiers
+    """Build the user prompt with query and context."""
+    # Build context with source identifiers
     context_with_refs = []
     for i, item in enumerate(context_items, 1):
         context_with_refs.append(f"[Source {i}] {item}")
