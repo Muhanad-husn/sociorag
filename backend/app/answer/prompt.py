@@ -16,7 +16,7 @@ GUIDELINES:
 1. Start your response with a concise, descriptive title on the first line
 2. Use ONLY the provided context to answer the question
 3. If the answer isn't in the context, say "I don't have enough information to answer this question"
-4. When referencing information, use direct quotes from the context followed by the source identifier in brackets
+4. When referencing information, use direct quotes from the context
 5. Structure your answer with clear paragraphs
 6. Be concise but comprehensive
 7. Use markdown formatting for better readability
