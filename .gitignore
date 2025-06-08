@@ -23,21 +23,9 @@ venv/
 *.swn
 
 # Environment and secrets
-.env
-.venv
-env/
-venv/
-config.yaml
 *.key
 *.pem
 .secrets/
-
-# IDEs and editors
-.idea/
-.vscode/
-*.swp
-*.swo
-*.swn
 
 # Build and distribution
 dist/
@@ -57,9 +45,7 @@ saved/
 # Backup directories
 backup_*/
 final_backup_*/
-phase4_backup_*/
-phase6_backup_*/
-phase7_backup_*/
+phase*_backup_*/
 cleanup_backups/
 input/
 graph.db
@@ -93,15 +79,12 @@ instructions/
 *.db-shm
 *.db-wal
 
-# Backup directories
-phase*_backup_*/
+# Specific files to ignore
 backend/app/answer/pdf.py
-.
 
 # Logs
 logs/*.log
 logs/*.log.*
-*.log
 
 # Keep logs directory structure but ignore log files
 !logs/.gitkeep
