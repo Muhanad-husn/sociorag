@@ -9,6 +9,17 @@ import { getApiUrl } from './api';
  */
 async function shutdownApplication(): Promise<void> {
   try {
+    // Check if processing is currently active
+    // Access the store state directly to avoid import cycles
+    const processingState = localStorage.getItem('sociograph-storage');
+    if (processingState) {
+      const state = JSON.parse(processingState);
+      if (state?.state?.isProcessing) {
+        console.warn('Shutdown prevented: System is currently processing files');
+        return;
+      }
+    }
+
     const apiUrl = getApiUrl();
     
     // Use sendBeacon for reliable delivery during page unload
@@ -45,36 +56,43 @@ async function shutdownApplication(): Promise<void> {
  * is closing the tab or window
  */
 export function setupShutdownTrigger(): void {
-  // Handle beforeunload event (when user tries to close/refresh the page)
-  window.addEventListener('beforeunload', (event) => {
-    // Only shutdown if this appears to be an intentional close
-    // (not a refresh or navigation within the app)
-    if (event.type === 'beforeunload') {
+  // Track if shutdown has already been triggered to prevent multiple calls
+  let shutdownTriggered = false;
+  let isNavigating = false;
+    // Track navigation events to distinguish between browser close and page navigation
+  window.addEventListener('beforeunload', () => {
+    // Only trigger shutdown if this is likely a real browser close
+    // Additional checks to prevent false positives:
+    
+    // Check if we're in the middle of processing
+    const processingState = localStorage.getItem('sociograph-storage');
+    if (processingState) {
+      const state = JSON.parse(processingState);
+      if (state?.state?.isProcessing) {
+        console.warn('Shutdown prevented: System is currently processing files');
+        return;
+      }
+    }
+    
+    // Only shutdown if we haven't already triggered it and we're not navigating
+    if (!shutdownTriggered && !isNavigating) {
+      shutdownTriggered = true;
       shutdownApplication();
     }
   });
 
-  // Handle visibilitychange as a backup
-  // This fires when the tab becomes hidden (e.g., when closing the tab)
-  document.addEventListener('visibilitychange', () => {
-    if (document.visibilityState === 'hidden') {
-      // Use a small delay to distinguish between tab switching and closing
-      setTimeout(() => {
-        if (document.visibilityState === 'hidden') {
-          shutdownApplication();
-        }
-      }, 100);
-    }
+  // Track when user starts navigating within the app
+  // This helps distinguish between navigation and browser close
+  window.addEventListener('popstate', () => {
+    isNavigating = true;
+    // Reset after a short delay
+    setTimeout(() => {
+      isNavigating = false;
+    }, 1000);
   });
 
-  // Handle pagehide event as another backup
-  // This fires when the page is being unloaded
-  window.addEventListener('pagehide', (event) => {
-    // Only trigger on actual page unload, not when going into back/forward cache
-    if (!event.persisted) {
-      shutdownApplication();
-    }
-  });
+  // Note: Removed pagehide listener as it was also too aggressive
+  // Only relying on beforeunload for more precise detection
 }
 
 /**

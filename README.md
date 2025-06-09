@@ -1,6 +1,6 @@
 # SocioRAG
 
-<img src="resources/socioRAG-logo-small.png" title="" alt="SocioRAG Logo" data-align="center">
+![SocioRAG Logo](resources/socioRAG-logo-small.png)
 
 ## 📈 Project Status
 
@@ -49,6 +49,12 @@ SocioRAG is a production-ready system for analyzing social dynamics in texts thr
 
 ## 🚀 Quick Start
 
+> **🎯 TL;DR**:
+>
+> 1. Run `.\start_production.ps1`
+> 2. When it says "Both services are healthy", click: [http://localhost:3000](http://localhost:3000)
+> 3. When done, run `.\stop_production.ps1`
+
 ### ⚡ Instant Setup (Recommended)
 
 ```powershell
@@ -69,7 +75,9 @@ cp config.yaml.example config.yaml
 - ✅ Detects missing dependencies and installs them
 - ✅ Starts both backend and frontend services
 - ✅ Waits for services to be healthy
-- ✅ Opens the application in your browser
+- ✅ Shows "Both services are healthy" when ready
+
+**📱 Once you see "Both services are healthy", click: [http://localhost:3000](http://localhost:3000)**
 
 ### 🔧 First-time Complete Setup (Optional)
 
@@ -105,12 +113,14 @@ npm run dev
 
 ### 🌐 Access Points
 
-Once started, access the application at:
+**After the startup script completes and shows "Both services are healthy", access the application at:**
 
-- **Frontend**: `http://localhost:5173`
+- **🌟 Main Application**: **`http://localhost:3000`** ← **Click here to use SocioRAG!**
 - **Backend API**: `http://localhost:8000`
 - **API Documentation**: `http://localhost:8000/docs`
 - **Admin Panel**: `http://localhost:8000/api/admin/status`
+
+> **💡 Note**: Wait for the startup script to finish loading before clicking the link. The application will automatically open in your browser when ready.
 
 📖 **Full deployment guide**: [DEPLOYMENT.md](DEPLOYMENT.md)
 
@@ -296,7 +306,7 @@ huggingface_token: hf_your_token             # HuggingFace token for translation
 
 ## 🔄 Usage
 
-### Starting the Application
+### 🚀 Starting the Application
 
 ```powershell
 # Start in production mode
@@ -304,10 +314,20 @@ huggingface_token: hf_your_token             # HuggingFace token for translation
 
 # Start with monitoring dashboard
 .\start_production.ps1 -EnableMonitoring
+```
 
-# Stop the application
+**➡️ After startup completes, visit: [http://localhost:3000](http://localhost:3000)**
+
+### 🛑 Stopping the Application
+
+**⚠️ IMPORTANT**: Always properly shutdown the application when finished:
+
+```powershell
+# Stop the application (REQUIRED when done)
 .\stop_production.ps1
 ```
+
+> **💡 Why shutdown is important**: This script safely stops both backend and frontend services, prevents resource conflicts, and ensures clean shutdown of all processes.
 
 ### API Endpoints
 

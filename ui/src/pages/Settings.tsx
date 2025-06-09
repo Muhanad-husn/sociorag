@@ -26,10 +26,12 @@ export function Settings() {
   const [editingApiKey, setEditingApiKey] = useState(false);
   const [newApiKey, setNewApiKey] = useState('');
   const [savingApiKey, setSavingApiKey] = useState(false);
-  
-  // Shutdown state
+    // Shutdown state
   const [isShuttingDown, setIsShuttingDown] = useState(false);
   const [showShutdownConfirm, setShowShutdownConfirm] = useState(false);
+  const [shutdownEnabled, setShutdownEnabled] = useState(() => {
+    return localStorage.getItem('sociorag-enable-shutdown') === 'true';
+  });
   // Load admin data on component mount
   useEffect(() => {
     loadAdminData();
@@ -185,7 +187,6 @@ export function Settings() {
     setEditingApiKey(false);
     setNewApiKey('');
   };
-
   const handleShutdown = async () => {
     setIsShuttingDown(true);
     try {
@@ -201,6 +202,16 @@ export function Settings() {
       toast.error('Failed to initiate system shutdown');
     } finally {
       setIsShuttingDown(false);
+    }
+  };
+
+  const handleToggleShutdownEnabled = (enabled: boolean) => {
+    setShutdownEnabled(enabled);
+    localStorage.setItem('sociorag-enable-shutdown', enabled.toString());
+    if (enabled) {
+      toast.success('Automatic shutdown enabled - system will shutdown when browser is closed');
+    } else {
+      toast.success('Automatic shutdown disabled - system will continue running when browser is closed');
     }
   };
 
@@ -767,7 +778,39 @@ export function Settings() {
                         {healthStatus?.status || 'Unknown'}
                       </span>
                     </>
-                  )}
+                  )}                </div>
+              </div>
+
+              {/* Automatic Shutdown Control */}
+              <div className="flex items-center justify-between p-3 bg-accent/50 rounded-lg">
+                <div className="space-y-1">
+                  <label className="text-sm font-medium">Automatic Shutdown</label>
+                  <p className="text-xs text-muted-foreground">
+                    Automatically shutdown system when browser is closed
+                  </p>
+                </div>
+                <div className="flex items-center space-x-3">
+                  <span className="text-xs text-muted-foreground">
+                    {shutdownEnabled ? 'Enabled' : 'Disabled'}
+                  </span>
+                  <button
+                    onClick={() => handleToggleShutdownEnabled(!shutdownEnabled)}
+                    className={clsx(
+                      'relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2',
+                      shutdownEnabled 
+                        ? 'bg-primary' 
+                        : 'bg-gray-200 dark:bg-gray-700'
+                    )}
+                    role="switch"
+                    aria-checked={shutdownEnabled}
+                  >
+                    <span
+                      className={clsx(
+                        'inline-block h-4 w-4 transform rounded-full bg-white transition-transform',
+                        shutdownEnabled ? 'translate-x-6' : 'translate-x-1'
+                      )}
+                    />
+                  </button>
                 </div>
               </div>
 

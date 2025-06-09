@@ -12,10 +12,19 @@ import { setupShutdownTrigger } from './lib/shutdown';
 export function App() {
   const { theme, language } = useAppStore();
   const [currentPath, setCurrentPath] = useState('/');
-
   // Set up shutdown trigger when app initializes
+  // Only enable in production or when explicitly enabled
   useEffect(() => {
-    setupShutdownTrigger();
+    // Check if we're in production mode or if shutdown triggers should be enabled
+    const isProduction = import.meta.env.PROD;
+    const enableShutdown = localStorage.getItem('sociorag-enable-shutdown') === 'true';
+    
+    if (isProduction || enableShutdown) {
+      setupShutdownTrigger();
+      console.log('🛑 Shutdown triggers enabled');
+    } else {
+      console.log('🔧 Shutdown triggers disabled (development mode)');
+    }
   }, []);
 
   const handleRoute = (e: any) => {
