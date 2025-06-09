@@ -24,7 +24,7 @@ GUIDELINES:
 RESPONSE FORMAT:
 - First line: A concise title that summarizes the main topic or answer
 - Second line: Leave blank
-- Following lines: Your detailed answer with quotes and source identifiers
+- Following lines: Your detailed answer with quotes
 
 QUOTE FORMAT:
 - Use direct quotes from the context: "quoted text" 
@@ -34,47 +34,25 @@ QUOTE FORMAT:
 
 def build_user_prompt(query: str, context_items: List[str]) -> str:
     """Build the user prompt with query and context."""
-    # Build context with source identifiers
-    context_with_refs = []
-    for i, item in enumerate(context_items, 1):
-        context_with_refs.append(f"[Source {i}] {item}")
-    
-    context_str = "\n\n".join(context_with_refs)
+    # Build context without source identifiers
+    context_str = "\n\n".join(context_items)
     
     return f"""CONTEXT:
 {context_str}
 
 QUESTION: {query}
 
-Please provide a well-structured answer with a concise title, using direct quotes with source identifiers:"""
+Please provide a well-structured answer with a concise title, using direct quotes:"""
 
 
 def process_quotes(answer_md: str, context_items: List[str]) -> str:
-    """Post-process the answer to ensure proper quote and source formatting.
+    """Post-process the answer to ensure proper quote formatting.
     
-    This function validates that source identifiers in the answer correspond to
-    available context items and fixes any formatting issues.
+    This function validates and cleans up quote formatting in the answer.
     """
-    # Find all source identifier patterns in the answer
-    source_pattern = r'\[Source (\d+)\]'
-    sources = re.findall(source_pattern, answer_md)
-    
-    # Convert to integers and get unique sources
-    unique_sources = sorted(set(int(s) for s in sources if s.isdigit()))
-    
-    # Validate sources don't exceed available context
-    max_available = len(context_items)
-    valid_sources = [s for s in unique_sources if 1 <= s <= max_available]
-    
-    # If we have invalid sources, add a note
-    invalid_sources = [s for s in unique_sources if s > max_available]
-    if invalid_sources:
-        answer_md += f"\n\n*Note: Some source references ({invalid_sources}) refer to unavailable sources and have been omitted.*"
-    
-    # Clean up any malformed source identifiers to ensure consistency
-    answer_md = re.sub(r'\[Source\s+(\d+)\]', r'[Source \1]', answer_md)
-    
-    return answer_md
+    # Since we no longer use source identifiers, we can simply return the answer
+    # with any basic formatting cleanup if needed
+    return answer_md.strip()
 
 
 def build_context_summary(context_items: List[str]) -> str:

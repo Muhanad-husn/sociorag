@@ -7,6 +7,7 @@ import { useAsyncRequest } from '../hooks/useAsyncRequest';
 import { useAppStore } from '../hooks/useLocalState';
 import { askQuestion, type AskResponse } from '../lib/api';
 import { t } from '../lib/i18n';
+import { setProcessingState } from '../lib/shutdown-safe';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '../components/ui/Tabs';
 import { Card } from '../components/ui/Card';
 import clsx from 'clsx';
@@ -34,9 +35,9 @@ export function Home() {
       setAnswerHtml('');
     }
   };
-
   const handleUploadStart = () => {
     setIsProcessing(true);
+    setProcessingState(true); // Prevent accidental shutdowns during processing
   };
 
   const handleUploadComplete = (filename: string) => {
@@ -48,6 +49,7 @@ export function Home() {
 
   const handleProcessingComplete = () => {
     setIsProcessing(false);
+    setProcessingState(false); // Re-enable shutdown triggers
     // UI components will automatically be re-enabled when isProcessing is set to false
   };  // Determine if the UI should be in a loading state
   const isLoading = isSearching || isProcessing;

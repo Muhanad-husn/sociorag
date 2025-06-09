@@ -170,9 +170,8 @@ def create_app() -> FastAPI:
         allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],        allow_headers=["*"],
         expose_headers=["Content-Disposition"],
         max_age=600,  # Cache preflight requests for 10 minutes
-    )
-
-    # Include routersapp.include_router(ingest_router)
+    )    # Include routers
+    app.include_router(ingest_router)
     app.include_router(qa_router)
     app.include_router(history_router)
     app.include_router(documents_router)
@@ -187,6 +186,11 @@ def create_app() -> FastAPI:
     async def root():
         """Root endpoint for API health check."""
         return {"status": "ok", "message": "SocioGraph API is running"}
+    
+    @app.get("/health")
+    async def health():
+        """Simple health check endpoint for monitoring and load balancers."""
+        return {"status": "healthy", "service": "SocioGraph API"}
     
     duration = time.time() - start_time
     logger.log_operation_end("app_initialization", success=True, duration=duration)

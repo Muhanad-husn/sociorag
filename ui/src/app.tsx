@@ -7,15 +7,15 @@ import { History } from './pages/History';
 import { Settings } from './pages/Settings';
 import { Navigation } from './components/Navigation';
 import { getDirection } from './lib/i18n';
-import { setupShutdownTrigger } from './lib/shutdown';
+import { setupSafeShutdownTrigger } from './lib/shutdown-safe';
 
 export function App() {
   const { theme, language } = useAppStore();
   const [currentPath, setCurrentPath] = useState('/');
 
-  // Set up shutdown trigger when app initializes
+  // Set up safer shutdown trigger when app initializes
   useEffect(() => {
-    setupShutdownTrigger();
+    setupSafeShutdownTrigger();
   }, []);
 
   const handleRoute = (e: any) => {

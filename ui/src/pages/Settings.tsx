@@ -8,7 +8,7 @@ import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from '..
 import { Moon, Sun, Settings as SettingsIcon, AlertTriangle, Save, Shield, CheckCircle, XCircle, RefreshCw, Power } from 'lucide-preact';
 import { toast } from 'sonner';
 import clsx from 'clsx';
-import { manualShutdown } from '../lib/shutdown';
+import { manualShutdown } from '../lib/shutdown-safe';
 
 export function Settings() {
   const { isDark, toggleTheme, settings, updateSettings, language, setLanguage } = useAppStore();
