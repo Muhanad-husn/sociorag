@@ -1,6 +1,6 @@
 # SocioRAG
 
-![SocioRAG Logo](resources/socioRAG-logo-small.png)
+<img src="resources/socioRAG-logo-small.png" title="" alt="SocioRAG Logo" data-align="center">
 
 ## 📈 Project Status
 
@@ -16,12 +16,12 @@
 
 ## 🔑 Environment Variables
 
-| Key                | Description                        | Example      |
-|--------------------|------------------------------------|--------------|
-| OPENROUTER_API_KEY | LLM access key                     | `sk-or-***`  |
-| CHUNK_SIM          | Similarity threshold for chunking   | `0.80`       |
-| LOG_LEVEL          | Logging level                      | `DEBUG`      |
-| ...                | ...                                | ...          |
+| Key                | Description                       | Example     |
+| ------------------ | --------------------------------- | ----------- |
+| OPENROUTER_API_KEY | LLM access key                    | `sk-or-***` |
+| CHUNK_SIM          | Similarity threshold for chunking | `0.80`      |
+| LOG_LEVEL          | Logging level                     | `DEBUG`     |
+| ...                | ...                               | ...         |
 
 See `.env.example` for the full list.
 
@@ -116,15 +116,15 @@ Once started, access the application at:
 
 ## ✨ Feature Overview
 
-| Feature                | Description                                  | Status   |
-|------------------------|----------------------------------------------|----------|
-| Entity Extraction      | LLM-powered, multilingual                    | ✅ Ready |
-| Vector Search          | Fast, reranking, configurable; supports both chunk and entity embeddings | ✅ Ready |
-| PDF Export             | Custom, styled, automated                    | ✅ Ready |
-| Query Analytics        | JSONL logs, performance metrics              | ✅ Ready |
-| Multilingual Support   | English & Arabic, translation API            | ✅ Ready |
-| UI                     | Modern, responsive, bilingual                | ✅ Ready |
-| Logging & Monitoring   | Structured logs, REST API, health checks     | ✅ Ready |
+| Feature              | Description                                                              | Status  |
+| -------------------- | ------------------------------------------------------------------------ | ------- |
+| Entity Extraction    | LLM-powered, multilingual                                                | ✅ Ready |
+| Vector Search        | Fast, reranking, configurable; supports both chunk and entity embeddings | ✅ Ready |
+| PDF Export           | Custom, styled, automated                                                | ✅ Ready |
+| Query Analytics      | JSONL logs, performance metrics                                          | ✅ Ready |
+| Multilingual Support | English & Arabic, translation API                                        | ✅ Ready |
+| UI                   | Modern, responsive, bilingual                                            | ✅ Ready |
+| Logging & Monitoring | Structured logs, REST API, health checks                                 | ✅ Ready |
 
 ## 🧪 Running Tests
 
