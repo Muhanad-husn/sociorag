@@ -2,7 +2,7 @@ import { useEffect } from 'preact/hooks';
 import { useProgressPolling } from '../hooks/useAsyncRequest';
 import { getProcessingProgress } from '../lib/api';
 import { t } from '../lib/i18n';
-import { setProcessingState } from '../lib/shutdown-safe';
+import { useAppStore } from '../hooks/useLocalState';
 import { CheckCircle, Loader } from 'lucide-preact';
 import clsx from 'clsx';
 
@@ -12,23 +12,24 @@ interface ProgressBarProps {
 }
 
 export function ProgressBar({ isVisible, onComplete }: ProgressBarProps) {
+  const { setIsProcessing } = useAppStore();
   const { progress, status, isComplete } = useProgressPolling(
     isVisible ? getProcessingProgress : null,
     1000 // Poll every 1 second
   );
   useEffect(() => {
     if (isComplete) {
-      setProcessingState(false); // Re-enable shutdown triggers when processing is complete
+      setIsProcessing(false); // Re-enable shutdown triggers when processing is complete
       onComplete?.();
     }
-  }, [isComplete, onComplete]);
+  }, [isComplete, onComplete, setIsProcessing]);
 
   // Set processing state when component becomes visible
   useEffect(() => {
     if (isVisible) {
-      setProcessingState(true); // Prevent shutdown during processing
+      setIsProcessing(true); // Prevent shutdown during processing
     }
-  }, [isVisible]);
+  }, [isVisible, setIsProcessing]);
 
   if (!isVisible && !isComplete) {
     return null;
