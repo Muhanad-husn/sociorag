@@ -9,7 +9,7 @@ _tok, _model = None, None
 _config = get_config()
 
 def _load_helsinki():
-    """Load Helsinki-NLP translation model."""
+    """Load Helsinki-NLP translation model with caching support."""
     global _tok, _model
     if _tok is None:
         try:
@@ -17,18 +17,35 @@ def _load_helsinki():
             hf_token = _config.HUGGINGFACE_TOKEN
             use_auth = hf_token is not None and len(str(hf_token).strip()) > 0
             
+            # Set up cache directory from config
+            cache_dir = str(_config.TRANSFORMERS_CACHE_DIR)
+            
             # Try to load the model, but handle potential errors
             get_logger().info(f"Loading Helsinki-NLP translation model (with auth: {use_auth})")
+            get_logger().info(f"Using cache directory: {cache_dir}")
             
             if use_auth:
-                _tok = MarianTokenizer.from_pretrained("Helsinki-NLP/opus-mt-tc-big-ar-en", token=hf_token)
-                _model = MarianMTModel.from_pretrained("Helsinki-NLP/opus-mt-tc-big-ar-en", token=hf_token)
+                _tok = MarianTokenizer.from_pretrained(
+                    "Helsinki-NLP/opus-mt-tc-big-ar-en", 
+                    token=hf_token,
+                    cache_dir=cache_dir
+                )
+                _model = MarianMTModel.from_pretrained(
+                    "Helsinki-NLP/opus-mt-tc-big-ar-en", 
+                    token=hf_token,
+                    cache_dir=cache_dir
+                )
             else:
                 # Try without token for publicly available models
-                _tok = MarianTokenizer.from_pretrained("Helsinki-NLP/opus-mt-tc-big-ar-en")
-                _model = MarianMTModel.from_pretrained("Helsinki-NLP/opus-mt-tc-big-ar-en")
-                
-            get_logger().info("Successfully loaded translation model")
+                _tok = MarianTokenizer.from_pretrained(
+                    "Helsinki-NLP/opus-mt-tc-big-ar-en",
+                    cache_dir=cache_dir
+                )
+                _model = MarianMTModel.from_pretrained(
+                    "Helsinki-NLP/opus-mt-tc-big-ar-en",
+                    cache_dir=cache_dir
+                )                
+            get_logger().info("Successfully loaded translation model from cache")
             return True
         except Exception as e:
             # Log the error but continue execution
@@ -37,13 +54,29 @@ def _load_helsinki():
             # Try loading a smaller model as fallback
             try:
                 get_logger().info("Attempting to load smaller translation model as fallback")
+                cache_dir = str(_config.TRANSFORMERS_CACHE_DIR)
+                
                 if use_auth:
-                    _tok = MarianTokenizer.from_pretrained("Helsinki-NLP/opus-mt-ar-en", token=hf_token)
-                    _model = MarianMTModel.from_pretrained("Helsinki-NLP/opus-mt-ar-en", token=hf_token)
+                    _tok = MarianTokenizer.from_pretrained(
+                        "Helsinki-NLP/opus-mt-ar-en", 
+                        token=hf_token,
+                        cache_dir=cache_dir
+                    )
+                    _model = MarianMTModel.from_pretrained(
+                        "Helsinki-NLP/opus-mt-ar-en", 
+                        token=hf_token,
+                        cache_dir=cache_dir
+                    )
                 else:
-                    _tok = MarianTokenizer.from_pretrained("Helsinki-NLP/opus-mt-ar-en")
-                    _model = MarianMTModel.from_pretrained("Helsinki-NLP/opus-mt-ar-en")
-                get_logger().info("Successfully loaded fallback translation model")
+                    _tok = MarianTokenizer.from_pretrained(
+                        "Helsinki-NLP/opus-mt-ar-en",
+                        cache_dir=cache_dir
+                    )
+                    _model = MarianMTModel.from_pretrained(
+                        "Helsinki-NLP/opus-mt-ar-en",
+                        cache_dir=cache_dir
+                    )
+                get_logger().info("Successfully loaded fallback translation model from cache")
                 return True
             except Exception as e2:
                 get_logger().error(f"Error loading fallback translation model: {e2}")

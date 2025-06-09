@@ -8,14 +8,20 @@ import yaml
 from pydantic import BaseModel, Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
-class _Config(BaseSettings):
+class _Config(BaseSettings):    
     # ---------------------- paths ---------------------- #
     BASE_DIR: Path = Path(__file__).resolve().parent.parent.parent.parent
     INPUT_DIR: Path = Field(default_factory=lambda: Path(__file__).resolve().parent.parent.parent.parent / "input")
     SAVED_DIR: Path = Field(default_factory=lambda: Path(__file__).resolve().parent.parent.parent.parent / "saved")
     VECTOR_DIR: Path = Field(default_factory=lambda: Path(__file__).resolve().parent.parent.parent.parent / "vector_store")
     GRAPH_DB: Path = Field(default_factory=lambda: Path(__file__).resolve().parent.parent.parent.parent / "data" / "graph.db")
-    PDF_THEME: Path = Field(default_factory=lambda: Path(__file__).resolve().parent.parent.parent.parent / "resources" / "pdf_theme.css")    # ---------------------- models --------------------- #
+    PDF_THEME: Path = Field(default_factory=lambda: Path(__file__).resolve().parent.parent.parent.parent / "resources" / "pdf_theme.css")
+    
+    # ---------------------- model cache paths ---------------------- #
+    CACHE_DIR: Path = Field(default_factory=lambda: Path(__file__).resolve().parent.parent.parent.parent / "models_cache")
+    HF_CACHE_DIR: Path = Field(default_factory=lambda: Path(__file__).resolve().parent.parent.parent.parent / "models_cache" / "huggingface")
+    TRANSFORMERS_CACHE_DIR: Path = Field(default_factory=lambda: Path(__file__).resolve().parent.parent.parent.parent / "models_cache" / "transformers")
+    SENTENCE_TRANSFORMERS_CACHE_DIR: Path = Field(default_factory=lambda: Path(__file__).resolve().parent.parent.parent.parent / "models_cache" / "sentence_transformers")# ---------------------- models --------------------- #
     EMBEDDING_MODEL: str = "sentence-transformers/all-MiniLM-L6-v2"
     RERANKER_MODEL: str = "cross-encoder/ms-marco-MiniLM-L-6-v2"  # Fixed model name with hyphen in L-6
       # Entity extraction LLM parameters

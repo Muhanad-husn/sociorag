@@ -3,11 +3,11 @@
 
 This module provides lazy-loaded, thread-safe singletons for all heavy infrastructure:
 - LoggerSingleton: Centralized logging
-- EmbeddingSingleton: Sentence transformer model
+- EmbeddingSingleton: Sentence transformer model with cache support
 - ChromaSingleton: Persistent vector store
 - SQLiteSingleton: Graph database with sqlite-vec
 - LLMClientSingleton: OpenRouter client wrapper
-- NLPSingleton: spaCy pipeline
+- NLPSingleton: spaCy pipeline with cache support
 """
 
 import logging
@@ -29,6 +29,26 @@ except ImportError:
     sqlite_vec = None
 
 from .config import get_config
+
+def _setup_model_cache():
+    """Set up environment variables for model caching."""
+    config = get_config()
+    
+    # Create cache directories
+    config.CACHE_DIR.mkdir(exist_ok=True)
+    config.HF_CACHE_DIR.mkdir(exist_ok=True)
+    config.TRANSFORMERS_CACHE_DIR.mkdir(exist_ok=True)
+    config.SENTENCE_TRANSFORMERS_CACHE_DIR.mkdir(exist_ok=True)
+    
+    # Set environment variables for caching
+    os.environ["HF_HOME"] = str(config.HF_CACHE_DIR)
+    os.environ["TRANSFORMERS_CACHE"] = str(config.TRANSFORMERS_CACHE_DIR)
+    os.environ["SENTENCE_TRANSFORMERS_HOME"] = str(config.SENTENCE_TRANSFORMERS_CACHE_DIR)
+    
+    return config
+
+# Initialize cache setup
+_setup_model_cache()
 
 # Import the embedding cache if available, with fallback
 try:
@@ -153,14 +173,29 @@ class EmbeddingSingleton(metaclass=_SingletonMeta):
             config = get_config()
             logger = LoggerSingleton().get()
             self._logger = logger  # Store logger for later use
+            
             logger.info(f"Loading embedding model: {config.EMBEDDING_MODEL}")
+            logger.info(f"Using cache directory: {config.SENTENCE_TRANSFORMERS_CACHE_DIR}")
+            
             try:
-                # Use trust_remote_code=True to avoid authentication issues
-                self._model = SentenceTransformer(config.EMBEDDING_MODEL, trust_remote_code=True)
+                # Use trust_remote_code=True and cache directory for faster loading
+                self._model = SentenceTransformer(
+                    config.EMBEDDING_MODEL, 
+                    trust_remote_code=True,
+                    cache_folder=str(config.SENTENCE_TRANSFORMERS_CACHE_DIR)
+                )
+                logger.info("Successfully loaded embedding model from cache")
             except Exception as e:
-                logger.warning(f"Error loading embedding model with trust_remote_code=True: {e}")
+                logger.warning(f"Error loading embedding model with cache: {e}")
                 # Fallback to basic loading
-                self._model = SentenceTransformer(config.EMBEDDING_MODEL)
+                try:
+                    self._model = SentenceTransformer(config.EMBEDDING_MODEL, trust_remote_code=True)
+                    logger.info("Successfully loaded embedding model without cache")                
+                except Exception as e2:
+                    logger.warning(f"Error loading embedding model with trust_remote_code=True: {e2}")
+                    # Final fallback to basic loading
+                    self._model = SentenceTransformer(config.EMBEDDING_MODEL)
+                    logger.info("Successfully loaded embedding model with basic loading")
             
         return self._model
         
@@ -260,9 +295,10 @@ class ChromaSingleton(metaclass=_SingletonMeta):
             config.VECTOR_DIR.mkdir(parents=True, exist_ok=True)
             logger.info(f"Initializing Chroma at: {config.VECTOR_DIR}")
             
-            # Create embedding function wrapper
+            # Create embedding function wrapper with cache support
             embedding_function = HuggingFaceEmbeddings(
-                model_name=config.EMBEDDING_MODEL
+                model_name=config.EMBEDDING_MODEL,
+                cache_folder=str(config.SENTENCE_TRANSFORMERS_CACHE_DIR)
             )
             
             self._chroma = Chroma(
@@ -270,6 +306,7 @@ class ChromaSingleton(metaclass=_SingletonMeta):
                 embedding_function=embedding_function,
                 collection_name="documents"
             )
+            logger.info("Successfully initialized Chroma with persistent storage")
             
         return self._chroma
 
@@ -286,8 +323,7 @@ class SQLiteSingleton(metaclass=_SingletonMeta):
             config = get_config()
             logger = LoggerSingleton().get()
             
-            # Ensure parent directory exists
-            config.GRAPH_DB.parent.mkdir(parents=True, exist_ok=True)
+            # Ensure parent directory exists            config.GRAPH_DB.parent.mkdir(parents=True, exist_ok=True)
             
             logger.info(f"Connecting to SQLite database: {config.GRAPH_DB}")
             
@@ -300,12 +336,18 @@ class SQLiteSingleton(metaclass=_SingletonMeta):
             # Set row_factory to return rows as dictionaries
             self._connection.row_factory = sqlite3.Row
             
-            # Enable WAL mode for better concurrency
+            # Optimize SQLite for better performance
             self._connection.execute("PRAGMA journal_mode=WAL")
+            self._connection.execute("PRAGMA synchronous=NORMAL")  # Faster than FULL, still safe
+            self._connection.execute("PRAGMA cache_size=10000")    # 10MB cache
+            self._connection.execute("PRAGMA temp_store=MEMORY")   # Store temp tables in memory
+            self._connection.execute("PRAGMA mmap_size=268435456") # 256MB memory map
             
-            # Enable extension loading first
+            logger.info("SQLite optimizations applied for better performance")
+              # Enable extension loading first
             self._connection.enable_load_extension(True)
-              # Try to load sqlite-vec extension
+            
+            # Try to load sqlite-vec extension
             try:
                 if sqlite_vec is not None:
                     # Use the load method from sqlite_vec
@@ -630,10 +672,12 @@ class NLPSingleton(metaclass=_SingletonMeta):
             logger.info(f"Loading spaCy model: {config.SPACY_MODEL}")
             
             # Load model with only necessary components for performance
+            # spaCy models will be cached automatically in the user's spacy data directory
             self._nlp = spacy.load(
                 config.SPACY_MODEL,
                 disable=["parser", "ner", "lemmatizer", "textcat"]
             )
+            logger.info("Successfully loaded spaCy model")
             
         return self._nlp
 

@@ -76,6 +76,40 @@ function Stop-Services {
     Write-Log "Services stopped" "SUCCESS" $SuccessColor
 }
 
+function Test-ModelCache {
+    Write-Log "Checking model cache..." "INFO" $InfoColor
+    
+    $cacheDir = "models_cache"
+    if (Test-Path $cacheDir) {
+        try {
+            $cacheSize = (Get-ChildItem $cacheDir -Recurse -File | Measure-Object -Property Length -Sum).Sum / 1MB
+            Write-Log "Model cache found: $([math]::Round($cacheSize, 1)) MB" "SUCCESS" $SuccessColor
+            return $true
+        } catch {
+            Write-Log "Model cache directory exists but size calculation failed" "WARNING" $WarningColor
+            return $true  # Assume cache exists if directory is present
+        }
+    } else {
+        Write-Log "No model cache found. First run will take longer..." "WARNING" $WarningColor
+        return $false
+    }
+}
+
+function Initialize-ModelCache {
+    Write-Log "Initializing model cache (one-time setup)..." "INFO" $InfoColor
+    Write-Log "This will download and cache all ML models for faster future startups" "INFO" $InfoColor
+    
+    try {
+        python scripts\preload_models.py
+        Write-Log "Model cache initialized successfully!" "SUCCESS" $SuccessColor
+        return $true
+    } catch {
+        Write-Log "Failed to initialize model cache: $($_.Exception.Message)" "ERROR" $ErrorColor
+        Write-Log "Continuing without cache - startup will take longer" "WARNING" $WarningColor
+        return $false
+    }
+}
+
 function Test-Prerequisites {
     Write-Log "Checking prerequisites..." "INFO" $InfoColor
     
@@ -370,8 +404,21 @@ try {
         }
         Start-Sleep -Seconds 5
     }
+      Write-Log "Ready to start services..." "SUCCESS" $SuccessColor
     
-    Write-Log "Ready to start services..." "SUCCESS" $SuccessColor
+    # Check and initialize model cache if needed
+    $hasCachedModels = Test-ModelCache
+    if (-not $hasCachedModels) {
+        Write-Log "Setting up model cache for faster future startups..." "INFO" $InfoColor
+        $response = Read-Host "Download and cache models now? This is a one-time setup (y/N)"
+        if ($response -eq 'y' -or $response -eq 'Y') {
+            Initialize-ModelCache
+        } else {
+            Write-Log "Skipping model cache setup. Startup will take longer..." "WARNING" $WarningColor
+        }
+    } else {
+        Write-Log "Using cached models for faster startup!" "SUCCESS" $SuccessColor
+    }
     
     # Start services
     if (!(Start-Backend)) {

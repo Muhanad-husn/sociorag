@@ -21,15 +21,27 @@ _reranker_available = True
 _direct_model_available = False  # Start with False until we confirm it works
 
 def _get_reranker():
-    """Lazy-load the cross-encoder reranker."""
+    """Lazy-load the cross-encoder reranker with caching support."""
     global _reranker, _reranker_available
     
     if _reranker is None and _reranker_available:
         try:
+            from backend.app.core.config import get_config
+            config = get_config()
+            cache_dir = str(config.SENTENCE_TRANSFORMERS_CACHE_DIR)
+            
             # Use same model that works with direct transformer but with specific parameters
             model_name = "cross-encoder/ms-marco-MiniLM-L-6-v2"  # Note the "-" in L-6 versus L6 in config
             _logger.info(f"Loading cross-encoder reranker: {model_name}")
-            _reranker = CrossEncoder(model_name, max_length=512, device="cpu")
+            _logger.info(f"Using cache directory: {cache_dir}")
+            
+            _reranker = CrossEncoder(
+                model_name, 
+                max_length=512, 
+                device="cpu",
+                cache_folder=cache_dir
+            )
+            _logger.info("Successfully loaded cross-encoder reranker from cache")
         except Exception as e:
             _logger.warning(f"Failed to load cross-encoder reranker: {e}")
             _logger.warning("Will skip reranking and use vector similarity scores only")
@@ -39,9 +51,19 @@ def _get_reranker():
                 # Try the model from config but with the correct name format
                 fallback_model = "cross-encoder/ms-marco-MiniLM-L-6-v2"  # Correct format with hyphen
                 _logger.info(f"Attempting to load fallback reranker: {fallback_model}")
-                _reranker = CrossEncoder(fallback_model, max_length=512, device="cpu")
+                
+                from backend.app.core.config import get_config
+                config = get_config()
+                cache_dir = str(config.SENTENCE_TRANSFORMERS_CACHE_DIR)
+                
+                _reranker = CrossEncoder(
+                    fallback_model, 
+                    max_length=512, 
+                    device="cpu",
+                    cache_folder=cache_dir
+                )
                 _reranker_available = True
-                _logger.info("Successfully loaded fallback reranker")
+                _logger.info("Successfully loaded fallback reranker from cache")
             except Exception as e2:
                 _logger.error(f"All reranker loading attempts failed: {e2}")
                 _reranker_available = False
@@ -49,19 +71,24 @@ def _get_reranker():
     return _reranker
 
 def _load_direct_transformer():
-    """Load reranker model directly using transformers library as a fallback."""
+    """Load reranker model directly using transformers library as a fallback with caching."""
     global _tokenizer, _model, _direct_model_available
     
     if _tokenizer is None or _model is None:
         try:
+            from backend.app.core.config import get_config
+            config = get_config()
+            cache_dir = str(config.TRANSFORMERS_CACHE_DIR)
+            
             fallback_model = "cross-encoder/ms-marco-MiniLM-L-6-v2"  # Public model that should work without auth
             _logger.info(f"Loading direct transformer reranker: {fallback_model}")
+            _logger.info(f"Using cache directory: {cache_dir}")
             
-            _tokenizer = AutoTokenizer.from_pretrained(fallback_model)
-            _model = AutoModelForSequenceClassification.from_pretrained(fallback_model)
+            _tokenizer = AutoTokenizer.from_pretrained(fallback_model, cache_dir=cache_dir)
+            _model = AutoModelForSequenceClassification.from_pretrained(fallback_model, cache_dir=cache_dir)
             _model.eval()  # Set to evaluation mode
             _direct_model_available = True
-            _logger.info("Successfully loaded direct transformer reranker")
+            _logger.info("Successfully loaded direct transformer reranker from cache")
             
         except Exception as e:
             _logger.error(f"Failed to load direct transformer reranker: {e}")
