@@ -53,7 +53,7 @@ SocioRAG is a production-ready system for analyzing social dynamics in texts thr
 
 ```powershell
 # Clone the repository
-git clone https://github.com/your-username/sociorag.git
+git clone https://github.com/Muhanad-husn/sociorag.git
 cd sociorag
 
 # Set up environment files
