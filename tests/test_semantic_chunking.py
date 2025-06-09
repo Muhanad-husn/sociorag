@@ -62,7 +62,7 @@ class TestSemanticChunker:
         chunker = SemanticChunker()
         assert chunker.embed_model is not None
         assert chunker.splitter is not None
-        assert chunker.max_chunk_size == 1000
+        assert chunker.max_chunk_size == 3000
         assert chunker.min_chunk_size == 100
     
     def test_basic_chunking(self):

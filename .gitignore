@@ -49,7 +49,6 @@ phase*_backup_*/
 cleanup_backups/
 input/
 graph.db
-config.yaml
 
 # Cache
 .cache/

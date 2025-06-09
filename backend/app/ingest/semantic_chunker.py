@@ -23,7 +23,7 @@ class SemanticChunker:
         model_name: str = None,
         buffer_size: int = 1,
         breakpoint_percentile_threshold: int = 85,
-        max_chunk_size: int = 1000,
+        max_chunk_size: int = 3000,
         min_chunk_size: int = 100
     ):
         # Use config defaults if not specified

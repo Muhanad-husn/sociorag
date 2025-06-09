@@ -243,7 +243,7 @@ function Test-Services {
     $retryCount = 0
     $backendReady = $false
     
-    Write-Log "Waiting for backend to initialize (this may take up to 3 minutes)..." "INFO" $InfoColor
+    Write-Log "Waiting for backend to initialize (this may take up to 2 minutes)..." "INFO" $InfoColor
     Write-Log "Backend needs time to load spaCy models and initialize database..." "INFO" $InfoColor
     Start-Sleep -Seconds 15  # Give backend more initial time to start
     
