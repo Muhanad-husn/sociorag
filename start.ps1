@@ -19,10 +19,10 @@
     Show backend startup logs for debugging
     
 .EXAMPLE
-    .\start_production.ps1
-    .\start_production.ps1 -CleanLogs
-    .\start_production.ps1 -Port 8080 -FrontendPort 3001
-    .\start_production.ps1 -ShowStartupLogs
+    .\start.ps1
+    .\start.ps1 -CleanLogs
+    .\start.ps1 -Port 8080 -FrontendPort 3001
+    .\start.ps1 -ShowStartupLogs
 #>
 
 param(
@@ -334,7 +334,7 @@ function Show-Status {
     Write-Log "" "INFO" $InfoColor
     Write-Log "Commands:" "INFO" $InfoColor
     Write-Log "  View logs: .\view_logs.ps1" "INFO" $InfoColor
-    Write-Log "  Stop:      .\stop_production.ps1" "INFO" $InfoColor
+    Write-Log "  Stop:      .\stop.ps1" "INFO" $InfoColor
     Write-Log "  Or press Ctrl+C to stop services" "INFO" $InfoColor
 }
 

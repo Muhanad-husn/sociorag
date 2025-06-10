@@ -75,7 +75,7 @@ self._model = SentenceTransformer(
 - ✅ Reports cache size
 - ✅ Provides performance feedback
 
-### Startup Script (`start_production.ps1`)
+### Startup Script (`start.ps1`)
 ```powershell
 [2025-06-10 00:35:10][INFO] Checking model cache...
 [2025-06-10 00:35:10][SUCCESS] Model cache found: 174.9 MB

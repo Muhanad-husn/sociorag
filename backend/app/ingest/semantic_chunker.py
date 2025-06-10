@@ -20,17 +20,17 @@ class SemanticChunker:
     
     def __init__(
         self,
-        model_name: str = None,
-        buffer_size: int = 1,
-        breakpoint_percentile_threshold: int = 85,
-        max_chunk_size: int = 3000,
+        model_name: str | None = None,
+        buffer_size: int = 2,
+        breakpoint_percentile_threshold: int = 60,
+        MAX_CHUNK_SIZE: int = 1000,
         min_chunk_size: int = 100
     ):
         # Use config defaults if not specified
         self.model_name = model_name or config.RERANKER_MODEL
         self.buffer_size = buffer_size
         self.breakpoint_percentile_threshold = breakpoint_percentile_threshold
-        self.max_chunk_size = max_chunk_size
+        self.max_chunk_size = MAX_CHUNK_SIZE
         self.min_chunk_size = min_chunk_size
         
         # Initialize embedding model

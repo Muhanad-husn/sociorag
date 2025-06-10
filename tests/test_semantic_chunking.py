@@ -84,7 +84,7 @@ class TestSemanticChunker:
     
     def test_chunk_size_constraints(self):
         """Test that chunk size constraints are respected."""
-        chunker = SemanticChunker(max_chunk_size=100, min_chunk_size=20)
+        chunker = SemanticChunker(MAX_CHUNK_SIZE=100, min_chunk_size=20)
         
         # Test with text that should create multiple chunks due to size constraints
         long_text = "This is a long sentence. " * 10  # Should exceed max_chunk_size
@@ -107,7 +107,7 @@ class TestSemanticChunker:
     
     def test_large_chunk_splitting(self):
         """Test that large chunks are properly split."""
-        chunker = SemanticChunker(max_chunk_size=50)  # Very small max size
+        chunker = SemanticChunker(MAX_CHUNK_SIZE=50)  # Very small max size
         
         long_sentence = "This is a very long sentence that should definitely exceed the maximum chunk size and trigger splitting."
         chunks = chunker._split_large_chunk(long_sentence)

@@ -5,7 +5,7 @@
 ### 🚀 Instant Launch (1-Command)
 ```powershell
 # Start SocioRAG in production mode with monitoring
-.\start_production.ps1
+.\start.ps1
 ```
 
 ### ⚡ Essential Commands
@@ -14,7 +14,7 @@
 .\scripts\production\app_manager.ps1 -Status
 
 # Stop all services
-.\stop_production.ps1
+.\stop.ps1
 
 # View logs
 Get-Content .\logs\sociorag.log -Tail 50 -Wait

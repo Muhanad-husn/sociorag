@@ -11,7 +11,7 @@ cp .env.example .env
 cp config.yaml.example config.yaml
 
 # Start application - auto-installs all dependencies!
-.\start_production.ps1
+.\start.ps1
 ```
 
 **That's it!** The startup script automatically:
@@ -27,7 +27,7 @@ cp config.yaml.example config.yaml
 .\setup.ps1
 
 # Then start normally
-.\start_production.ps1
+.\start.ps1
 ```
 
 ### 📋 Manual Setup (Advanced Users)

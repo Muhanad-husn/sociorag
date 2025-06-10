@@ -51,9 +51,9 @@ SocioRAG is a production-ready system for analyzing social dynamics in texts thr
 
 > **🎯 TL;DR**:
 >
-> 1. Run `.\start_production.ps1`
+> 1. Run `.\start.ps1`
 > 2. When it says "Both services are healthy", click: [http://localhost:3000](http://localhost:3000)
-> 3. When done, run `.\stop_production.ps1`
+> 3. When done, run `.\stop.ps1`
 
 ### ⚡ Instant Setup (Recommended)
 
@@ -67,7 +67,7 @@ cp .env.example .env
 cp config.yaml.example config.yaml
 
 # Start the application - dependencies install automatically!
-.\start_production.ps1
+.\start.ps1
 ```
 
 **That's it!** The startup script automatically:
@@ -88,7 +88,7 @@ For a complete environment setup including database initialization:
 .\setup.ps1
 
 # Then start normally
-.\start_production.ps1
+.\start.ps1
 ```
 
 ### 🖥️ Manual Setup (Advanced)
@@ -204,9 +204,9 @@ Copy-Item config.yaml.example config.yaml
 # Edit config.yaml with your OpenRouter API key and other settings
 
 # 4. Start application
-.\start_production.ps1
+.\start.ps1
 # Or start with monitoring dashboard
-# .\start_production.ps1 -EnableMonitoring
+# .\start.ps1 -EnableMonitoring
 ```
 
 ### Access Points
@@ -310,10 +310,10 @@ huggingface_token: hf_your_token             # HuggingFace token for translation
 
 ```powershell
 # Start in production mode
-.\start_production.ps1
+.\start.ps1
 
 # Start with monitoring dashboard
-.\start_production.ps1 -EnableMonitoring
+.\start.ps1 -EnableMonitoring
 ```
 
 **➡️ After startup completes, visit: [http://localhost:3000](http://localhost:3000)**
@@ -324,7 +324,7 @@ huggingface_token: hf_your_token             # HuggingFace token for translation
 
 ```powershell
 # Stop the application (REQUIRED when done)
-.\stop_production.ps1
+.\stop.ps1
 ```
 
 > **💡 Why shutdown is important**: This script safely stops both backend and frontend services, prevents resource conflicts, and ensures clean shutdown of all processes.

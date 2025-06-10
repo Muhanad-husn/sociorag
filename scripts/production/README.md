@@ -67,11 +67,11 @@ For convenience, you can also use these scripts from the project root:
 
 ```powershell
 # Start the application with default settings
-.\start_production.ps1
+.\start.ps1
 
 # Start with monitoring enabled
-.\start_production.ps1 -EnableMonitoring
+.\start.ps1 -EnableMonitoring
 
 # Stop the application
-.\stop_production.ps1
+.\stop.ps1
 ```

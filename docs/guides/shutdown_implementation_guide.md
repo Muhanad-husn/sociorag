@@ -7,7 +7,7 @@ The complete shutdown functionality has been successfully implemented with the f
 ### 1. Backend Shutdown Endpoint
 **File:** `d:\sociorag\backend\app\api\admin.py`
 - **Endpoint:** `POST /api/admin/shutdown`
-- **Functionality:** Executes `stop_production.ps1` script asynchronously
+- **Functionality:** Executes `stop.ps1` script asynchronously
 - **Platform:** Windows-optimized with PowerShell script execution
 - **Error Handling:** Comprehensive error handling and logging
 
@@ -66,7 +66,7 @@ The complete shutdown functionality has been successfully implemented with the f
 @router.post("/shutdown")
 async def shutdown_system() -> StatusResponse:
     """Shutdown the entire SocioRAG application."""
-    # Executes stop_production.ps1 using subprocess.Popen
+    # Executes stop.ps1 using subprocess.Popen
     # Provides immediate response before shutdown completes
     # Handles Windows-specific PowerShell execution
 ```
@@ -97,7 +97,7 @@ export function setupShutdownTrigger(): void {
 2. **Frontend Detection:** Browser events trigger shutdown function
 3. **API Call:** Frontend calls `/api/admin/shutdown` endpoint
 4. **Backend Processing:** Backend executes PowerShell script
-5. **Process Termination:** `stop_production.ps1` cleanly stops both servers
+5. **Process Termination:** `stop.ps1` cleanly stops both servers
 
 ## ✅ Verification Checklist
 
@@ -117,7 +117,7 @@ export function setupShutdownTrigger(): void {
 - Endpoint executes system commands (PowerShell script)
 - No authentication currently implemented
 - Consider adding admin authentication for production
-- Script execution is limited to predefined `stop_production.ps1`
+- Script execution is limited to predefined `stop.ps1`
 
 ## 📊 Performance Impact
 

@@ -146,6 +146,6 @@ if (-not (Test-Path "data\graph.db")) {
 Write-SetupLog "✅ Setup completed successfully!" "SUCCESS"
 Write-SetupLog "" "INFO"
 Write-SetupLog "Next steps:" "INFO"
-Write-SetupLog "  1. Run: .\start_production.ps1" "INFO"
+Write-SetupLog "  1. Run: .\start.ps1" "INFO"
 Write-SetupLog "  2. Open: http://localhost:5173" "INFO"
 Write-SetupLog "" "INFO"

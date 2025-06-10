@@ -603,7 +603,7 @@ async def restart_system() -> StatusResponse:
 async def shutdown_system() -> StatusResponse:
     """Shutdown the entire SocioRAG application.
     
-    This endpoint triggers the execution of stop_production.ps1 to cleanly
+    This endpoint triggers the execution of stop.ps1 to cleanly
     shutdown both the backend and frontend services.
     """
     try:
@@ -616,7 +616,7 @@ async def shutdown_system() -> StatusResponse:
         # Determine the script path relative to the project root
         current_dir = os.path.dirname(os.path.abspath(__file__))
         project_root = os.path.join(current_dir, "..", "..", "..")
-        stop_script = os.path.join(project_root, "stop_production.ps1")
+        stop_script = os.path.join(project_root, "stop.ps1")
         
         if platform.system() == "Windows":
             # Execute the PowerShell script asynchronously

@@ -33,7 +33,7 @@ cp config.yaml.example config.yaml
 
 ```powershell
 # Windows - Auto-installs all dependencies and starts services
-.\start_production.ps1
+.\start.ps1
 ```
 
 The startup script automatically:
@@ -128,7 +128,7 @@ huggingface_token: hf_your-token-here  # Required for Arabic translation
 After a Windows restart, simply run:
 
 ```powershell
-.\start_production.ps1
+.\start.ps1
 ```
 
 The script will automatically detect and reinstall missing dependencies.

@@ -25,7 +25,7 @@ cp .env.example .env
 cp config.yaml.example config.yaml
 
 # Start development environment - auto-installs dependencies!
-.\start_production.ps1
+.\start.ps1
 ```
 
 The startup script provides:
@@ -63,7 +63,7 @@ cd ui && npm install && cd ..
 #### Starting Development Services
 ```powershell
 # Auto-install and start all services
-.\start_production.ps1
+.\start.ps1
 
 # Or manually start individual services
 python -m backend.app.main  # Backend (Terminal 1)
@@ -75,7 +75,7 @@ cd ui && npm run dev        # Frontend (Terminal 2)
 Simply run the startup script - it will detect and reinstall any missing dependencies:
 
 ```powershell
-.\start_production.ps1
+.\start.ps1
 ```
 
 The auto-install feature ensures:

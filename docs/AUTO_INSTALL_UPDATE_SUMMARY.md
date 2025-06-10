@@ -51,14 +51,14 @@
 # Manual process after system restart
 cd sociorag
 npm install  # Had to remember this step
-.\start_production.ps1
+.\start.ps1
 ```
 
 #### After Auto-Install
 ```powershell
 # Zero-friction process after system restart
 cd sociorag
-.\start_production.ps1  # Automatically detects and installs dependencies!
+.\start.ps1  # Automatically detects and installs dependencies!
 ```
 
 ### 🎯 Problem Resolution
@@ -81,7 +81,7 @@ cd sociorag
 #### Core Auto-Install Components
 - `d:\sociorag\scripts\production\app_manager.ps1` - ✅ Enhanced with auto-install
 - `d:\sociorag\setup.ps1` - ✅ Comprehensive setup script
-- `d:\sociorag\start_production.ps1` - ✅ Integrated auto-install workflow
+- `d:\sociorag\start.ps1` - ✅ Integrated auto-install workflow
 
 #### Documentation Files
 - `d:\sociorag\README.md` - ✅ Updated and linting-compliant
@@ -97,13 +97,13 @@ git clone https://github.com/your-username/sociorag.git
 cd sociorag
 cp .env.example .env
 cp config.yaml.example config.yaml
-.\start_production.ps1  # Auto-installs everything!
+.\start.ps1  # Auto-installs everything!
 ```
 
 #### After System Restart
 ```powershell
 cd sociorag
-.\start_production.ps1  # Detects missing deps and auto-installs!
+.\start.ps1  # Detects missing deps and auto-installs!
 ```
 
 #### Complete Environment Setup (Optional)

@@ -7,7 +7,7 @@
     Stops all SocioRAG services (backend and frontend)
     
 .EXAMPLE
-    .\stop_production.ps1
+    .\stop.ps1
 #>
 
 # Colors for output

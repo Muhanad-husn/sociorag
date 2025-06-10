@@ -54,7 +54,7 @@ This document describes the changes made to consolidate the SocioRAG logging sys
 
 3. **Start With Clean Logs**:
    ```powershell
-   .\start_production.ps1 -CleanLogs
+   .\start.ps1 -CleanLogs
    ```
 
 4. **View Only Errors**:

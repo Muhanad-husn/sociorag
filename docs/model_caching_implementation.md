@@ -71,7 +71,7 @@ _reranker = CrossEncoder(
 - Tests model functionality after caching
 - Reports cache size and performance metrics
 
-### 5. Startup Script Integration (`start_production.ps1`)
+### 5. Startup Script Integration (`start.ps1`)
 - Automatic cache detection
 - Optional model preloading prompt
 - Performance status reporting
@@ -92,7 +92,7 @@ models_cache/
 ### Initial Setup (One-time)
 ```powershell
 # Automatic during startup
-.\start_production.ps1
+.\start.ps1
 
 # Or manual
 python scripts\preload_models.py
@@ -101,7 +101,7 @@ python scripts\preload_models.py
 ### Daily Usage
 ```powershell
 # Fast startup with cached models
-.\start_production.ps1
+.\start.ps1
 ```
 
 ### Performance Testing

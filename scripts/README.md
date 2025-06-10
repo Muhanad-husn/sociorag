@@ -5,8 +5,8 @@ This directory contains all PowerShell and batch scripts organized by purpose.
 ## Quick Start
 
 **Production Use (Main Scripts):**
-- Run `.\start_production.ps1` from the root directory to start SocioRAG
-- Run `.\stop_production.ps1` from the root directory to stop SocioRAG
+- Run `.\start.ps1` from the root directory to start SocioRAG
+- Run `.\stop.ps1` from the root directory to stop SocioRAG
 
 These are convenience wrappers that redirect to the organized scripts in `scripts\production\`.
 
@@ -14,8 +14,8 @@ These are convenience wrappers that redirect to the organized scripts in `script
 
 ### 📁 production/
 Core production scripts for running SocioRAG:
-- **start_production.ps1** - Main production startup script
-- **stop_production.ps1** - Main production shutdown script  
+- **start.ps1** - Main production startup script
+- **stop.ps1** - Main production shutdown script  
 - **app_manager.ps1** - Advanced application lifecycle management
 - **PRODUCTION_QUICKSTART.md** - Production deployment documentation
 
@@ -46,19 +46,19 @@ Superseded or legacy scripts (kept for reference):
 ### Starting SocioRAG for Production
 ```powershell
 # From root directory (recommended)
-.\start_production.ps1
+.\start.ps1
 
 # Or directly
-.\scripts\production\start_production.ps1
+.\scripts\production\start.ps1
 ```
 
 ### Stopping SocioRAG
 ```powershell
 # From root directory (recommended)
-.\stop_production.ps1
+.\stop.ps1
 
 # Or directly
-.\scripts\production\stop_production.ps1
+.\scripts\production\stop.ps1
 ```
 
 ### Force-kill if needed
@@ -88,4 +88,4 @@ The main production scripts are self-contained and require:
 - All scripts assume execution from the SocioRAG root directory
 - Scripts are organized to avoid duplication and provide clear separation of concerns
 - Archive directory contains legacy scripts maintained for historical reference
-- Main production scripts (`start_production.ps1`, `stop_production.ps1`) are the primary entry points
+- Main production scripts (`start.ps1`, `stop.ps1`) are the primary entry points
