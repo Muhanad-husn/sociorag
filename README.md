@@ -7,338 +7,346 @@
 [![Status](resources/status-badge.png)](docs/project_status.md)
 [![Version](resources/version-badge.png)](docs/project_status.md)
 
-## ✅ Production Ready
+**Current Version**: v1.0.3 | **Status**: ✅ Production Ready | **Last Updated**: June 23, 2025
 
-- **0% Error Rate**: All tests passing, robust error handling
-- **Sub-millisecond Response**: Optimized for speed and concurrency
-- **Comprehensive Documentation**: All guides consolidated and up-to-date (June 2025)
-- **Full Feature Set**: Entity extraction, vector search, multilingual support, PDF export, and analytics
+## ✅ Production Ready Features
 
-## 🔑 Environment Variables
+- **🎯 Zero Error Rate**: All tests passing with robust error handling
+- **⚡ High Performance**: Sub-millisecond response times with optimized concurrency
+- **📚 Complete Documentation**: All guides consolidated and up-to-date (June 2025)
+- **🔧 Full Feature Set**: Entity extraction, vector search, multilingual support, PDF export, and analytics
+- **🚀 Auto-Install**: Smart dependency detection and installation
+- **🛡️ Production Hardened**: Comprehensive logging, monitoring, and health checks
 
-| Key                | Description                       | Example     |
-| ------------------ | --------------------------------- | ----------- |
-| OPENROUTER_API_KEY | LLM access key                    | `sk-or-***` |
-| CHUNK_SIM          | Similarity threshold for chunking | `0.80`      |
-| LOG_LEVEL          | Logging level                     | `DEBUG`     |
-| ...                | ...                               | ...         |
+## 🔑 Environment Configuration
 
-See `.env.example` for the full list.
+| Variable           | Description                        | Example Value     | Required |
+| ------------------ | ---------------------------------- | ----------------- | -------- |
+| OPENROUTER_API_KEY | OpenRouter API key for LLM access | `sk-or-v1-***`    | ✅       |
+| CHUNK_SIM          | Similarity threshold for chunking  | `0.80`            | ⚠️       |
+| LOG_LEVEL          | Application logging level          | `DEBUG`           | ⚠️       |
+
+**Setup**: Copy `.env.example` to `.env` and update with your values.
+
+```powershell
+Copy-Item .env.example .env
+# Edit .env with your API keys
+```
 
 ## 📋 Overview
 
-SocioRAG is a production-ready system for analyzing social dynamics in texts through advanced NLP, entity extraction, vector search, and answer generation capabilities. The system follows a modular architecture with distinct phases for data ingestion, storage, retrieval, and answer generation.
+SocioRAG is a **production-ready system** for analyzing social dynamics in texts through advanced NLP, entity extraction, vector search, and answer generation capabilities. The system follows a modular architecture with distinct phases for data ingestion, storage, retrieval, and answer generation.
 
 ### 🛡️ System Requirements
 
-- **Python**: 3.8+ (with pip)
-- **Node.js**: 18+ (with npm)
-- **Operating System**: Windows (PowerShell), Linux/macOS (with minor script modifications)
-- **Memory**: 4GB+ RAM recommended
-- **Storage**: 2GB+ free space
+- **Python**: 3.12+ (tested with 3.12.9)
+- **Node.js**: 18+ with npm/pnpm/yarn support
+- **Operating System**: Windows (PowerShell), Linux, macOS
+- **Memory**: 4GB+ RAM (8GB recommended for optimal performance)
+- **Storage**: 2GB+ free space for dependencies and models
+- **Internet**: Required for model downloads and API access
 
-### 🔄 Auto-Install Features
+### 🔄 Smart Installation Features
 
-- **Smart Dependency Detection**: Automatically detects missing `node_modules` and installs frontend dependencies
-- **Package Manager Support**: Works with npm, pnpm, or yarn (auto-detected)
-- **Windows Path Handling**: Properly handles paths with spaces (e.g., "Program Files")
-- **Robust Error Handling**: Clear error messages and automatic fallbacks
-- **Zero Configuration**: Works out-of-the-box after environment setup
+- **🔍 Auto-Detection**: Automatically detects missing dependencies and installs them
+- **📦 Multi-Package Manager**: Supports npm, pnpm, and yarn (auto-detected)
+- **🪟 Windows Optimized**: Proper handling of paths with spaces (e.g., "Program Files")
+- **🛡️ Error Recovery**: Clear error messages with automatic fallbacks
+- **⚡ Zero Configuration**: Works out-of-the-box after environment setup
 
-📖 **Complete guide**: [DEPLOYMENT.md](DEPLOYMENT.md)
+📖 **Complete deployment guide**: [DEPLOYMENT.md](DEPLOYMENT.md)
 
 ## 🚀 Quick Start
 
-> **🎯 TL;DR**:
->
-> 1. Run `.\start.ps1`
-> 2. When it says "Both services are healthy", click: [http://localhost:3000](http://localhost:3000)
-> 3. When done, run `.\stop.ps1`
+> **🎯 TL;DR**: Run `.\start.ps1` → Click [http://localhost:3000](http://localhost:3000) when ready → Run `.\stop.ps1` when done
 
-### ⚡ Instant Setup (Recommended)
+### ⚡ One-Command Startup (Recommended)
 
 ```powershell
-# Clone the repository
+# Clone and navigate to repository
 git clone https://github.com/Muhanad-husn/sociorag.git
 cd sociorag
 
-# Set up environment files
-cp .env.example .env
-cp config.yaml.example config.yaml
+# Setup environment files
+Copy-Item .env.example .env
+Copy-Item config.yaml.example config.yaml
+# Edit .env with your OPENROUTER_API_KEY
 
-# Start the application - dependencies install automatically!
+# Start everything automatically
 .\start.ps1
 ```
 
-**That's it!** The startup script automatically:
+**🎉 Success indicators:**
 
-- ✅ Detects missing dependencies and installs them
-- ✅ Starts both backend and frontend services
-- ✅ Waits for services to be healthy
-- ✅ Shows "Both services are healthy" when ready
+- Backend: `✅ Backend started successfully`
+- Frontend: `✅ Frontend started successfully`
+- Health: `✅ All services started successfully!`
 
-**📱 Once you see "Both services are healthy", click: [http://localhost:3000](http://localhost:3000)**
+**🌐 Access Points:**
 
-### 🔧 First-time Complete Setup (Optional)
+- **Main Application**: [http://localhost:3000](http://localhost:3000) ← Primary UI
+- **API Documentation**: [http://localhost:8000/docs](http://localhost:8000/docs)
+- **Backend Health**: [http://localhost:8000/api/admin/health](http://localhost:8000/api/admin/health)
+- **Admin Status**: [http://localhost:8000/api/admin/status](http://localhost:8000/api/admin/status)
 
-For a complete environment setup including database initialization:
+### 🔧 Complete Setup (First Time)
+
+For comprehensive environment setup with database initialization:
 
 ```powershell
-# Run the comprehensive setup script
+# Run full setup script
 .\setup.ps1
 
 # Then start normally
 .\start.ps1
 ```
 
-### 🖥️ Manual Setup (Advanced)
+### � Shutdown (Important)
+
+**Always** properly stop the application when finished:
 
 ```powershell
-# 1. Install Python dependencies
-pip install -r requirements.txt
-
-# 2. Install frontend dependencies
-cd ui
-npm install
-cd ..
-
-# 3. Start services manually
-# Terminal 1 - Backend
-python -m backend.app.main
-
-# Terminal 2 - Frontend
-cd ui
-npm run dev
-```
-
-### 🌐 Access Points
-
-**After the startup script completes and shows "Both services are healthy", access the application at:**
-
-- **🌟 Main Application**: **`http://localhost:3000`** ← **Click here to use SocioRAG!**
-- **Backend API**: `http://localhost:8000`
-- **API Documentation**: `http://localhost:8000/docs`
-- **Admin Panel**: `http://localhost:8000/api/admin/status`
-
-> **💡 Note**: Wait for the startup script to finish loading before clicking the link. The application will automatically open in your browser when ready.
-
-📖 **Full deployment guide**: [DEPLOYMENT.md](DEPLOYMENT.md)
-
-## ✨ Feature Overview
-
-| Feature              | Description                                                              | Status  |
-| -------------------- | ------------------------------------------------------------------------ | ------- |
-| Entity Extraction    | LLM-powered, multilingual                                                | ✅ Ready |
-| Vector Search        | Fast, reranking, configurable; supports both chunk and entity embeddings | ✅ Ready |
-| PDF Export           | Custom, styled, automated                                                | ✅ Ready |
-| Query Analytics      | JSONL logs, performance metrics                                          | ✅ Ready |
-| Multilingual Support | English & Arabic, translation API                                        | ✅ Ready |
-| UI                   | Modern, responsive, bilingual                                            | ✅ Ready |
-| Logging & Monitoring | Structured logs, REST API, health checks                                 | ✅ Ready |
-
-## 🧪 Running Tests
-
-```powershell
-pytest tests/ -v          # run all tests
-pytest -m integration -v  # integration tests only
-```
-
-Full guide: [tests/README.md](tests/README.md)
-
-## 📊 Performance & Monitoring
-
-See the performance dashboard setup in [instructions/readme/README.md](instructions/readme/README.md#performance-testing--monitoring).
-
-## 🧹 Workspace Housekeeping
-
-Recommended cleanup steps: [docs/production_deployment_guide.md](docs/production_deployment_guide.md#🧹-additional-cleanup-opportunities).
-
-## 🏗️ How It Works
-
-1. **Ingest**: Upload documents (PDF, text)
-2. **Extract**: Entities and relationships via LLM + spaCy
-3. **Store**:
-   - Document chunks as vector embeddings for semantic retrieval
-   - Entities as separate vector embeddings for entity-level search and graph analysis
-   - **Semantic Chunking**: Intelligently divides text based on semantic boundaries rather than arbitrary length, with adaptive parameters for different document types and fallback mechanisms
-4. **Query**: Semantic search and answer generation using both chunk and entity vectors
-5. **Export**: Download answers and reports as PDF
-
-## 🖥️ User Interface
-
-- **Query History**: View, copy, and delete previous queries
-- **Search**: Natural language, semantic, and multilingual
-- **Document Management**: Upload, process, and download documents
-- **Settings**: API keys, model selection, theme toggle, and performance metrics
-
-## 📚 Documentation
-
-- [Documentation Hub](docs/README.md) – Centralized access to all guides
-- [Quick Start Guide](docs/installation_guide.md) – Fast onboarding
-- [Unified API Reference](docs/api_documentation.md) – All endpoints and usage
-- [Production Deployment Guide](docs/production_deployment_guide.md) – Deployment & runtime
-- [Project Status Dashboard](docs/project_status.md) – Version, health, and changelog
-
-## ⚡ Getting Started
-
-### One-Command Setup
-
-```powershell
-# Automated setup - handles everything
-.\quick_start.ps1
-```
-
-### Manual Quick Setup
-
-```powershell
-# 1. Create environment
-python -m venv .venv
-.\.venv\Scripts\Activate.ps1
-
-# 2. Install dependencies  
-pip install -r requirements.txt
-
-# 3. Set up configuration
-# Copy config.yaml.example to config.yaml and update with your API keys
-Copy-Item config.yaml.example config.yaml
-# Edit config.yaml with your OpenRouter API key and other settings
-
-# 4. Start application
-.\start.ps1
-# Or start with monitoring dashboard
-# .\start.ps1 -EnableMonitoring
-```
-
-### Access Points
-
-- Backend: [http://127.0.0.1:8000](http://127.0.0.1:8000)
-- API Documentation: [http://127.0.0.1:8000/docs](http://127.0.0.1:8000/docs)
-
-## 💻 Installation
-
-### System Requirements
-
-#### Minimum Requirements
-
-- **Operating System**: Windows 11 (tested and verified), Windows 10, macOS 10.15+, or Linux (Ubuntu 18.04+) - *We welcome testing and feedback on other operating systems*
-- **Python**: 3.12.9 (required for compatibility)
-- **Memory**: 4GB RAM minimum, 8GB recommended
-- **Storage**: 2GB free space for dependencies and models
-- **Internet**: Required for model downloads and API access
-
-#### Recommended Requirements
-
-- **Memory**: 16GB RAM for optimal performance
-- **Storage**: 10GB free space for large document processing
-- **CPU**: Multi-core processor for concurrent processing
-- **GPU**: Optional, for accelerated embeddings (future feature)
-
-### Method 1: Conda Installation (Recommended)
-
-```bash
-# 1. Install Miniconda (if not already installed)
-# Download from: https://docs.conda.io/en/latest/miniconda.html
-
-# 2. Clone the repository
-git clone <repository-url>
-cd sociorag
-
-# 3. Create environment from environment.yml
-conda env create -f environment.yml
-
-# 4. Activate the environment
-conda activate sociorag
-
-# 5. Download required spaCy model (Conda)
-python -m spacy download en_core_web_sm
-
-# 6. Install Playwright browsers for PDF generation (Conda)
-playwright install
-```
-
-### Method 2: pip Installation
-
-Using pip with virtual environment for Python package management.
-
-```bash
-# 1. Clone the repository
-git clone <repository-url>
-cd sociorag
-
-# 2. Create a virtual environment
-python -m venv .venv
-
-# 3. Activate the environment
-
-# On Windows
-.\.venv\Scripts\Activate.ps1
-
-# On macOS/Linux
-source .venv/bin/activate
-
-# 4. Install dependencies
-pip install -r requirements.txt
-
-# 5. Download required spaCy model (pip)
-python -m spacy download en_core_web_sm
-
-# 6. Install Playwright browsers for PDF generation (pip)
-playwright install
-```
-
-## 🛠️ Configuration
-
-Copy the example configuration file and update with your settings:
-
-```powershell
-Copy-Item config.yaml.example config.yaml
-```
-
-Edit the `config.yaml` file with your specific configuration:
-
-```yaml
-chunk_sim: 0.8                               # Similarity threshold for chunking
-top_k: 50                                    # Number of top results to retrieve
-vector_dir: /path/to/vector_store            # Path to vector store directory
-openrouter_api_key: sk-or-v1-your-api-key    # OpenRouter API key
-huggingface_token: hf_your_token             # HuggingFace token for translation
-```
-
-## 🔄 Usage
-
-### 🚀 Starting the Application
-
-```powershell
-# Start in production mode
-.\start.ps1
-
-# Start with monitoring dashboard
-.\start.ps1 -EnableMonitoring
-```
-
-**➡️ After startup completes, visit: [http://localhost:3000](http://localhost:3000)**
-
-### 🛑 Stopping the Application
-
-**⚠️ IMPORTANT**: Always properly shutdown the application when finished:
-
-```powershell
-# Stop the application (REQUIRED when done)
 .\stop.ps1
 ```
 
-> **💡 Why shutdown is important**: This script safely stops both backend and frontend services, prevents resource conflicts, and ensures clean shutdown of all processes.
+> **💡 Why this matters**: Prevents port conflicts, ensures clean shutdown, and stops all background processes properly.
 
-### API Endpoints
+## ✨ Feature Overview
 
-The SocioRAG API provides endpoints for:
+| Feature                    | Description                                                    | Status      |
+| -------------------------- | -------------------------------------------------------------- | ----------- |
+| **🧠 Entity Extraction** | LLM-powered multilingual entity recognition with spaCy        | ✅ Ready    |
+| **🔍 Vector Search**      | Fast similarity search with reranking and configurable params | ✅ Ready    |
+| **📄 PDF Export**         | Custom-styled automated report generation                      | ✅ Ready    |
+| **📊 Query Analytics**    | JSONL logging with performance metrics                        | ✅ Ready    |
+| **🌐 Multilingual**       | English & Arabic support with translation API                 | ✅ Ready    |
+| **🎨 Modern UI**          | Responsive design with dark/light themes                      | ✅ Ready    |
+| **🔐 Security**           | API key management and secure configurations                   | ✅ Ready    |
+| **📈 Monitoring**         | Health checks, structured logging, performance dashboards     | ✅ Ready    |
+| **🚀 Auto-Deploy**        | One-command startup with dependency management                 | ✅ Ready    |
 
-- Document ingestion and processing
-- Query and answer generation
-- PDF report export
-- Query history and analytics
+## 🧪 Testing & Quality
 
-Full API documentation is available at [http://127.0.0.1:8000/docs](http://127.0.0.1:8000/docs) when the application is running.
+```powershell
+# Run all tests
+pytest tests/ -v
+
+# Integration tests only
+pytest -m integration -v
+
+# Performance testing
+.\scripts\testing\test_runner.ps1 -TestLevel standard
+
+# Load testing
+.\scripts\testing\load_test.ps1 -ConcurrentUsers 5
+```
+
+**Test Coverage**: 100% pass rate | **Performance**: Sub-millisecond response | **Documentation**: Complete
+
+📖 **Full testing guide**: [tests/README.md](tests/README.md)
+
+## 🏗️ Architecture & How It Works
+
+**SocioRAG follows a robust 4-phase pipeline:**
+
+1. **📥 Ingest**: Upload documents (PDF, text) with intelligent preprocessing
+2. **🎯 Extract**: Entities and relationships via LLM + spaCy with multilingual support
+3. **🗄️ Store**: Dual vector storage system:
+   - **Chunk Embeddings**: Document segments for semantic retrieval
+   - **Entity Embeddings**: Named entities for graph analysis and entity-level search
+   - **Semantic Chunking**: AI-driven text segmentation based on semantic boundaries
+4. **🔍 Query**: Advanced hybrid retrieval combining:
+   - Vector similarity search
+   - BM25 keyword matching  
+   - Cross-encoder reranking
+   - Source diversity enforcement
+5. **📤 Export**: Download answers and comprehensive reports as styled PDFs
+
+### � Technology Stack
+
+| Component           | Technology                    | Purpose                          |
+| ------------------- | ----------------------------- | -------------------------------- |
+| **🖥️ Backend**     | FastAPI + Python 3.12        | API server and core logic       |
+| **🎨 Frontend**     | Preact + Vite + TypeScript   | Modern reactive UI               |
+| **🧠 LLM**          | OpenRouter API + LangChain   | Language model integration      |
+| **🗄️ Vector DB**   | SQLite-vec                    | Embeddings and similarity search |
+| **📊 Graph DB**     | SQLite                        | Entity relationships            |
+| **🔍 NLP**          | spaCy + Custom pipeline      | Entity extraction and analysis  |
+| **📄 Export**       | Playwright                    | PDF generation with styling     |
+| **🔒 Config**       | Pydantic + YAML              | Type-safe configuration         |
+
+### 📁 Project Structure
+
+```text
+sociorag/
+├── 🖥️ backend/app/          # FastAPI application
+│   ├── api/                 # REST API endpoints
+│   ├── core/                # Configuration & logging
+│   ├── ingest/              # Document processing
+│   ├── retriever/           # Vector search & retrieval
+│   └── answer/              # Response generation
+├── 🎨 ui/                   # Preact frontend
+├── 📊 scripts/              # Automation & testing
+│   ├── production/          # Deployment scripts
+│   ├── testing/             # Test automation
+│   └── utilities/           # Helper tools
+├── 📚 docs/                 # Documentation
+├── 🧪 tests/                # Test suites
+└── 📦 Configuration files
+```
+
+## 📚 Documentation Hub
+
+- **🚀 [Quick Start Guide](docs/installation_guide.md)** – Get up and running in minutes
+- **📖 [Complete Documentation](docs/README.md)** – Centralized access to all guides  
+- **🔧 [API Reference](docs/api_documentation.md)** – Complete endpoint documentation
+- **🏭 [Production Deployment](docs/production_deployment_guide.md)** – Deployment & scaling
+- **📊 [Project Status](docs/project_status.md)** – System health & version info
+- **🛠️ [Architecture Guide](docs/architecture_documentation.md)** – System design deep-dive
+
+## 🖥️ User Interface Features
+
+- **🔍 Smart Search**: Natural language, semantic, and multilingual queries
+- **📜 Query History**: View, copy, and delete previous queries with timestamps
+- **📤 Document Management**: Upload, process, and download documents
+- **⚙️ Advanced Settings**: API keys, model selection, theme toggle
+- **📊 Performance Metrics**: Real-time analytics and response monitoring
+- **🌐 Multilingual**: Full English and Arabic support with auto-translation
+- **🎨 Modern Design**: Responsive UI with dark/light themes
+
+## 📈 Monitoring & Performance
+
+- **Health Checks**: Real-time system status monitoring
+- **Performance Dashboard**: Response times, throughput, and system metrics
+- **Load Testing**: Built-in testing scripts for performance validation
+- **Structured Logging**: Comprehensive logging with multiple output formats
+
+```powershell
+# Start monitoring dashboard
+.\scripts\testing\monitoring_dashboard.ps1
+
+# Run performance tests
+.\scripts\testing\performance_test_monitor.ps1
+
+# Check system status
+.\scripts\utilities\production_status.ps1
+```
+
+## 💻 Installation Options
+
+### 🎯 Option 1: Automated Setup (Recommended)
+
+**Prerequisites**: Python 3.12+, Node.js 18+, Git
+
+```powershell
+# Clone repository
+git clone https://github.com/Muhanad-husn/sociorag.git
+cd sociorag
+
+# Automated setup - handles everything
+.\setup.ps1
+
+# Start application
+.\start.ps1
+```
+
+### 🐍 Option 2: Python Environment Setup
+
+#### Using Conda (Recommended)
+
+```bash
+# Install Miniconda if not already installed
+# Download: https://docs.conda.io/en/latest/miniconda.html
+
+# Create environment from environment.yml (if available)
+conda env create -f environment.yml
+conda activate sociorag
+
+# Or create manually
+conda create -n sociorag python=3.12
+conda activate sociorag
+pip install -r requirements.txt
+
+# Download spaCy model
+python -m spacy download en_core_web_sm
+
+# Install Playwright browsers
+playwright install
+```
+
+#### Using pip + venv
+
+```bash
+# Create virtual environment
+python -m venv .venv
+
+# Activate environment
+# Windows
+.\.venv\Scripts\Activate.ps1
+# Linux/macOS
+source .venv/bin/activate
+
+# Install dependencies
+pip install -r requirements.txt
+
+# Download spaCy model
+python -m spacy download en_core_web_sm
+
+# Install Playwright browsers
+playwright install
+```
+
+### � Configuration Setup
+
+```powershell
+# 1. Copy configuration templates
+Copy-Item config.yaml.example config.yaml
+Copy-Item .env.example .env
+
+# 2. Edit configuration files
+# config.yaml - System settings
+# .env - API keys and environment variables
+```
+
+**Required Configuration:**
+
+- `OPENROUTER_API_KEY`: Get from [OpenRouter](https://openrouter.ai/)
+- `CHUNK_SIM`: Text similarity threshold (default: 0.8)
+- `LOG_LEVEL`: Logging verbosity (DEBUG/INFO/WARNING/ERROR)
+
+### 🏃 Running the Application
+
+```powershell
+# Start with auto-dependency installation
+.\start.ps1
+
+# Or start services manually
+# Terminal 1: Backend
+python -m backend.app.main
+
+# Terminal 2: Frontend  
+cd ui
+npm install  # if not already installed
+npm run dev
+```
+
+### � System Requirements
+
+#### Minimum Requirements
+
+- **OS**: Windows 10+, macOS 10.15+, Linux (Ubuntu 18.04+)
+- **Python**: 3.12+ (recommended 3.12.9)
+- **Node.js**: 18+ with npm/pnpm/yarn
+- **Memory**: 4GB RAM
+- **Storage**: 2GB free space
+- **Network**: Internet connection for model downloads
+
+#### Recommended Requirements
+
+- **Memory**: 8GB+ RAM for optimal performance
+- **Storage**: 10GB+ for large document processing
+- **CPU**: Multi-core processor for concurrent operations
+- **GPU**: Optional, future feature for accelerated embeddings
 
 ## 🏗️ Architecture
 
@@ -374,24 +382,110 @@ Detailed diagrams & component docs → [docs/architecture_documentation.md](docs
 - **Entity Extraction**: spaCy + Custom LLM pipeline
 - **PDF Generation**: Playwright with browser automation
 
-## 🤝 Support & Contributing
+## 🤝 Contributing & Development
 
-- Issue tracker → GitHub
-- Contribution workflow → [Developer Guide](docs/guides/developer_guide.md#contributing-guidelines)
-- CI/CD roadmap → [Project Status](docs/project_status.md#🔄-future-version-control-strategy)
-- **Contact**: [Project Status Dashboard](docs/project_status.md) for updates and support links
+We welcome contributions! Here's how to get started:
+
+### 🛠️ Development Setup
+
+```powershell
+# Fork and clone the repository
+git clone https://github.com/your-username/sociorag.git
+cd sociorag
+
+# Set up development environment
+.\setup.ps1
+
+# Run tests
+pytest tests/ -v
+
+# Start in development mode
+.\start.ps1 -ShowStartupLogs
+```
+
+### 🧪 Testing Guidelines
+
+- **Unit Tests**: `pytest tests/ -v`
+- **Integration Tests**: `pytest -m integration -v`
+- **Performance Tests**: `.\scripts\testing\test_runner.ps1`
+- **Load Tests**: `.\scripts\testing\load_test.ps1`
+
+### 📝 Documentation Standards
+
+- Update README.md for user-facing changes
+- Add docstrings for new functions/classes
+- Update API documentation for endpoint changes
+- Include type hints for Python code
+
+### 🔄 Development Workflow
+
+1. Create a feature branch: `git checkout -b feature/your-feature`
+2. Make your changes with tests
+3. Run the full test suite
+4. Update documentation as needed
+5. Submit a pull request with clear description
+
+### 📞 Support & Community
+
+- **📋 Issues**: [GitHub Issues](https://github.com/Muhanad-husn/sociorag/issues)
+- **📖 Documentation**: [Complete Docs](docs/README.md)
+- **📊 Project Status**: [Status Dashboard](docs/project_status.md)
+- **🔧 Developer Guide**: [Development Guidelines](docs/guides/developer_guide.md)
 
 ## 📄 License
 
-Apache-2.0 – see [LICENSE](LICENSE) for full terms.
+**Apache-2.0 License** – See [LICENSE](LICENSE) for full terms.
 
-## 🖼️ Demo & Screenshots
+## � Acknowledgements
 
-*TODO: Add screenshots or a demo GIF here to showcase the UI and features.*
+- **LangChain** for LLM integration framework
+- **FastAPI** for the high-performance web framework
+- **SQLite-vec** for efficient vector storage
+- **spaCy** for advanced NLP processing
+- **Preact** for the lightweight frontend framework
+- **OpenRouter** for LLM API access
 
-## 🙏 Acknowledgements
+## 🚨 Troubleshooting
 
-- LangChain for LLM integration
-- FastAPI for the web framework
-- SQLite-vec for vector storage
-- spaCy for NLP processing
+### Common Issues
+
+**Port Already in Use:**
+
+```powershell
+# Kill existing processes
+.\stop.ps1
+# Wait a few seconds, then restart
+.\start.ps1
+```
+
+**Dependencies Not Installing:**
+
+```powershell
+# Clear cache and reinstall
+Remove-Item -Recurse -Force node_modules, .venv
+.\setup.ps1
+```
+
+**API Key Issues:**
+
+```powershell
+# Verify your .env file has the correct API key
+Get-Content .env | Select-String "OPENROUTER_API_KEY"
+```
+
+**Performance Issues:**
+
+```powershell
+# Check system status
+.\scripts\utilities\production_status.ps1
+# Run diagnostics
+.\scripts\testing\monitoring_dashboard.ps1
+```
+
+For more troubleshooting help, see [Installation Guide](docs/installation_guide.md#troubleshooting).
+
+---
+
+**🎯 Ready to start?** Follow the [Quick Start](#-quick-start) section above!
+
+**📖 Need more details?** Check out our [Complete Documentation](docs/README.md).
